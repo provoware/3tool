@@ -15,6 +15,7 @@
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
 - [ ] Weiterführende Hinweise lesen: `ANLEITUNG_WEITER.md`
 - [ ] Weitere Beispiele lesen: `ANLEITUNG_MEHR.md`
+- [ ] Zusätzliche Hinweise lesen: `ANLEITUNG_ZUSATZ.md`
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen

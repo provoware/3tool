@@ -3,3 +3,4 @@
 [2025-07-24] GUI-Tooltips erweitert, Kontextmenü hinzugefügt und Tipps-Dokument erstellt.
 [2025-07-24] Weiterfuehrende Anleitung erstellt, Tooltip fuer Tabelle.
 [2025-07-24] Weitere Tipps und Button zum Öffnen des Ausgabeordners
+[2025-07-24] Zusätzliche Hinweise für Laien erstellt

@@ -27,6 +27,7 @@ Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
 Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 Noch mehr Hinweise bietet `ANLEITUNG_WEITER.md`.
 Weitere Beispiele gibt es in `ANLEITUNG_MEHR.md`.
+Ergänzende Vorschläge enthält `ANLEITUNG_ZUSATZ.md`.
 
 ## Zusaetzlich
 
