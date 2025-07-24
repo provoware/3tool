@@ -23,6 +23,17 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    ```
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
 
+Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
+Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
+Im Abschnitt "Weiterführende Befehle" von `ANLEITUNG_GESAMT.md` finden sich
+zusätzliche Kommandos für neugierige Einsteiger.
+Weitere Beispiele stehen in `ANLEITUNG_EXTRA.md`.
+
+Unterstuetzte Modi:
+* **Standard** – ein Bild pro Audio
+* **Slideshow** – ganzer Bilder-Ordner fuer jedes Audio
+* **Video + Audio** – vorhandenes Video mit neuer Tonspur
+* **Mehrere Audios, ein Bild** – gleiches Bild fuer viele Audiodateien
 Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
 Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 
