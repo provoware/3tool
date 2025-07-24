@@ -87,3 +87,13 @@ ffmpeg -i eingang.mp4 -vf "transpose=1" gedreht.mp4
 ffmpeg -i eingang.mp4 -vf scale=1280:720 kleiner.mp4
 ```
 `scale` (skalieren) passt Breite und Höhe an.
+
+## 14. Mehrere Bilderordner koppeln
+Wenn du für jede Tonspur einen eigenen Bilderordner hast, kannst du das
+automatisch zuordnen lassen:
+
+1. Wähle im Tab **Bilder** alle gewünschten Ordner aus.
+2. Füge im Tab **Audios** die passenden Tondateien hinzu – in der gleichen Reihenfolge.
+3. Klicke auf **Auto-Paaren**.
+
+Das Tool erstellt dann für jeden Ordner eine eigene Slideshow.

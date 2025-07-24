@@ -30,3 +30,4 @@
 
 [2025-07-24] Dokumentation um Favoritenhinweise erweitert; Aufgabe "Dokumentation lesen" erledigt
 [2025-07-24] Weiterführende Befehle gelesen und neue Tipps ergänzt
+[2025-07-24] Auto-Pair mit mehreren Slideshow-Ordnern dokumentiert und Aufgabe erledigt

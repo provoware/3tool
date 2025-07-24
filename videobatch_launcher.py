@@ -148,8 +148,12 @@ def main():
                     try:
                         sp.check_call(["sudo", "apt", "update"])
                         sp.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        QtWidgets.QMessageBox.warning(
+                            self,
+                            "Fehler",
+                            f"ffmpeg konnte nicht automatisch installiert werden.\n{e}"
+                        )
                 self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
 
             self.setEnabled(True)

@@ -24,7 +24,7 @@
 - [x] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [x] Abschnitt "Weiterführende Befehle" lesen
 - [x] Neues Hilfefenster prüfen
-- [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
+- [x] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
 - [ ] Kontextmenü in Bilder- und Audioliste testen
 - [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
