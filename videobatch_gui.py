@@ -279,6 +279,7 @@ class DropListWidget(QtWidgets.QListWidget):
         self.setAlternatingRowColors(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setToolTip(title); self.setStatusTip(title)
+        self.itemDoubleClicked.connect(self._open_item)
     def dragEnterEvent(self,e):
         if e.mimeData().hasUrls(): e.acceptProposedAction()
         else: super().dragEnterEvent(e)
@@ -295,6 +296,27 @@ class DropListWidget(QtWidgets.QListWidget):
             it=QtWidgets.QListWidgetItem(Path(f).name); it.setData(Qt.UserRole,f); self.addItem(it)
     def selected_paths(self)->List[str]:
         return [i.data(Qt.UserRole) for i in self.selectedItems()]
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+        elif act==act_remove:
+            self.takeItem(self.row(item))
+        e.accept()
+    def _open_item(self,item:QtWidgets.QListWidgetItem):
+        path=item.data(Qt.UserRole)
+        if path:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
 
 class HelpPane(QtWidgets.QTextBrowser):
     def __init__(self):
@@ -313,6 +335,7 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<ul>"
             "<li>Doppelklick editiert Pfade, Rechtsklick öffnet Menü</li>"
             "<li>Kontextmenü kann Pfad kopieren oder Zeile löschen</li>"
+            "<li>Rechtsklick auf die Listen öffnet ein Menü zum Entfernen</li>"
             "<li>Hilfe-Menü zeigt README und Logdatei</li>"
             "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
             "<li>Tooltips zeigen volle Pfade</li>"
