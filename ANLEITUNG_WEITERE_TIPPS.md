@@ -58,3 +58,22 @@ ffmpeg -i eingang.mp4 -vf scale=1280:720 kleiner.mp4
 ```
 `scale` (Skalierung) passt Breite und Höhe des Bildes an.
 
+
+## Video langsamer abspielen
+```bash
+ffmpeg -i clip.mp4 -filter:v "setpts=2*PTS" langsam.mp4
+```
+`setpts` (Zeitstempel) verdoppelt die Wiedergabedauer und macht das Video halb so schnell.
+
+## Ton normalisieren
+```bash
+ffmpeg -i laut.mp3 -af loudnorm normal.mp3
+```
+`loudnorm` (Lautheitsausgleich) sorgt fuer ein einheitliches Lautstaerkeniveau.
+
+## Untertitel einbinden
+```bash
+ffmpeg -i video.mp4 -i text.srt -c:v copy -c:a copy -c:s mov_text mit_untertitel.mp4
+```
+`mov_text` ist das Untertitelformat fuer MP4-Dateien.
+

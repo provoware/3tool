@@ -36,5 +36,6 @@ Diese Anleitung richtet sich an Anfaenger und erklaert jeden Schritt.
    python3 videobatch_extra.py --selftest
    ```
    Bei Erfolg erscheint die Meldung `Selftests OK`.
-
+7. **Log-Bereich**:
+   Unten im Fenster laufen die Meldungen mit. Im Menü "Hilfe" kannst du mit "Logdatei öffnen" alles nachlesen.
 Weitere Fragen werden in `README.md` beantwortet.

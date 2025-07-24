@@ -34,7 +34,7 @@
 - [ ] Favoriten per Drag&Drop nutzen
 - [ ] Verschiedene Themes ausprobieren
 - [ ] Theme "Kontrast" testen
-- [ ] Logging-Bereich beobachten
+- [x] Logging-Bereich beobachten
 - [ ] Schriftgröße ändern
 - [ ] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
