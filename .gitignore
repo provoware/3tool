@@ -1,0 +1,9 @@
+# Python cache and environment files
+__pycache__/
+*.py[cod]
+*.egg-info/
+.videotool_env/
+.venv/
+# Logs
+*.log
+.vscode/
