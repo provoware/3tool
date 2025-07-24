@@ -46,3 +46,15 @@ ffmpeg -ss 00:00:05 -i lang.mp4 -t 00:00:10 -c copy teil.mp4
 ```
 `-ss` gibt den Startzeitpunkt an, `-t` die Dauer. Hier wird ein zehn Sekunden langer Abschnitt ab Sekunde 5 ausgegeben.
 
+## Video in Schwarz-Weiß umwandeln
+```bash
+ffmpeg -i bunt.mp4 -vf format=gray grau.mp4
+```
+`format=gray` (Graustufen) macht das Video komplett schwarz-weiß.
+
+## Größe ändern
+```bash
+ffmpeg -i eingang.mp4 -vf scale=1280:720 kleiner.mp4
+```
+`scale` (Skalierung) passt Breite und Höhe des Bildes an.
+

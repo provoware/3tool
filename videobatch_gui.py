@@ -662,8 +662,10 @@ class MainWindow(QtWidgets.QMainWindow):
         m_hilfe = menubar.addMenu("Hilfe")
         act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
         act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(self._open_logfile)
+        act_help = QAction("Kurzanleitung", self); act_help.setToolTip("Kurzes Hilfefenster anzeigen"); act_help.triggered.connect(self._show_help_window)
         m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
+        m_hilfe.addAction(act_help)
 
     def _change_font(self, delta:int):
         self._set_font(self._font_size + delta)
@@ -698,6 +700,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def _open_logfile(self):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE)))
         self._log("Logdatei geöffnet")
+
+    def _show_help_window(self):
+        dlg = QtWidgets.QDialog(self)
+        dlg.setWindowTitle("Kurzanleitung")
+        layout = QtWidgets.QVBoxLayout(dlg)
+        layout.addWidget(HelpPane())
+        dlg.resize(400, 300)
+        dlg.exec()
+        self._log("Hilfefenster geöffnet")
 
     def _add_form(self, layout: QtWidgets.QFormLayout, label: str, widget: QtWidgets.QWidget, help_text: str):
         widget.setToolTip(help_text); widget.setStatusTip(help_text)

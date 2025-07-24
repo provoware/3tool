@@ -49,6 +49,10 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
 - Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast".
 
+## Hilfe-Fenster
+
+Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeigt dort die wichtigsten Schritte. Es lässt sich jederzeit öffnen.
+
 ## Zusaetzlich
 
 * Die Datei `videobatch_extra.py` enthaelt eine Kommandozeilenversion. Mit `--selftest` lassen sich einfache Tests ausfuehren.

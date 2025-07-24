@@ -23,11 +23,11 @@
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
 - [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [ ] Abschnitt "Weiterführende Befehle" lesen
-- [ ] Neues Hilfefenster prüfen
+- [x] Neues Hilfefenster prüfen
 - [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
 - [ ] Kontextmenü in Bilder- und Audioliste testen
-- [ ] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
+- [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
 - [ ] Beschriftungen unter den Buttons prüfen
 - [ ] Favoriten-Bereich testen
 - [ ] Bilder zu Favoriten hinzufügen
