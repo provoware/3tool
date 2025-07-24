@@ -487,6 +487,9 @@ class MainWindow(QtWidgets.QMainWindow):
         pool_tabs.addTab(self.audio_list, "Audios")
         pool_tabs.addTab(self.favorite_list, "Favoriten")
 
+        pool_box = QtWidgets.QGroupBox("Dateilisten")
+        pb_lay = QtWidgets.QVBoxLayout(pool_box); pb_lay.addWidget(pool_tabs)
+
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.model)
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
@@ -534,17 +537,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
         form.addRow("", self.clear_after)
 
-        self.settings_widget = QtWidgets.QWidget(); self.settings_widget.setLayout(form)
+        settings_box = QtWidgets.QGroupBox("Einstellungen")
+        settings_box.setLayout(form)
 
-        left_split  = QtWidgets.QSplitter(Qt.Vertical); left_split.addWidget(pool_tabs); left_split.addWidget(self.settings_widget)
-        right_split = QtWidgets.QSplitter(Qt.Vertical); right_split.addWidget(self.table); right_split.addWidget(self.help_pane)
+        self.settings_widget = settings_box
+
+        table_box = QtWidgets.QGroupBox("Paare")
+        tb_lay = QtWidgets.QVBoxLayout(table_box); tb_lay.addWidget(self.table)
+
+        help_box = QtWidgets.QGroupBox("Hilfe")
+        hb_lay = QtWidgets.QVBoxLayout(help_box); hb_lay.addWidget(self.help_pane)
+
+        left_split  = QtWidgets.QSplitter(Qt.Vertical); left_split.addWidget(pool_box); left_split.addWidget(self.settings_widget)
+        right_split = QtWidgets.QSplitter(Qt.Vertical); right_split.addWidget(table_box); right_split.addWidget(help_box)
         grid_split  = QtWidgets.QSplitter(Qt.Horizontal); grid_split.addWidget(left_split); grid_split.addWidget(right_split)
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
 
-        log_box = QtWidgets.QWidget(); bl = QtWidgets.QVBoxLayout(log_box)
-        bl.addWidget(self.progress_total); bl.addWidget(self.log_edit)
+        log_box = QtWidgets.QGroupBox("Protokoll")
+        bl = QtWidgets.QVBoxLayout(log_box)
+        bl.addWidget(self.progress_total)
+        bl.addWidget(self.log_edit)
 
         outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(log_box)
         outer_split.setStretchFactor(0,4); outer_split.setStretchFactor(1,1)
@@ -843,9 +857,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):
-        path,_=QtWidgets.QFileDialog.getOpenFileName(self,"Projekt laden",str(Path.cwd()),"JSON (*.json)")
-        if not path: return
-        data=json.loads(Path(path).read_text(encoding="utf-8"))
+        path,_ = QtWidgets.QFileDialog.getOpenFileName(self, "Projekt laden", str(Path.cwd()), "JSON (*.json)")
+        if not path:
+            return
+        try:
+            data = json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Fehler beim Laden", str(e))
+            self._log(f"Fehler beim Laden: {e}")
+            return
         self._push_history()
         self.model.clear()
         new=[]

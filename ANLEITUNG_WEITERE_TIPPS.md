@@ -83,3 +83,15 @@ ffmpeg -i film.mp4 -an stumm.mp4
 ```
 `-an` (audio none) entfernt die Tonspur.
 
+## Einzelnes Bild aus Video speichern
+```bash
+ffmpeg -ss 00:00:10 -i film.mp4 -vframes 1 bild.png
+```
+`-vframes 1` (ein Bild) nimmt genau einen Frame ab der gewählten Zeit.
+
+## Video rückwärts abspielen
+```bash
+ffmpeg -i film.mp4 -vf reverse -af areverse rueckwaerts.mp4
+```
+Die Filter `reverse` und `areverse` (umkehren) lassen Bild und Ton rückwärts laufen.
+

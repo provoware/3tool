@@ -38,4 +38,6 @@ Diese Anleitung richtet sich an Anfaenger und erklaert jeden Schritt.
    Bei Erfolg erscheint die Meldung `Selftests OK`.
 7. **Log-Bereich**:
    Unten im Fenster laufen die Meldungen mit. Im Menü "Hilfe" kannst du mit "Logdatei öffnen" alles nachlesen.
+8. **Übersicht**:
+   Die Dateien, Einstellungen, Tabelle und Hilfe sind jetzt durch klare Überschriften getrennt.
 Weitere Fragen werden in `README.md` beantwortet.

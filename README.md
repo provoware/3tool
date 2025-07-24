@@ -36,6 +36,7 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Farb-Themes** – über das Menü "Theme" stehen sechs unterschiedliche Farbkombinationen bereit. Das Theme "Kontrast" bietet hohe Lesbarkeit.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 - **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
+- **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio

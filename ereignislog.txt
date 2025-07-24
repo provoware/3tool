@@ -20,3 +20,4 @@
 [2025-07-24] Hilfefenster hinzugefügt und Laien-Tipps erweitert
 [2025-07-24] Log-Bereich dokumentiert und Aufgabe abgehakt
 [2025-07-24] Favoriten erklärt, neue Tipps ergänzt und Aufgaben erledigt
+[2025-07-24] Bereiche mit Überschriften gruppiert, README-Menüeintrag getestet
