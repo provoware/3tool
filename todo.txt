@@ -30,6 +30,14 @@
 - [ ] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
 - [ ] Beschriftungen unter den Buttons prüfen
 
+# Neu
+- [ ] Favoriten-Bereich testen
+- [ ] Bilder zu Favoriten hinzufügen
+- [ ] Favoriten per Drag&Drop nutzen
+- [ ] Verschiedene Themes ausprobieren
+- [ ] Logging-Bereich beobachten
+- [ ] Schriftgröße ändern
+
 
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
