@@ -47,3 +47,11 @@ ffmpeg -i clip.mp4 -vf "eq=brightness=0.1" heller.mp4
 - Unter **Theme** hilft das Design **Kontrast** bei schwächerem Sehen.
 
 Weitere Tipps findest du in `ANLEITUNG_GESAMT.md`.
+
+## 8. Kurzes Stück ausschneiden
+```bash
+ffmpeg -ss 00:00:10 -i original.mp4 -t 00:00:20 -c copy kurz.mp4
+```
+*`-ss`* gibt die Startzeit an. *`-t`* bestimmt die Länge des Ausschnitts.
+
+Mit dem Knopf **Öffnen** im Hauptfenster wird der Ausgabeordner angezeigt.

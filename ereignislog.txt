@@ -16,3 +16,4 @@
 
 [2025-07-24] Zusatztipps-Datei erstellt, Buttons mit Hilfetexten
 [2025-07-24] Neues Kontrast-Theme und Hinweise für Sehschwache ergänzt
+[2025-07-24] Öffnen-Button protokolliert, README/Log-Menü meldet Aktionen

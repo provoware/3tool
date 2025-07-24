@@ -626,7 +626,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.clicked.connect(self._start_encode)
         self.btn_stop.clicked.connect(self._stop_encode)
         self.table.doubleClicked.connect(self._show_statusbar_path)
-        self.btn_out_open.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.out_dir_edit.text())))
+        self.btn_out_open.clicked.connect(self._open_out_dir)
 
         self._apply_font()
         self._apply_theme(self.settings.value("ui/theme", "Standard"))
@@ -660,8 +660,8 @@ class MainWindow(QtWidgets.QMainWindow):
         m_option.addAction(self.act_copy_only)
 
         m_hilfe = menubar.addMenu("Hilfe")
-        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(Path('README.md').resolve()))))
-        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
+        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
+        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(self._open_logfile)
         m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
 
@@ -684,6 +684,20 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().setStyleSheet(css)
         self.settings.setValue("ui/theme", name)
         self._log(f"Theme gewechselt: {name}")
+
+    def _open_out_dir(self):
+        path = self.out_dir_edit.text()
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        self._log(f"Ausgabeordner geöffnet: {path}")
+
+    def _open_readme(self):
+        path = str(Path('README.md').resolve())
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        self._log("README geöffnet")
+
+    def _open_logfile(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE)))
+        self._log("Logdatei geöffnet")
 
     def _add_form(self, layout: QtWidgets.QFormLayout, label: str, widget: QtWidgets.QWidget, help_text: str):
         widget.setToolTip(help_text); widget.setStatusTip(help_text)

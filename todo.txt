@@ -19,7 +19,7 @@
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] "Pfad kopieren" im Kontextmenü testen
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
-- [ ] Knopf "Ausgabeordner öffnen" testen
+- [x] Knopf "Ausgabeordner öffnen" testen
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
 - [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [ ] Abschnitt "Weiterführende Befehle" lesen
