@@ -27,3 +27,5 @@
 [2025-07-24] Ausgabeordner-Prüfung eingebaut
 [2025-07-24] Neue Beispiele in ANLEITUNG_TIPPS.md hinzugefügt und Aufgabe erledigt
 [2025-07-24] Selbsttest ausgefuehrt und Aufgabe abgehakt
+
+[2025-07-24] Dokumentation um Favoritenhinweise erweitert; Aufgabe "Dokumentation lesen" erledigt

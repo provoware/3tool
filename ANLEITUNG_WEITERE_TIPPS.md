@@ -159,3 +159,9 @@ ffmpeg -i film.mp4 -vf fps=1 bilder/bild_%03d.png
 ```
 `fps=1` (Frames pro Sekunde) legt hier fest, dass genau ein Bild pro Sekunde ausgegeben wird.
 
+## Ton in MP3 umwandeln
+```bash
+ffmpeg -i aufnahme.wav -codec:a libmp3lame -qscale:a 2 musik.mp3
+```
+`libmp3lame` (MP3-Encoder) erzeugt eine gute Qualität. Der Wert `2` steht für hohe Güte (0-9).
+

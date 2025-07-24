@@ -54,6 +54,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
 - Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast".
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
+- Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 
 ## Hilfe-Fenster
 

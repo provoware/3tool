@@ -37,5 +37,5 @@
 - [x] Logging-Bereich beobachten
 - [x] Schriftgröße ändern
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
-- [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
