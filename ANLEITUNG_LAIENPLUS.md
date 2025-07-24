@@ -97,3 +97,15 @@ automatisch zuordnen lassen:
 3. Klicke auf **Auto-Paaren**.
 
 Das Tool erstellt dann für jeden Ordner eine eigene Slideshow.
+
+## 15. Rand entfernen
+```bash
+ffmpeg -i eingang.mp4 -vf "crop=1280:720:0:60" ohne_rand.mp4
+```
+`crop` (beschneiden) löscht oben und unten je 60 Pixel.
+
+## 16. Geschwindigkeit ändern
+```bash
+ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" schneller.mp4
+```
+`setpts` passt die Abspielzeit an. Hier läuft das Video doppelt so schnell.

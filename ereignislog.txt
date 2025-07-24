@@ -33,3 +33,5 @@
 [2025-07-24] Auto-Pair mit mehreren Slideshow-Ordnern dokumentiert und Aufgabe erledigt
 [2025-07-24] Neue ffmpeg-Beispiele ergänzt und ANLEITUNG_EXTRA.md gelesen (Aufgabe erledigt)
 [2025-07-24] Kontextmenüs getestet und neue Tipps ergänzt
+[2025-07-24] Virtuelle Umgebung genutzt und Pakete installiert
+[2025-07-24] Zwei neue Laientipps zu crop und Geschwindigkeit
