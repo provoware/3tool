@@ -165,3 +165,15 @@ ffmpeg -i aufnahme.wav -codec:a libmp3lame -qscale:a 2 musik.mp3
 ```
 `libmp3lame` (MP3-Encoder) erzeugt eine gute Qualität. Der Wert `2` steht für hohe Güte (0-9).
 
+
+## Farben invertieren
+```bash
+ffmpeg -i eingang.mp4 -vf negate negativ.mp4
+```
+`negate` (Farben umkehren) erstellt ein Negativ des Videos.
+
+## Standbild am Anfang
+```bash
+ffmpeg -i film.mp4 -vf tpad=stop_mode=clone:stop_duration=3 startbild.mp4
+```
+`tpad` (Zeitpolster) klont hier die erste Szene für drei Sekunden.

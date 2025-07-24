@@ -32,3 +32,4 @@
 [2025-07-24] Weiterführende Befehle gelesen und neue Tipps ergänzt
 [2025-07-24] Auto-Pair mit mehreren Slideshow-Ordnern dokumentiert und Aufgabe erledigt
 [2025-07-24] Neue ffmpeg-Beispiele ergänzt und ANLEITUNG_EXTRA.md gelesen (Aufgabe erledigt)
+[2025-07-24] Kontextmenüs getestet und neue Tipps ergänzt
