@@ -609,17 +609,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.clear()
         new=[]
         mode=self.mode_combo.currentText()
-        if mode=="Mehrere Audios, 1 Bild" and len(imgs)>=1:
-            img=imgs[0]
+        if mode=="Mehrere Audios, 1 Bild" and imgs:
+            img = imgs[0]
             for aud in auds:
-                p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
-        elif mode=="Slideshow" and len(imgs)==1:
-            img=imgs[0]
-            for aud in auds:
-                p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
+                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
+        elif mode=="Slideshow":
+            if len(imgs)==len(auds):
+                pairs = zip(imgs, auds)
+            elif len(imgs)==1:
+                pairs = ((imgs[0], a) for a in auds)
+            else:
+                pairs = zip(imgs, auds)
+            for img, aud in pairs:
+                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
         else:
-            for img,aud in zip(imgs,auds):
-                p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
+            for img, aud in zip(imgs, auds):
+                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
         self.model.add_pairs(new)
         self._update_counts()
         self._resize_columns()

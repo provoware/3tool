@@ -24,6 +24,7 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
+Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio

@@ -11,7 +11,7 @@
       pip install -r requirements.txt
       ```
 - [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
-- [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_GESAMT.md`
+- [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md` und `ANLEITUNG_LAIENPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
 - [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
@@ -22,3 +22,4 @@
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
 - [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [ ] Neues Hilfefenster prüfen
+- [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
