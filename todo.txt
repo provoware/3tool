@@ -12,7 +12,7 @@
       ```
 - [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
 - [x] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
-- [ ] Modus "Slideshow" ausprobieren
+- [x] Modus "Slideshow" ausprobieren
  - [x] Modus "Video + Audio" ausprobieren
 - [x] Modus "Mehrere Audios, ein Bild" ausprobieren
 - [x] Menüeintrag "README öffnen" testen
@@ -39,10 +39,7 @@
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
- - [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
-- [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
-- [ ] Modus "Slideshow" ausprobieren
-- [ ] Modus "Video + Audio" ausprobieren
+ - [ ] Modus "Video + Audio" ausprobieren
 - [x] Modus "Mehrere Audios, ein Bild" ausprobieren
 - [ ] Menüeintrag "README öffnen" testen
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)

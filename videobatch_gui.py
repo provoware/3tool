@@ -1033,6 +1033,10 @@ class MainWindow(QtWidgets.QMainWindow):
         header = self.table.horizontalHeader()
         header.resizeSections(QHeaderView.ResizeToContents)
 
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._resize_columns()
+
     def _table_menu(self, pos: QtCore.QPoint):
         index = self.table.indexAt(pos)
         if not index.isValid():

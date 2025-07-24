@@ -58,3 +58,9 @@ python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud sprache*.mp3
 ffmpeg -i eingang.mp4 -vf "hflip" gespiegelt.mp4
 ```
 `hflip` (horizontal spiegeln) dreht das Bild an einer senkrechten Achse.
+
+## Kontrast erhöhen
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=contrast=1.5" kontrast.mp4
+```
+`eq` (Equalizer) verändert Helligkeit und Kontrast. Der Wert `1.5` sorgt für ein intensiveres Bild.

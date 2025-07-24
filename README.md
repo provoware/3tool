@@ -76,4 +76,5 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 * Ereignisse und Aenderungen werden in `ereignislog.txt` festgehalten.
 
 * Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
+* Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.

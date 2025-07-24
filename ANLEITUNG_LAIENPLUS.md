@@ -138,3 +138,10 @@ ffprobe -v quiet -show_format -show_streams eingang.mp4
 python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud ton1.mp3 ton2.mp3 --out output
 ```
 `multi-audio` nutzt das gleiche Bild für alle Audios.
+
+## 21. Kontrast stärker machen
+
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=contrast=1.5" kontrast.mp4
+```
+`eq` (Equalizer) passt Helligkeit und Kontrast an. Der Wert `1.5` sorgt für ein satteres Bild.
