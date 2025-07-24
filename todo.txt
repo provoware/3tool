@@ -19,9 +19,11 @@
 - [ ] Weitere Befehle lesen: `ANLEITUNG_EXTRA_BEFEHLE.md`
 - [ ] Neue Modi nachlesen: `ANLEITUNG_MODI.md`
 - [ ] Praktische Beispiele lesen: `ANLEITUNG_PRAKTISCH.md`
+- [ ] Noch mehr Tipps lesen: `ANLEITUNG_NUTZERPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
 - [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
+- [ ] Menüeintrag "README öffnen" testen
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen

@@ -31,6 +31,7 @@ Ergänzende Vorschläge enthält `ANLEITUNG_ZUSATZ.md`.
 Weitere Befehle zeigt `ANLEITUNG_EXTRA_BEFEHLE.md`.
 Hinweise zu den neuen Modi finden sich in `ANLEITUNG_MODI.md`.
 Praktische Beispiele liefert `ANLEITUNG_PRAKTISCH.md`.
+Noch mehr einfache Tipps gibt es in `ANLEITUNG_NUTZERPLUS.md`.
 
 ## Zusaetzlich
 

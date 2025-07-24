@@ -383,6 +383,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Einstellungen
         self.out_dir_edit  = QtWidgets.QLineEdit(str(self.settings.value("encode/out_dir", default_output_dir(), str)))
+        self.out_dir_edit.setPlaceholderText("Zielordner für fertige Videos")
         self.btn_out_open  = QtWidgets.QToolButton(); self.btn_out_open.setText("Öffnen")
         self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
@@ -511,7 +512,9 @@ class MainWindow(QtWidgets.QMainWindow):
         m_option.addAction(self.act_copy_only)
 
         m_hilfe = menubar.addMenu("Hilfe")
+        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(Path('README.md').resolve()))))
         act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
+        m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
 
     def _change_font(self, delta:int):
@@ -605,6 +608,10 @@ class MainWindow(QtWidgets.QMainWindow):
             img=imgs[0]
             for aud in auds:
                 p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
+        elif mode=="Slideshow" and len(imgs)==1:
+            img=imgs[0]
+            for aud in auds:
+                p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
         else:
             for img,aud in zip(imgs,auds):
                 p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
@@ -653,6 +660,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width_spin.setValue(s.get("width", self.width_spin.value()))
         self.height_spin.setValue(s.get("height", self.height_spin.value()))
         self.abitrate_edit.setText(s.get("abitrate", self.abitrate_edit.text()))
+        self.mode_combo.setCurrentText(s.get("mode", self.mode_combo.currentText()))
         self._update_counts()
         self._resize_columns()
         self._log(f"Projekt geladen: {path}")
