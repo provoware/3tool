@@ -457,17 +457,18 @@ class InfoDashboard(QtWidgets.QWidget):
         self.env_lbl.setText(f"Env: {'OK' if imp_ok else 'FEHLT'}")
     def log(self,msg): self.mini_log.appendPlainText(msg)
 
-def _create_panel_grid() -> QtWidgets.QWidget:
+def _create_panel_grid(rows: int = 3, cols: int = 3) -> QtWidgets.QWidget:
+    """Erzeugt ein flexibles Raster mit gleich großen Feldern."""
     grid_widget = QtWidgets.QWidget()
     grid = QtWidgets.QGridLayout(grid_widget)
     grid.setSpacing(5)
-    for r in range(3):
+    for r in range(rows):
         grid.setRowStretch(r, 1)
-        for c in range(3):
+        for c in range(cols):
             grid.setColumnStretch(c, 1)
-            panel = QtWidgets.QGroupBox(f"Panel {r*3+c+1}")
+            panel = QtWidgets.QGroupBox(f"Panel {r*cols + c + 1}")
             lay = QtWidgets.QVBoxLayout(panel)
-            lbl = QtWidgets.QLabel(f"Inhalt {r*3+c+1}")
+            lbl = QtWidgets.QLabel(f"Inhalt {r*cols + c + 1}")
             lbl.setAlignment(Qt.AlignCenter)
             lay.addWidget(lbl)
             grid.addWidget(panel, r, c)
@@ -592,6 +593,13 @@ class MainWindow(QtWidgets.QMainWindow):
         bl.addWidget(self.progress_total)
         bl.addWidget(self.log_edit)
 
+        # Log-Bereich flexibel einteilbar
+        main_splitter = QtWidgets.QSplitter(Qt.Vertical)
+        main_splitter.addWidget(panel_grid)
+        main_splitter.addWidget(self.log_box)
+        main_splitter.setStretchFactor(0, 4)
+        main_splitter.setStretchFactor(1, 1)
+
         # Buttons
         self.btn_add_images = QtWidgets.QPushButton("Bilder wählen")
         self.btn_add_audios = QtWidgets.QPushButton("Audios wählen")
@@ -640,8 +648,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(self.dashboard)
         central_layout.addWidget(btn_box)
-        central_layout.addWidget(panel_grid)
-        central_layout.addWidget(self.log_box)
+        central_layout.addWidget(main_splitter)
         central = QtWidgets.QWidget(); central.setLayout(central_layout)
         self.setCentralWidget(central)
 
