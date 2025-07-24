@@ -42,6 +42,8 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
 - **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
+- **Farb-Themes** – über das Menü "Theme" stehen fünf sehr unterschiedliche Farbkombinationen bereit.
+- **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio

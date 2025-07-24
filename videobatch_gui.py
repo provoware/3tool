@@ -40,6 +40,7 @@ THEMES = {
     "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
     "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
     "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
+    "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}"
 }
 
 # ---------- Helpers ----------
@@ -400,6 +401,54 @@ class FavoriteListWidget(DropListWidget):
             self.removed.emit(path)
             self.takeItem(self.row(item))
             self.window()._log(f"Favorit entfernt: {path}")
+        e.accept()
+
+class ImageListWidget(DropListWidget):
+    add_to_fav = Signal(str)
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_fav=menu.addAction("Zu Favoriten")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+        elif act==act_remove:
+            self.takeItem(self.row(item))
+        elif act==act_fav:
+            self.add_to_fav.emit(path)
+        e.accept()
+
+class FavoriteListWidget(DropListWidget):
+    use_fav = Signal(str)
+    removed = Signal(str)
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_use=menu.addAction("Zum Arbeitsbereich")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+        elif act==act_use:
+            self.use_fav.emit(path)
+        elif act==act_remove:
+            self.removed.emit(path)
+            self.takeItem(self.row(item))
         e.accept()
 
 class HelpPane(QtWidgets.QTextBrowser):
@@ -792,6 +841,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self._update_counts()
         self._resize_columns()
         self._log(f"{len(files)} Audio(s) hinzugefügt")
+
+    def _add_to_favorites(self, path: str):
+        for i in range(self.favorite_list.count()):
+            if self.favorite_list.item(i).data(Qt.UserRole) == path:
+                return
+        self.favorite_list.add_files([path])
+        self._log(f"Favorit hinzugefügt: {path}")
+
+    def _use_favorite(self, path: str):
+        self._on_images_added([path])
+        self._log(f"Favorit genutzt: {path}")
 
     def _add_to_favorites(self, path: str):
         for i in range(self.favorite_list.count()):
