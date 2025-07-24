@@ -34,3 +34,22 @@ ffmpeg -i clip.mp4 -vf "fps=10,scale=320:-1" -gifflags -transdiff gif_out.gif
 
 Weitere Hinweise findest du in `ANLEITUNG_GESAMT.md`.
 
+
+## 6. Kontrast stärken
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=contrast=1.4" kontrast.mp4
+```
+*`eq`* steht für "equalizer". Der Wert `1.4` erhöht den Kontrast leicht.
+
+## 7. Video um 180° drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=2,transpose=2" gedreht.mp4
+```
+*`transpose`* (Drehung) wird hier zweimal angewandt und ergibt 180 Grad.
+
+## 8. Rand hinzufügen
+```bash
+ffmpeg -i eingang.mp4 -vf "pad=iw+40:ih+40:20:20:black" mit_rand.mp4
+```
+*`pad`* fügt Ränder hinzu. `iw` und `ih` stehen für Breite und Höhe des Originals.
+

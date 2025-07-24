@@ -6,6 +6,7 @@ Dieses Projekt erstellt aus Bildern und Audiodateien einfache Videos im MP4-Form
 
 * Python 3.10 oder neuer
 * `ffmpeg` und `ffprobe` muessen im Systempfad vorhanden sein
+* Benötigte Pakete: PySide6, Pillow, ffmpeg-python (siehe requirements.txt)
 
 Die benoetigten Python-Pakete stehen in `requirements.txt`.
 
