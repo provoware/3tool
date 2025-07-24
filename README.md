@@ -75,4 +75,5 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 * In `0000-testall` liegt ein Beispielskript, um Prueftools wie `flake8` oder `black` einzurichten.
 * Ereignisse und Aenderungen werden in `ereignislog.txt` festgehalten.
 
+* Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.

@@ -126,3 +126,15 @@ ffprobe -v quiet -show_format -show_streams eingang.mp4
 - Im Menü **Ansicht** gibt es den neuen Punkt **Hilfe-Bereich**.
 - Nimm den Haken weg, wenn du mehr Platz brauchst.
 - Setze ihn wieder, um die kurzen Hinweise anzuzeigen.
+
+## 20. Mehrere Audios mit einem Bild
+
+- Im Tab **Bilder** ein einzelnes Bild auswählen.
+- Unter **Audios** mehrere Tondateien hinzufügen.
+- Bei **Modus** die Option **Mehrere Audios, 1 Bild** wählen.
+- Auf **Auto-Paaren** klicken und danach **START** drücken.
+
+```bash
+python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud ton1.mp3 ton2.mp3 --out output
+```
+`multi-audio` nutzt das gleiche Bild für alle Audios.
