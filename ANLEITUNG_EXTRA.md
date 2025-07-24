@@ -32,5 +32,29 @@ ffmpeg -i clip.mp4 -vf "fps=10,scale=320:-1" -gifflags -transdiff gif_out.gif
 ```
 *`fps`* legt die Bildrate (frames per second) fest, *`scale`* aendert die Groesse. *`-gifflags -transdiff`* optimiert die Dateigroesse.
 
+## 6. Video drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=1" gedreht.mp4
+```
+*`transpose`* dreht das Bild. Der Wert `1` bedeutet 90 Grad im Uhrzeigersinn.
+
+## 7. Video spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf "hflip" spiegel.mp4
+```
+*`hflip`* spiegelt das Video horizontal wie in einem Spiegel.
+
+## 8. Logo in Ecke einblenden
+```bash
+ffmpeg -i film.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
+```
+*`overlay`* legt ein Bild über das Video. `10:10` gibt die Position in Pixeln an.
+
+## 9. Untertitel einbrennen
+```bash
+ffmpeg -i film.mp4 -vf "subtitles=text.srt" film_ut.mp4
+```
+*`subtitles`* mischt die Datei `text.srt` direkt in das Video.
+
 Weitere Hinweise findest du in `ANLEITUNG_GESAMT.md`.
 
