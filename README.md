@@ -23,15 +23,7 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    ```
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
 
-Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
-Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
-Noch mehr Hinweise bietet `ANLEITUNG_WEITER.md`.
-Weitere Beispiele gibt es in `ANLEITUNG_MEHR.md`.
-Ergänzende Vorschläge enthält `ANLEITUNG_ZUSATZ.md`.
-Weitere Befehle zeigt `ANLEITUNG_EXTRA_BEFEHLE.md`.
-Hinweise zu den neuen Modi finden sich in `ANLEITUNG_MODI.md`.
-Praktische Beispiele liefert `ANLEITUNG_PRAKTISCH.md`.
-Noch mehr einfache Tipps gibt es in `ANLEITUNG_NUTZERPLUS.md`.
+Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 
 ## Zusaetzlich
 
