@@ -47,8 +47,8 @@
  - [x] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen
  - [x] Ereignislog aktualisieren: `ereignislog.txt`
-- [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
-- [ ] Abschnitt "Weiterführende Befehle" lesen
+- [x] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
+- [x] Abschnitt "Weiterführende Befehle" lesen
 - [x] Neues Hilfefenster prüfen
 - [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen

@@ -46,3 +46,4 @@
 [2025-07-24] Debug-Log zuschaltbar und Hilfe angepasst
 [2025-07-24] README-Menü und Tooltip getestet
 [2025-07-24] Log-Bereich zuschaltbar, Fenster zentriert und neue Tipps ergänzt; Aufgabe 'Neues Hilfefenster prüfen' erledigt
+2025-07-24 Noch mehr Beispiele und Weiterfuehrende Befehle gelesen
