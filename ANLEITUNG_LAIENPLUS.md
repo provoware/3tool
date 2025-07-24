@@ -70,3 +70,9 @@ Mit dem Knopf **Öffnen** im Hauptfenster wird der Ausgabeordner angezeigt.
 - Öffne das Menü **Theme** oben im Fenster.
 - Wähle dort **Kontrast**. Dadurch erscheinen gelbe Buchstaben auf schwarzem Hintergrund.
 - Diese Ansicht hilft, wenn die Augen nicht mehr so fit sind.
+
+## 11. Video leiser machen
+```bash
+ffmpeg -i eingang.mp4 -filter:a "volume=0.5" leiser.mp4
+```
+*`volume`* (Lautstärke) mit dem Wert `0.5` reduziert die Lautstärke auf fünfzig Prozent.

@@ -1,6 +1,6 @@
 # Aufgabenliste
 
-- [ ] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [x] Projekt testen: `python3 videobatch_extra.py --selftest`
 - [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
       ```bash
       python3 -m venv .venv

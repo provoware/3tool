@@ -39,10 +39,23 @@ def pip_install(py: str, pkgs: list[str]) -> None:
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade"] + pkgs)
 
 def reboot_into_venv():
-    py  = str(venv_python())
+    py_path = Path(venv_python())
+    if not py_path.exists():
+        try:
+            ensure_venv()
+        except Exception as e:
+            print("Konnte virtuelle Umgebung nicht erstellen:", e)
+            py_path = Path(sys.executable)
+        else:
+            py_path = Path(venv_python()) if (ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python").exists() else Path(sys.executable)
+
     env = os.environ.copy()
     env[FLAG] = "1"
-    os.execvpe(py, [py, str(SELF)], env)
+    try:
+        os.execvpe(str(py_path), [str(py_path), str(SELF)], env)
+    except FileNotFoundError:
+        print("Python-Interpreter nicht gefunden:", py_path)
+        os.execvpe(sys.executable, [sys.executable, str(SELF)], env)
 
 def bootstrap_console():
     if not in_venv():

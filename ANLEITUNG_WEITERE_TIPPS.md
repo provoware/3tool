@@ -107,6 +107,12 @@ ffprobe -v quiet -show_format -show_streams eingang.mp4
 ```
 `ffprobe` ist ein Analyse-Programm von ffmpeg. Es listet alle Daten wie Auflösung und Kodierung auf.
 
+## Neue Tonspur einfügen
+```bash
+ffmpeg -i film.mp4 -i kommentar.mp3 -c:v copy -map 0:v:0 -map 1:a:0 mit_neuem_ton.mp4
+```
+`-map` (Zuordnung) wählt das Bild aus dem ersten Eingang und den Ton aus dem zweiten.
+
 ## Untertitel aus Video speichern
 ```bash
 ffmpeg -i film.mp4 -map 0:s:0 subs.srt
