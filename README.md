@@ -30,6 +30,12 @@ zusätzliche Kommandos für neugierige Einsteiger.
 Weitere Beispiele stehen in `ANLEITUNG_EXTRA.md`.
 Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 
+## Neues in der Oberfläche
+
+- **Favoriten** – Bilder lassen sich per Rechtsklick zu einer Favoritenliste hinzufügen. Im Tab "Favoriten" können sie per Drag&Drop in den Arbeitsbereich gezogen werden.
+- **Farb-Themes** – über das Menü "Theme" stehen fünf sehr unterschiedliche Farbkombinationen bereit.
+- **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
+
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio
 * **Slideshow** – ganzer Bilder-Ordner fuer jedes Audio

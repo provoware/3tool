@@ -327,15 +327,77 @@ class DropListWidget(QtWidgets.QListWidget):
         act=menu.exec(e.globalPos())
         if act==act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+            self.window()._log(f"Im Ordner gezeigt: {path}")
         elif act==act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
+            self.window()._log(f"Pfad kopiert: {path}")
         elif act==act_remove:
             self.takeItem(self.row(item))
+            self.window()._log(f"Eintrag entfernt: {path}")
         e.accept()
     def _open_item(self,item:QtWidgets.QListWidgetItem):
         path=item.data(Qt.UserRole)
         if path:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+            wnd = self.window()
+            if hasattr(wnd, "_log"):
+                wnd._log(f"Im Ordner gezeigt: {path}")
+
+class ImageListWidget(DropListWidget):
+    add_to_fav = Signal(str)
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_fav=menu.addAction("Zu Favoriten")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+            self.window()._log(f"Im Ordner gezeigt: {path}")
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+            self.window()._log(f"Pfad kopiert: {path}")
+        elif act==act_remove:
+            self.takeItem(self.row(item))
+            self.window()._log(f"Eintrag entfernt: {path}")
+        elif act==act_fav:
+            self.add_to_fav.emit(path)
+            self.window()._log(f"Zu Favoriten: {path}")
+        e.accept()
+
+class FavoriteListWidget(DropListWidget):
+    use_fav = Signal(str)
+    removed = Signal(str)
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_use=menu.addAction("Zum Arbeitsbereich")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+            self.window()._log(f"Im Ordner gezeigt: {path}")
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+            self.window()._log(f"Pfad kopiert: {path}")
+        elif act==act_use:
+            self.use_fav.emit(path)
+            self.window()._log(f"Favorit genutzt: {path}")
+        elif act==act_remove:
+            self.removed.emit(path)
+            self.takeItem(self.row(item))
+            self.window()._log(f"Favorit entfernt: {path}")
+        e.accept()
 
 class ImageListWidget(DropListWidget):
     add_to_fav = Signal(str)
@@ -658,6 +720,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._font_size = size
         self._apply_font()
         self.settings.setValue("ui/font_size", size)
+        self._log(f"Schriftgröße gesetzt auf {size}")
 
     def _apply_font(self):
         f = QtGui.QFont("DejaVu Sans", self._font_size)
@@ -731,6 +794,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.model.add_pairs([PairItem(f)])
         self._update_counts()
         self._resize_columns()
+        self._log(f"{len(files)} Bild(er) hinzugefügt")
 
     def _on_audios_added(self, files: List[str]):
         self._push_history()
@@ -743,6 +807,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.layoutChanged.emit()
         self._update_counts()
         self._resize_columns()
+        self._log(f"{len(files)} Audio(s) hinzugefügt")
+
+    def _add_to_favorites(self, path: str):
+        for i in range(self.favorite_list.count()):
+            if self.favorite_list.item(i).data(Qt.UserRole) == path:
+                return
+        self.favorite_list.add_files([path])
+        self._log(f"Favorit hinzugefügt: {path}")
+
+    def _use_favorite(self, path: str):
+        self._on_images_added([path])
+        self._log(f"Favorit genutzt: {path}")
 
     def _add_to_favorites(self, path: str):
         for i in range(self.favorite_list.count()):
@@ -782,6 +858,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.add_pairs(new)
         self._update_counts()
         self._resize_columns()
+        self._log(f"Auto-Pair erstellt {len(new)} Paar(e)")
 
     def _clear_all(self):
         if QtWidgets.QMessageBox.question(self,"Löschen?","Alle Paare wirklich entfernen?")!=QtWidgets.QMessageBox.Yes: return
@@ -789,6 +866,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.clear(); self.image_list.clear(); self.audio_list.clear()
         self.log_edit.clear(); self.dashboard.mini_log.clear()
         self._update_counts()
+        self._log("Listen geleert")
 
     def _undo_last(self):
         if not self._history: return
@@ -796,6 +874,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.clear(); self.model.add_pairs(last)
         self._update_counts()
         self._resize_columns()
+        self._log("Rückgängig ausgeführt")
 
     # ----- save / load -----
     def _save_project(self):
@@ -863,6 +942,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _stop_encode(self):
         if self.worker: self.worker.stop()
         self.btn_stop.setEnabled(False)
+        self._log("Encoding gestoppt")
 
     def _on_row_progress(self,row:int,perc:float):
         if 0<=row<len(self.pairs):
@@ -920,17 +1000,20 @@ class MainWindow(QtWidgets.QMainWindow):
             path = p.output or p.image_path or p.audio_path
             if path:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+                self._log(f"Ordner geöffnet: {path}")
         elif action == act_copy:
             p = self.pairs[row]
             path = p.output or p.image_path or p.audio_path
             if path:
                 QtWidgets.QApplication.clipboard().setText(str(path))
                 self.statusBar().showMessage("Pfad kopiert", 2000)
+                self._log(f"Pfad kopiert: {path}")
         elif action == act_remove:
             self._push_history()
             self.model.remove_rows([row])
             self._update_counts()
             self._resize_columns()
+            self._log(f"Zeile {row+1} gelöscht")
 
     def _show_statusbar_path(self, index: QtCore.QModelIndex):
         if not index.isValid(): return
