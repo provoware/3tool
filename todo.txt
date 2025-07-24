@@ -65,7 +65,7 @@
 - [ ] Favoriten per Drag&Drop nutzen
 - [ ] Verschiedene Themes ausprobieren
 - [ ] Logging-Bereich beobachten
-- [ ] Schriftgröße ändern
+- [x] Schriftgröße ändern
 
 
 - [x] Dokumentation gelesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`

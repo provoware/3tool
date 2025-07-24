@@ -461,7 +461,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("VideoBatchTool 4.1 – Bild + Audio → MP4")
-        self.resize(1500,900)
+        screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
+        w = min(1200, int(screen.width() * 0.9))
+        h = min(800, int(screen.height() * 0.9))
+        self.resize(w, h)
+        self.setMinimumSize(800, 600)
 
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
         self._font_size = self.settings.value("ui/font_size", 11, int)
@@ -587,9 +591,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.setToolTip("Encoding starten")
         self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
 
-        self.btn_encode.setStyleSheet("font-size:16pt;font-weight:bold;background:#005BBB;color:white;padding:6px 14px;")
+        self.btn_encode.setStyleSheet("font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;")
 
-        top_buttons = QtWidgets.QHBoxLayout()
+        top_buttons = QtWidgets.QGridLayout()
+        top_buttons.setSpacing(4)
         btn_defs = [
             (self.btn_add_images, "Bilder oder Ordner auswählen"),
             (self.btn_add_audios, "Audiodateien hinzufügen"),
@@ -601,9 +606,11 @@ class MainWindow(QtWidgets.QMainWindow):
             (self.btn_encode, "Videos jetzt erstellen"),
             (self.btn_stop, "Laufenden Vorgang abbrechen"),
         ]
-        for btn, tip in btn_defs:
-            top_buttons.addWidget(self._wrap_button(btn, tip))
-        top_buttons.addStretch(1)
+        for i, (btn, tip) in enumerate(btn_defs):
+            row, col = divmod(i, 4)
+            top_buttons.addWidget(self._wrap_button(btn, tip), row, col)
+        for i in range(4):
+            top_buttons.setColumnStretch(i, 1)
 
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(self.dashboard)
@@ -728,7 +735,9 @@ class MainWindow(QtWidgets.QMainWindow):
         """Return button with help label underneath."""
         button.setToolTip(help_text); button.setStatusTip(help_text)
         lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
+        button.setMaximumHeight(28)
         box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)
+        box.setSpacing(1)
         box.addWidget(button); box.addWidget(lbl)
         w = QtWidgets.QWidget(); w.setLayout(box)
         return w
