@@ -1,0 +1,14 @@
+# Aufgabenliste
+
+- [ ] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
+      ```bash
+      python3 -m venv .venv
+      source .venv/bin/activate
+      ```
+- [ ] Pakete installieren:
+      ```bash
+      pip install -r requirements.txt
+      ```
+- [ ] Tool über den Launcher starten: `python3 videobatch_launcher.py`
+- [ ] Dokumentation erweitern (z.B. Beispiele für die GUI-Bedienung)
