@@ -386,7 +386,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("VideoBatchTool 4.1 – Bild + Audio → MP4")
-        self.resize(1500,900)
+        # Groesse an Bildschirm anpassen (dynamisch)
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            geo = screen.availableGeometry()
+            w = min(1500, geo.width() - 50)
+            h = min(900,  geo.height() - 50)
+            self.resize(w, h)
+        else:
+            self.resize(1200, 800)
 
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
         self._font_size = self.settings.value("ui/font_size", 11, int)
