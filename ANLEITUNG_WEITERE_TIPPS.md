@@ -34,3 +34,15 @@ ffmpeg -i clip.mp4 -filter:v "setpts=0.5*PTS" doppelt.mp4
 Der `setpts`-Filter verkürzt hier die Bilddauer. Dadurch läuft das Video doppelt
 so schnell.
 
+## Video spiegeln
+```bash
+ffmpeg -i quelle.mp4 -vf "hflip" gespiegelt.mp4
+```
+Der Filter `hflip` spiegelt das Bild horizontal wie in einem Spiegel.
+
+## Kurzen Ausschnitt speichern
+```bash
+ffmpeg -ss 00:00:05 -i lang.mp4 -t 00:00:10 -c copy teil.mp4
+```
+`-ss` gibt den Startzeitpunkt an, `-t` die Dauer. Hier wird ein zehn Sekunden langer Abschnitt ab Sekunde 5 ausgegeben.
+

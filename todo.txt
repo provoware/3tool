@@ -10,8 +10,8 @@
       ```bash
       pip install -r requirements.txt
       ```
-- [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
-- [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md` und `ANLEITUNG_LAIENPLUS.md`
+- [ ] Tool über den Launcher starten: `python3 videobatch_launcher.py`
+- [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
 - [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
@@ -29,17 +29,11 @@
 - [ ] Kontextmenü in Bilder- und Audioliste testen
 - [ ] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
 - [ ] Beschriftungen unter den Buttons prüfen
-
-# Neu
 - [ ] Favoriten-Bereich testen
 - [ ] Bilder zu Favoriten hinzufügen
 - [ ] Favoriten per Drag&Drop nutzen
 - [ ] Verschiedene Themes ausprobieren
 - [ ] Logging-Bereich beobachten
 - [ ] Schriftgröße ändern
-
-
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
-- [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
-- [ ] Ereignislog aktualisieren: `ereignislog.txt`
