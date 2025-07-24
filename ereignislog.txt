@@ -19,3 +19,4 @@
 [2025-07-24] Öffnen-Button protokolliert, README/Log-Menü meldet Aktionen
 [2025-07-24] Hilfefenster hinzugefügt und Laien-Tipps erweitert
 [2025-07-24] Log-Bereich dokumentiert und Aufgabe abgehakt
+[2025-07-24] Favoriten erklärt, neue Tipps ergänzt und Aufgaben erledigt

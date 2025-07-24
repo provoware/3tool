@@ -55,3 +55,11 @@ ffmpeg -ss 00:00:10 -i original.mp4 -t 00:00:20 -c copy kurz.mp4
 *`-ss`* gibt die Startzeit an. *`-t`* bestimmt die Länge des Ausschnitts.
 
 Mit dem Knopf **Öffnen** im Hauptfenster wird der Ausgabeordner angezeigt.
+
+## 9. Favoriten nutzen
+
+- In der **Bilder**-Liste mit der rechten Maustaste auf ein Bild klicken und
+  **Zu Favoriten** wählen.
+- Wechsle zum Tab **Favoriten**. Dort findest du das gespeicherte Bild.
+- Ziehe das Bild per Drag&Drop in den Arbeitsbereich, um es sofort zu verwenden.
+- Im unteren Log-Bereich erscheinen alle Schritte als Meldung.

@@ -28,10 +28,10 @@
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
 - [ ] Kontextmenü in Bilder- und Audioliste testen
 - [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
-- [ ] Beschriftungen unter den Buttons prüfen
-- [ ] Favoriten-Bereich testen
-- [ ] Bilder zu Favoriten hinzufügen
-- [ ] Favoriten per Drag&Drop nutzen
+- [x] Beschriftungen unter den Buttons prüfen
+- [x] Favoriten-Bereich testen
+- [x] Bilder zu Favoriten hinzufügen
+- [x] Favoriten per Drag&Drop nutzen
 - [ ] Verschiedene Themes ausprobieren
 - [ ] Theme "Kontrast" testen
 - [x] Logging-Bereich beobachten

@@ -35,6 +35,7 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Favoriten** – Bilder lassen sich per Rechtsklick zu einer Favoritenliste hinzufügen. Im Tab "Favoriten" können sie per Drag&Drop in den Arbeitsbereich gezogen werden.
 - **Farb-Themes** – über das Menü "Theme" stehen sechs unterschiedliche Farbkombinationen bereit. Das Theme "Kontrast" bietet hohe Lesbarkeit.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
+- **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio
@@ -48,6 +49,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
 - Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast".
+- Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
 
 ## Hilfe-Fenster
 

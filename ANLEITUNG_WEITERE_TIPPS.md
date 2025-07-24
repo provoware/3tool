@@ -77,3 +77,9 @@ ffmpeg -i video.mp4 -i text.srt -c:v copy -c:a copy -c:s mov_text mit_untertitel
 ```
 `mov_text` ist das Untertitelformat fuer MP4-Dateien.
 
+## Video ohne Ton speichern
+```bash
+ffmpeg -i film.mp4 -an stumm.mp4
+```
+`-an` (audio none) entfernt die Tonspur.
+
