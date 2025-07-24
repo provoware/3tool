@@ -17,6 +17,10 @@
 - [ ] Weitere Beispiele lesen: `ANLEITUNG_MEHR.md`
 - [ ] Zusätzliche Hinweise lesen: `ANLEITUNG_ZUSATZ.md`
 - [ ] Weitere Befehle lesen: `ANLEITUNG_EXTRA_BEFEHLE.md`
+- [ ] Neue Modi nachlesen: `ANLEITUNG_MODI.md`
+- [ ] Modus "Slideshow" ausprobieren
+- [ ] Modus "Video + Audio" ausprobieren
+- [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen

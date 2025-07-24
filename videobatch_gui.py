@@ -6,7 +6,7 @@
 # =========================================
 
 from __future__ import annotations
-import sys, json, shutil, subprocess, logging
+import sys, json, shutil, subprocess, logging, tempfile
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Any
@@ -116,8 +116,8 @@ class PairItem:
             self.valid=False; self.validation_msg=f"Bild fehlt: {ip}"; return
         if not ap.exists():
             self.valid=False; self.validation_msg=f"Audio fehlt: {ap}"; return
-        if ip.suffix.lower() not in (".jpg",".jpeg",".png",".bmp",".webp"):
-            self.valid=False; self.validation_msg="Ungültiges Bildformat"; return
+        if not ip.is_dir() and ip.suffix.lower() not in (".jpg",".jpeg",".png",".bmp",".webp",".mp4",".mkv",".avi",".mov"):
+            self.valid=False; self.validation_msg="Ungültiges Bild/Video"; return
         if ap.suffix.lower() not in (".mp3",".wav",".flac",".m4a",".aac"):
             self.valid=False; self.validation_msg="Ungültiges Audioformat"; return
         self.valid=True; self.validation_msg=""
@@ -200,10 +200,36 @@ class EncodeWorker(QtCore.QObject):
                 w,h = self.settings["width"], self.settings["height"]
                 crf = self.settings["crf"]; preset=self.settings["preset"]; ab=self.settings["abitrate"]
                 duration = item.duration or 1
-                cmd = ["ffmpeg","-y","-loop","1","-i",item.image_path,"-i",item.audio_path,
-                       "-c:v","libx264","-tune","stillimage",
-                       "-vf",f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
-                       "-c:a","aac","-b:a",ab,"-shortest","-preset",preset,"-crf",str(crf),item.output]
+                mode = self.settings.get("mode","Standard")
+                if mode == "Video + Audio":
+                    cmd = ["ffmpeg","-y","-i",item.image_path,"-i",item.audio_path,
+                           "-c:v","copy","-c:a","aac","-b:a",ab,
+                           "-shortest","-preset",preset,"-crf",str(crf),item.output]
+                elif mode == "Slideshow":
+                    img_dir = Path(item.image_path)
+                    imgs = []
+                    for ext in ("*.jpg","*.jpeg","*.png","*.bmp","*.webp"):
+                        imgs.extend(sorted(img_dir.glob(ext)))
+                    if not imgs:
+                        raise Exception("Keine Bilder für Slideshow")
+                    per = duration/len(imgs) if duration else 2
+                    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as f:
+                        for im in imgs:
+                            f.write(f"file '{im}'\n")
+                            f.write(f"duration {per}\n")
+                        f.write(f"file '{imgs[-1]}'\n")
+                        list_path = f.name
+                    cmd = ["ffmpeg","-y","-f","concat","-safe","0","-i",list_path,
+                           "-i",item.audio_path,
+                           "-c:v","libx264",
+                           "-vf",f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                           "-c:a","aac","-b:a",ab,
+                           "-shortest","-preset",preset,"-crf",str(crf),item.output]
+                else:
+                    cmd = ["ffmpeg","-y","-loop","1","-i",item.image_path,"-i",item.audio_path,
+                           "-c:v","libx264","-tune","stillimage",
+                           "-vf",f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                           "-c:a","aac","-b:a",ab,"-shortest","-preset",preset,"-crf",str(crf),item.output]
                 proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
                 for line in proc.stderr:
                     if self._stop: proc.kill(); break
@@ -360,6 +386,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width_spin    = QtWidgets.QSpinBox(); self.width_spin.setRange(16,7680); self.width_spin.setValue(self.settings.value("encode/width",1920,int))
         self.height_spin   = QtWidgets.QSpinBox(); self.height_spin.setRange(16,4320); self.height_spin.setValue(self.settings.value("encode/height",1080,int))
         self.abitrate_edit = QtWidgets.QLineEdit(self.settings.value("encode/abitrate","192k",str))
+        self.mode_combo   = QtWidgets.QComboBox();
+        self.mode_combo.addItems(["Standard","Slideshow","Video + Audio","Mehrere Audios, 1 Bild"])
+        self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
+        self.mode_combo.setCurrentText(self.settings.value("encode/mode","Standard",str))
         self.clear_after   = QtWidgets.QCheckBox("Nach Fertigstellung Listen leeren")
         self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
 
@@ -373,6 +403,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(form,"Breite",self.width_spin,"Video-Breite in Pixel")
         self._add_form(form,"Höhe",self.height_spin,"Video-Höhe in Pixel")
         self._add_form(form,"Audio-Bitrate",self.abitrate_edit,"z.B. 192k, 256k")
+        self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
         form.addRow("", self.clear_after)
 
         self.settings_widget = QtWidgets.QWidget(); self.settings_widget.setLayout(form)
@@ -557,8 +588,14 @@ class MainWindow(QtWidgets.QMainWindow):
         imgs.sort(); auds.sort()
         self.model.clear()
         new=[]
-        for img,aud in zip(imgs,auds):
-            p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
+        mode=self.mode_combo.currentText()
+        if mode=="Mehrere Audios, 1 Bild" and len(imgs)>=1:
+            img=imgs[0]
+            for aud in auds:
+                p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
+        else:
+            for img,aud in zip(imgs,auds):
+                p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
         self.model.add_pairs(new)
         self._update_counts()
         self._resize_columns()
@@ -615,7 +652,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 "preset": self.preset_combo.currentText(),
                 "width": self.width_spin.value(),
                 "height": self.height_spin.value(),
-                "abitrate": self.abitrate_edit.text().strip() or "192k"}
+                "abitrate": self.abitrate_edit.text().strip() or "192k",
+                "mode": self.mode_combo.currentText()}
 
     def _start_encode(self):
         if not self.pairs: return
@@ -719,6 +757,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("encode/width", s["width"])
         self.settings.setValue("encode/height", s["height"])
         self.settings.setValue("encode/abitrate", s["abitrate"])
+        self.settings.setValue("encode/mode", s["mode"])
         super().closeEvent(event)
 
 # ---- Public
