@@ -10,5 +10,6 @@
       ```bash
       pip install -r requirements.txt
       ```
-- [ ] Tool über den Launcher starten: `python3 videobatch_launcher.py`
-- [ ] Dokumentation erweitern (z.B. Beispiele für die GUI-Bedienung)
+- [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
+- [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [ ] Ereignislog aktualisieren: `ereignislog.txt`

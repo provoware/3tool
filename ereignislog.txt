@@ -1,0 +1,2 @@
+[2025-07-24] Repository untersucht. Dokumentations- und Setup-Dateien wurden hinzugefuegt.
+[2025-07-24] Einsteiger-Anleitung und Eventlog erstellt, README angepasst.
