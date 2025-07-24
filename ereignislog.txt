@@ -11,3 +11,4 @@
 [2025-07-24] Anleitungen zusammengefasst in ANLEITUNG_GESAMT.md
 [2025-07-24] Tipps erweitert und Hilfe-Panel überarbeitet
 [2025-07-24] Slideshow-Autopair verbessert, neue Laien-Anleitung und Readme-Update
+[2025-07-24] Weiterführende Befehle ergänzt und Kontextmenü erweitert

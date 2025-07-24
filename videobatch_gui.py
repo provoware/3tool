@@ -312,9 +312,11 @@ class HelpPane(QtWidgets.QTextBrowser):
             "</ol>"
             "<ul>"
             "<li>Doppelklick editiert Pfade, Rechtsklick öffnet Menü</li>"
+            "<li>Kontextmenü kann Pfad kopieren oder Zeile löschen</li>"
             "<li>Hilfe-Menü zeigt README und Logdatei</li>"
             "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
             "<li>Tooltips zeigen volle Pfade</li>"
+            "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
             "</ul>"
         )
 
@@ -758,6 +760,7 @@ class MainWindow(QtWidgets.QMainWindow):
         row = index.row()
         menu = QtWidgets.QMenu(self)
         act_open = menu.addAction("Im Ordner zeigen")
+        act_copy = menu.addAction("Pfad kopieren")
         act_remove = menu.addAction("Zeile löschen")
         action = menu.exec(self.table.viewport().mapToGlobal(pos))
         if action == act_open:
@@ -765,6 +768,12 @@ class MainWindow(QtWidgets.QMainWindow):
             path = p.output or p.image_path or p.audio_path
             if path:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        elif action == act_copy:
+            p = self.pairs[row]
+            path = p.output or p.image_path or p.audio_path
+            if path:
+                QtWidgets.QApplication.clipboard().setText(str(path))
+                self.statusBar().showMessage("Pfad kopiert", 2000)
         elif action == act_remove:
             self._push_history()
             self.model.remove_rows([row])

@@ -149,3 +149,35 @@ python3 videobatch_extra.py --mode video --img film.mp4 --aud kommentar.mp3 --pr
 ```
 `preset` bestimmt die Geschwindigkeit, `crf` steht fuer die Qualitaet (kleiner Wert = bessere Qualitaet).
 
+## 9. Weiterführende Befehle für Laien
+
+*Videos verketten* ("concat" = hintereinanderhängen):
+```bash
+ffmpeg -i teil1.mp4 -i teil2.mp4 -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1" zusammen.mp4
+```
+`concat` fügt zwei Videos zu einem.
+
+*Audio austauschen* ("map" = Spuren wählen):
+```bash
+ffmpeg -i video.mp4 -i neu.mp3 -map 0:v -map 1:a -c:v copy -shortest neu_video.mp4
+```
+`map` bestimmt, welche Video- und Audiospuren genutzt werden.
+
+*GIF in MP4 umwandeln*:
+```bash
+ffmpeg -i animation.gif -movflags faststart -pix_fmt yuv420p ausgabe.mp4
+```
+`pix_fmt` sorgt für weitgehende Kompatibilität.
+
+*Helligkeit erhöhen* ("eq" = Gleichung für Bildwerte):
+```bash
+ffmpeg -i dunkel.mp4 -vf "eq=brightness=0.1" heller.mp4
+```
+`brightness` gibt den Aufhellungswert an.
+
+*Video langsamer abspielen*:
+```bash
+ffmpeg -i input.mp4 -filter:v "setpts=2.0*PTS" langsamer.mp4
+```
+`setpts` steuert die Abspielgeschwindigkeit.
+
