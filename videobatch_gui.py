@@ -40,7 +40,6 @@ THEMES = {
     "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
     "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
     "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
-    "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}"
 }
 
 # ---------- Helpers ----------

@@ -39,7 +39,7 @@
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
-- [ ] Tool über den Launcher starten: `python3 videobatch_launcher.py`
+ - [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
 - [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
@@ -49,7 +49,7 @@
 - [ ] "Pfad kopieren" im Kontextmenü testen
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen
-- [ ] Ereignislog aktualisieren: `ereignislog.txt`
+ - [x] Ereignislog aktualisieren: `ereignislog.txt`
 - [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [ ] Abschnitt "Weiterführende Befehle" lesen
 - [ ] Neues Hilfefenster prüfen
