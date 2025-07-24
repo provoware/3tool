@@ -109,3 +109,9 @@ ffmpeg -i eingang.mp4 -vf "crop=1280:720:0:60" ohne_rand.mp4
 ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" schneller.mp4
 ```
 `setpts` passt die Abspielzeit an. Hier läuft das Video doppelt so schnell.
+
+## 17. Metadaten anzeigen
+```bash
+ffprobe -v quiet -show_format -show_streams eingang.mp4
+```
+`ffprobe` ist ein Analyse-Werkzeug (Hilfsprogramm), das Informationen wie Auflösung und Kodierung ausgibt.

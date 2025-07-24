@@ -24,6 +24,7 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    ```
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
    Bist du bereits in einer eigenen Umgebung, erkennt der Launcher dies und nutzt dein aktuelles Python.
+3. Alternativ kann das Beispielskript `setup.sh` alles in einem Durchlauf erledigen. Ein Muster steht in `setup-sh.txt`.
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.

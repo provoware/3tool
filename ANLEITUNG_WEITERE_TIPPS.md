@@ -177,3 +177,9 @@ ffmpeg -i eingang.mp4 -vf negate negativ.mp4
 ffmpeg -i film.mp4 -vf tpad=stop_mode=clone:stop_duration=3 startbild.mp4
 ```
 `tpad` (Zeitpolster) klont hier die erste Szene für drei Sekunden.
+
+## Video um 90° drehen
+```bash
+ffmpeg -i hochkant.mp4 -vf transpose=1 gedreht.mp4
+```
+`transpose` (Drehen) dreht hier das Bild einmal im Uhrzeigersinn.

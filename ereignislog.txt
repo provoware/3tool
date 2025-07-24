@@ -35,3 +35,4 @@
 [2025-07-24] Kontextmenüs getestet und neue Tipps ergänzt
 [2025-07-24] Virtuelle Umgebung genutzt und Pakete installiert
 [2025-07-24] Zwei neue Laientipps zu crop und Geschwindigkeit
+[2025-07-24] setup-sh.txt erstellt und Dokumentation gelesen (Aufgabe erledigt)
