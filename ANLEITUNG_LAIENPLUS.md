@@ -29,4 +29,21 @@ ffmpeg -i eingang.mp4 -filter:a "volume=1.5" lauter.mp4
 ```
 *`volume`* bestimmt die Lautstärke (1.5 = 150 Prozent).
 
+## 5. Nur den Ton speichern
+```bash
+ffmpeg -i video.mp4 -vn ton.mp3
+```
+*`-vn`* bedeutet "ohne Video". So erhält man nur die Tonspur.
+
+## 6. Helligkeit anpassen
+```bash
+ffmpeg -i clip.mp4 -vf "eq=brightness=0.1" heller.mp4
+```
+*`eq`* steht für "equalizer". Der Wert `0.1` macht das Bild etwas heller.
+
+## 7. Schrift und Farben im Tool
+
+- Im Menü **Ansicht** kann man die Schriftgröße verändern.
+- Unter **Theme** hilft das Design **Kontrast** bei schwächerem Sehen.
+
 Weitere Tipps findest du in `ANLEITUNG_GESAMT.md`.
