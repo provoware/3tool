@@ -1,0 +1,67 @@
+from pathlib import Path
+
+# Pfad zum Schreiben in den Vorlagen-Ordner des Nutzers
+templates_dir = Path.home() / "Vorlagen"
+templates_dir.mkdir(exist_ok=True)
+
+script_path = templates_dir / "0000-testall"
+script_content = """#!/bin/bash
+# 0000-testall: Installiert Tools, zeigt Versionen, führt Lint & Format aus
+
+set -e
+echo "🧙 Starte 0000-testall..."
+
+# 1. Ins Projektverzeichnis wechseln
+cd ~/Projekte/WIZZARDTOOL-MODUL
+
+# 2. Virtuelle Umgebung erstellen/aktivieren
+if [ ! -d ".venv" ]; then
+  echo "🔧 Erzeuge virtuelle Umgebung..."
+  python3 -m venv .venv
+fi
+source .venv/bin/activate
+
+# 3. Installation der Prüftools
+echo "📦 Installiere/aktualisiere Tools..."
+pip install --upgrade pip > /dev/null
+pip install flake8 mypy ruff black isort autoflake > /dev/null
+
+# 4. Version-Check
+echo -e "\\n🔍 Versionen:"
+flake8 --version
+mypy --version
+ruff --version
+black --version
+isort --version
+autoflake --version
+
+# 5. Validierung
+echo -e "\\n🔎 Starte Validierung:"
+flake8 .
+mypy .
+ruff check .
+
+# 6. Auto-Fixes
+echo -e "\\n✨ Wende Auto-Fixes an:"
+black .
+isort .
+autoflake --in-place --remove-unused-variables -r .
+
+echo -e "\\n✅ Alle Prüfungen und Fixes abgeschlossen."
+"""
+
+# Datei erstellen und ausführbar machen
+script_path.write_text(script_content)
+script_path.chmod(0o755)
+
+# Alias-Vorschlag
+alias_snippet = "alias testall='bash ~/Vorlagen/0000-testall'"
+
+# Ausgabe für den Nutzer
+import ace_tools as tools
+import pandas as pd
+df = pd.DataFrame({
+    "Item": ["Skript erstellt", "Alias-Zeile"],
+    "Eintrag": [str(script_path), alias_snippet]
+})
+tools.display_dataframe_to_user(name="Vorlagen-Skript & Alias", dataframe=df)
