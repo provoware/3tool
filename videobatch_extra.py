@@ -30,8 +30,8 @@ def probe_duration(path:str)->float:
         for st in pr.get("streams", []):
             if st.get("codec_type") == "audio":
                 return float(st.get("duration", 0) or 0)
-    except Exception:
-        pass
+    except Exception as e:
+        print("Fehler beim Prüfen der Dauer:", e, file=sys.stderr)
     return 0.0
 
 def cli_single(images:List[str], audios:List[str], out_dir:str,

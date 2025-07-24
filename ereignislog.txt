@@ -29,3 +29,4 @@
 [2025-07-24] Selbsttest ausgefuehrt und Aufgabe abgehakt
 
 [2025-07-24] Dokumentation um Favoritenhinweise erweitert; Aufgabe "Dokumentation lesen" erledigt
+[2025-07-24] Weiterführende Befehle gelesen und neue Tipps ergänzt

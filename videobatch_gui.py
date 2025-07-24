@@ -58,8 +58,8 @@ def probe_duration(path: str) -> float:
         for st in pr.get("streams", []):
             if st.get("codec_type") == "audio":
                 return float(st.get("duration", 0) or 0)
-    except Exception:
-        pass
+    except Exception as e:
+        print("Fehler beim Prüfen der Dauer:", e, file=sys.stderr)
     return 0.0
 
 def get_used_dir() -> Path:
@@ -81,7 +81,8 @@ def safe_move(src: Path, dst_dir: Path, copy_only: bool=False) -> Path:
         shutil.copy2(src, tgt)
         if not copy_only:
             try: src.unlink()
-            except Exception: pass
+            except Exception as e:
+                print("Fehler beim Löschen:", e, file=sys.stderr)
     return tgt
 
 def make_thumb(path: str, size: Tuple[int,int]=(160,90)) -> QtGui.QPixmap:
@@ -256,7 +257,8 @@ class EncodeWorker(QtCore.QObject):
                             elapsed=float(h_)*3600+float(m_)*60+float(s_)
                             perc=min(100.0, elapsed/duration*100.0)
                             item.progress=perc; self.row_progress.emit(i,perc)
-                        except Exception: pass
+                        except Exception as e:
+                            print("Fehler beim Lesen des Fortschritts:", e, file=sys.stderr)
                 proc.wait()
                 if proc.returncode!=0:
                     item.status="FEHLER"; self.row_error.emit(i,"FFmpeg-Fehler")

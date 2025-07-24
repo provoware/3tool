@@ -76,3 +76,14 @@ Mit dem Knopf **Öffnen** im Hauptfenster wird der Ausgabeordner angezeigt.
 ffmpeg -i eingang.mp4 -filter:a "volume=0.5" leiser.mp4
 ```
 *`volume`* (Lautstärke) mit dem Wert `0.5` reduziert die Lautstärke auf fünfzig Prozent.
+## 12. Video drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=1" gedreht.mp4
+```
+*`transpose`* (drehen) richtet das Bild neu aus. Der Wert `1` steht für eine 90°-Drehung.
+
+## 13. Größe ändern
+```bash
+ffmpeg -i eingang.mp4 -vf scale=1280:720 kleiner.mp4
+```
+`scale` (skalieren) passt Breite und Höhe an.
