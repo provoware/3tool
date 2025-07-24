@@ -21,7 +21,8 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    ```bash
    python3 videobatch_launcher.py
    ```
-   Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
+   Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an,
+   installiert die Pakete und führt einen kurzen Selbsttest aus. Danach startet die grafische Oberfläche.
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.

@@ -36,6 +36,13 @@ def pip_install(py: str, pkgs: list[str]) -> None:
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL)
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade"] + pkgs)
 
+def run_selftest(py: str) -> None:
+    """Startet den kurzen Selbsttest der CLI und zeigt das Ergebnis."""
+    try:
+        subprocess.check_call([py, str(Path(__file__).with_name("videobatch_extra.py")), "--selftest"])
+    except subprocess.CalledProcessError:
+        print("Warnung: Selbsttest meldete einen Fehler. Das Tool wird trotzdem gestartet.")
+
 def reboot_into_venv():
     py  = str(venv_python())
     env = os.environ.copy()
@@ -56,6 +63,9 @@ def bootstrap_console():
 
 def main():
     bootstrap_console()
+
+    # Kurzer Selbsttest der Kommandozeilen-Version
+    run_selftest(str(venv_python()))
 
     from PySide6 import QtWidgets
     import subprocess as sp

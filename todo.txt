@@ -1,6 +1,10 @@
 # Aufgabenliste
 
 - [x] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [ ] Launcher nutzen (erstellt Umgebung, installiert Pakete, führt Selbsttest aus):
+      ```bash
+      python3 videobatch_launcher.py
+      ```
 - [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
       ```bash
       python3 -m venv .venv
@@ -10,7 +14,6 @@
       ```bash
       pip install -r requirements.txt
       ```
-- [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
 - [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md` und `ANLEITUNG_LAIENPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
@@ -37,3 +40,4 @@
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
 - [x] Fenstergröße an Bildschirm anpassen (Resize-Bug prüfen)
 - [ ] Verhalten beim Wiederherstellen der Fenstergröße testen
+- [ ] Erweiterte Tests ausführen (benötigt Internet, installiert Prüftools): `python3 0000-testall`
