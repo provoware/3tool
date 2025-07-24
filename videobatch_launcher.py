@@ -72,7 +72,11 @@ def bootstrap_console():
 def main():
     bootstrap_console()
 
-    from PySide6 import QtWidgets
+    try:
+        from PySide6 import QtWidgets
+    except Exception as e:
+        print("Qt konnte nicht geladen werden:", e)
+        sys.exit(1)
     import subprocess as sp
 
     class Wizard(QtWidgets.QDialog):
@@ -164,10 +168,21 @@ def main():
     if wiz.exec() != QtWidgets.QDialog.Accepted:
         sys.exit(0)
 
-    import videobatch_gui as gui
-    w = gui.MainWindow()
-    w.show()
-    sys.exit(app.exec())
+    try:
+        import videobatch_gui as gui
+    except Exception as e:
+        print("Fehler beim Laden der Oberfl\u00e4che:", e)
+        sys.exit(1)
+
+    try:
+        w = gui.MainWindow()
+        w.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        print("Fehler beim Start des Tools:", e)
+        if hasattr(gui, "LOG_FILE"):
+            print("Details stehen in", gui.LOG_FILE)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
