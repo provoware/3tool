@@ -129,3 +129,23 @@ ffmpeg -i leise.mp3 -filter:a "volume=1.8" laut.mp3
 *Logdatei ansehen*:
 Ueber das Hilfe-Menue laesst sich "Logdatei oeffnen" auswaehlen. Dort stehen weitere Details, falls etwas schiefgeht.
 
+## 8. Noch mehr Beispiele fuer Einsteiger
+
+*Bildrate aendern* ("Framerate" = Bilder pro Sekunde):
+```bash
+ffmpeg -i input.mp4 -r 30 ausgabe.mp4
+```
+`-r` legt die Framerate fest.
+
+*Video drehen* ("transpose" = Bild drehen):
+```bash
+ffmpeg -i input.mp4 -vf "transpose=1" gedreht.mp4
+```
+`transpose=1` dreht das Video um 90 Grad.
+
+*Hochwertige Verarbeitung*
+```bash
+python3 videobatch_extra.py --mode video --img film.mp4 --aud kommentar.mp3 --preset slow --crf 20
+```
+`preset` bestimmt die Geschwindigkeit, `crf` steht fuer die Qualitaet (kleiner Wert = bessere Qualitaet).
+

@@ -20,3 +20,5 @@
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
+- [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
+- [ ] Neues Hilfefenster prüfen

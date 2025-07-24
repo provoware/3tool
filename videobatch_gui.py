@@ -302,16 +302,21 @@ class HelpPane(QtWidgets.QTextBrowser):
         self.setOpenExternalLinks(True)
         self.setHtml(self._html())
     def _html(self)->str:
-        return ("<h2>Bedienhilfe</h2>"
-                "<ol><li>Bilder & Audios hinzufügen/ziehen</li>"
-                "<li>Auto-Paaren oder manuell zuweisen</li>"
-                "<li>Einstellungen prüfen</li>"
-                "<li>START klicken</li></ol>"
-                "<ul><li>Dateiname = Audio + Zeitstempel</li>"
-                "<li>Doppelklick auf Zellen editiert Pfade</li>"
-                "<li>Rechtsklick auf Zeile: Menü</li>"
-                "<li>Tooltips zeigen volle Pfade</li>"
-                "<li>Nach Erfolg Archivierung</li></ul>")
+        return (
+            "<h2>Bedienhilfe</h2>"
+            "<ol>"
+            "<li>Bilder oder Ordner sowie Audios hineinziehen</li>"
+            "<li>Gewünschten Modus wählen (Standard, Slideshow, Video + Audio, Mehrere Audios)</li>"
+            "<li>Mit 'Auto-Paaren' Dateien koppeln oder selbst zuweisen</li>"
+            "<li>Einstellungen prüfen und START klicken</li>"
+            "</ol>"
+            "<ul>"
+            "<li>Doppelklick editiert Pfade, Rechtsklick öffnet Menü</li>"
+            "<li>Hilfe-Menü zeigt README und Logdatei</li>"
+            "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
+            "<li>Tooltips zeigen volle Pfade</li>"
+            "</ul>"
+        )
 
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):

@@ -9,3 +9,4 @@
 [2025-07-24] Praktische Beispiele und Videolaengen-Anpassung eingefuehrt
 [2025-07-24] GUI-Verbesserungen (Auto-Pair Slideshow, README-Menü) und neue Anleitung 'ANLEITUNG_NUTZERPLUS.md'
 [2025-07-24] Anleitungen zusammengefasst in ANLEITUNG_GESAMT.md
+[2025-07-24] Tipps erweitert und Hilfe-Panel überarbeitet

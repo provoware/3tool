@@ -25,6 +25,12 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 
+Unterstuetzte Modi:
+* **Standard** – ein Bild pro Audio
+* **Slideshow** – ganzer Bilder-Ordner fuer jedes Audio
+* **Video + Audio** – vorhandenes Video mit neuer Tonspur
+* **Mehrere Audios, ein Bild** – gleiches Bild fuer viele Audiodateien
+
 ## Zusaetzlich
 
 * Die Datei `videobatch_extra.py` enthaelt eine Kommandozeilenversion. Mit `--selftest` lassen sich einfache Tests ausfuehren.
