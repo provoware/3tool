@@ -36,6 +36,6 @@
 - [x] Theme "Kontrast" testen
 - [x] Logging-Bereich beobachten
 - [x] Schriftgröße ändern
-- [ ] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
+- [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`

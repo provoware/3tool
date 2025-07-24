@@ -46,6 +46,7 @@ ffmpeg -i clip.mp4 -vf "eq=brightness=0.1" heller.mp4
 - Im Menü **Ansicht** kann man die Schriftgröße verändern.
 - Unter **Theme** hilft das Design **Kontrast** bei schwächerem Sehen.
 - Durch die neuen Überschriften findest du Dateien, Einstellungen, Tabelle und Hilfe leichter.
+- Mit **Schrift Reset** stellst du die Standardgröße wieder her.
 
 Weitere Tipps findest du in `ANLEITUNG_GESAMT.md`.
 

@@ -901,7 +901,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 "mode": self.mode_combo.currentText()}
 
     def _start_encode(self):
-        if not self.pairs: return
+        if not self.pairs:
+            QtWidgets.QMessageBox.information(
+                self,
+                "Keine Paare",
+                "Bitte zuerst Bilder und Audios hinzufügen.",
+            )
+            self._log("Encoding abgebrochen: keine Paare")
+            return
         if any(p.audio_path is None for p in self.pairs):
             QtWidgets.QMessageBox.warning(self,"Fehlende Audios","Nicht alle Bilder haben ein Audio."); return
         for p in self.pairs: p.validate()

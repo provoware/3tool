@@ -120,3 +120,18 @@ ffmpeg -i wackelig.mp4 -vf deshake stabil.mp4
 ```
 `deshake` versucht, sichtbare Bewegungen zu glätten.
 
+## Dateigröße verringern
+```bash
+ffmpeg -i grosses_video.mp4 -vcodec libx264 -crf 28 kleiner.mp4
+```
+`libx264` ist ein verbreiteter Videocodec (Kompressionsverfahren). Ein höherer
+`crf`-Wert (Qualitätsfaktor) führt zu kleinerer Datei, allerdings mit etwas
+weniger Bildqualität.
+
+## Schwarze Ränder abschneiden
+```bash
+ffmpeg -i film.mp4 -vf "crop=1280:720:0:60" ohne_rand.mp4
+```
+Der Filter `crop` (beschneiden) entfernt hier oben und unten 60 Pixel und gibt
+ein 1280 × 720-Bild zurück.
+
