@@ -68,5 +68,5 @@
 - [ ] Schriftgröße ändern
 
 
-- [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
-- [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
+- [x] Dokumentation gelesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [x] Zusätzliche Tipps gelesen: `ANLEITUNG_TIPPS.md`

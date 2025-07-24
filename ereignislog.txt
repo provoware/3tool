@@ -37,3 +37,4 @@
 [2025-07-24] Zwei neue Laientipps zu crop und Geschwindigkeit
 [2025-07-24] setup-sh.txt erstellt und Dokumentation gelesen (Aufgabe erledigt)
 [2025-07-24] Syntaxfehler im Theme behoben, Launcher zeigt nun verständliche Fehlermeldungen
+[2025-07-24] Dokumentation gelesen und doppelte Klassen entfernt

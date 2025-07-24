@@ -43,7 +43,7 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
-- **Farb-Themes** – über das Menü "Theme" stehen fünf sehr unterschiedliche Farbkombinationen bereit.
+- **Hintergrund-Verarbeitung** – das Kodieren läuft jetzt in einem eigenen Thread (Hintergrundprozess), so bleibt die Oberfläche flüssig.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 
 Unterstuetzte Modi:

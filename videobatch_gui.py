@@ -402,53 +402,6 @@ class FavoriteListWidget(DropListWidget):
             self.window()._log(f"Favorit entfernt: {path}")
         e.accept()
 
-class ImageListWidget(DropListWidget):
-    add_to_fav = Signal(str)
-    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
-        item=self.itemAt(e.pos())
-        if not item:
-            return
-        path=item.data(Qt.UserRole)
-        menu=QtWidgets.QMenu(self)
-        act_open=menu.addAction("Im Ordner zeigen")
-        act_copy=menu.addAction("Pfad kopieren")
-        act_fav=menu.addAction("Zu Favoriten")
-        act_remove=menu.addAction("Entfernen")
-        act=menu.exec(e.globalPos())
-        if act==act_open:
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
-        elif act==act_copy:
-            QtWidgets.QApplication.clipboard().setText(str(path))
-        elif act==act_remove:
-            self.takeItem(self.row(item))
-        elif act==act_fav:
-            self.add_to_fav.emit(path)
-        e.accept()
-
-class FavoriteListWidget(DropListWidget):
-    use_fav = Signal(str)
-    removed = Signal(str)
-    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
-        item=self.itemAt(e.pos())
-        if not item:
-            return
-        path=item.data(Qt.UserRole)
-        menu=QtWidgets.QMenu(self)
-        act_open=menu.addAction("Im Ordner zeigen")
-        act_copy=menu.addAction("Pfad kopieren")
-        act_use=menu.addAction("Zum Arbeitsbereich")
-        act_remove=menu.addAction("Entfernen")
-        act=menu.exec(e.globalPos())
-        if act==act_open:
-            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
-        elif act==act_copy:
-            QtWidgets.QApplication.clipboard().setText(str(path))
-        elif act==act_use:
-            self.use_fav.emit(path)
-        elif act==act_remove:
-            self.removed.emit(path)
-            self.takeItem(self.row(item))
-        e.accept()
 
 class HelpPane(QtWidgets.QTextBrowser):
     def __init__(self):
