@@ -34,6 +34,8 @@ Unterstuetzte Modi:
 * **Slideshow** – ganzer Bilder-Ordner fuer jedes Audio
 * **Video + Audio** – vorhandenes Video mit neuer Tonspur
 * **Mehrere Audios, ein Bild** – gleiches Bild fuer viele Audiodateien
+Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
+Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 
 ## Zusaetzlich
 

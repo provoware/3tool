@@ -28,3 +28,7 @@
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
 - [ ] Kontextmenü in Bilder- und Audioliste testen
 
+- [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
+- [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
+- [ ] Ereignislog aktualisieren: `ereignislog.txt`

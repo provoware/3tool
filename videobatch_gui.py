@@ -342,6 +342,16 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
             "</ul>"
         )
+        return ("<h2>Bedienhilfe</h2>"
+                "<ol><li>Bilder & Audios hinzufügen/ziehen</li>"
+                "<li>Auto-Paaren oder manuell zuweisen</li>"
+                "<li>Einstellungen prüfen</li>"
+                "<li>START klicken</li></ol>"
+                "<ul><li>Dateiname = Audio + Zeitstempel</li>"
+                "<li>Doppelklick auf Zellen editiert Pfade</li>"
+                "<li>Rechtsklick auf Zeile: Menü</li>"
+                "<li>Tooltips zeigen volle Pfade</li>"
+                "<li>Nach Erfolg Archivierung</li></ul>")
 
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):
