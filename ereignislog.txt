@@ -43,3 +43,5 @@
 [2025-07-24] Hilfe-Bereich zuschaltbar, Layout mit Tabs. Aufgabe 'Modus "Video + Audio" ausprobieren' erledigt
 [2025-07-24] Multi-Audio-Modus getestet, neue Tipps zu Fade und Weichzeichnen ergänzt
 [2025-07-24] Slideshow-Modus getestet und neuen Kontrast-Tipp ergänzt
+[2025-07-24] Debug-Log zuschaltbar und Hilfe angepasst
+[2025-07-24] README-Menü und Tooltip getestet

@@ -425,6 +425,7 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Hilfe-Menü zeigt README und Logdatei</li>"
             "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
             "<li>Tooltips zeigen volle Pfade</li>"
+            "<li>Menü 'Optionen' hat einen Debug-Schalter für mehr Meldungen</li>"
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
             "</ul>"
         )
@@ -470,6 +471,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
         self._font_size = self.settings.value("ui/font_size", 11, int)
+        self.debug_mode = self.settings.value("ui/debug", False, bool)
+        logger.setLevel(logging.DEBUG if self.debug_mode else logging.INFO)
 
         sys.excepthook = self._global_exception
 
@@ -694,6 +697,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.act_copy_only.setToolTip("Originaldateien behalten")
         self.act_copy_only.triggered.connect(self._toggle_copy_mode)
         m_option.addAction(self.act_copy_only)
+        self.act_debug = QAction("Debug-Log", self, checkable=True, checked=self.debug_mode)
+        self.act_debug.setToolTip("Detailiertes Protokoll aktivieren")
+        self.act_debug.triggered.connect(self._toggle_debug)
+        m_option.addAction(self.act_debug)
 
         m_hilfe = menubar.addMenu("Hilfe")
         act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
@@ -764,10 +771,14 @@ class MainWindow(QtWidgets.QMainWindow):
         w = QtWidgets.QWidget(); w.setLayout(box)
         return w
 
-    def _log(self, msg:str):
-        self.log_edit.appendPlainText(msg)
-        self.dashboard.log(msg)
-        logger.info(msg)
+    def _log(self, msg:str, level=logging.INFO):
+        if level >= logging.INFO or self.debug_mode:
+            self.log_edit.appendPlainText(msg)
+            self.dashboard.log(msg)
+        logger.log(level, msg)
+
+    def _debug(self, msg:str):
+        self._log(f"DEBUG: {msg}", logging.DEBUG)
 
     def _push_history(self):
         snap=[]
@@ -808,13 +819,16 @@ class MainWindow(QtWidgets.QMainWindow):
         for f in files:
             self.image_list.add_files([f])
             self.model.add_pairs([PairItem(f)])
+            self._debug(f"Bild hinzugefügt: {f}")
         self._update_counts()
         self._resize_columns()
         self._log(f"{len(files)} Bild(er) hinzugefügt")
 
     def _on_audios_added(self, files: List[str]):
         self._push_history()
-        for f in files: self.audio_list.add_files([f])
+        for f in files:
+            self.audio_list.add_files([f])
+            self._debug(f"Audio hinzugefügt: {f}")
         it=iter(files)
         for p in self.pairs:
             if p.audio_path is None:
@@ -852,6 +866,7 @@ class MainWindow(QtWidgets.QMainWindow):
         imgs=[self.image_list.item(i).data(Qt.UserRole) for i in range(self.image_list.count())]
         auds=[self.audio_list.item(i).data(Qt.UserRole) for i in range(self.audio_list.count())]
         imgs.sort(); auds.sort()
+        self._debug(f"Auto-Pair start mit {len(imgs)} Bild(er) und {len(auds)} Audio(s)")
         self.model.clear()
         new=[]
         mode=self.mode_combo.currentText()
@@ -872,6 +887,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for img, aud in zip(imgs, auds):
                 p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
         self.model.add_pairs(new)
+        self._debug(f"Auto-Pair Ergebnis: {[(p.image_path, p.audio_path) for p in new][:3]} ...")
         self._update_counts()
         self._resize_columns()
         self._log(f"Auto-Pair erstellt {len(new)} Paar(e)")
@@ -1022,6 +1038,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def _toggle_help(self, checked: bool):
         self.help_box.setVisible(checked)
         self.settings.setValue("ui/show_help", checked)
+
+    def _toggle_debug(self, checked: bool):
+        self.debug_mode = checked
+        logger.setLevel(logging.DEBUG if checked else logging.INFO)
+        self.settings.setValue("ui/debug", checked)
+        self._log(f"Debug-Log {'aktiviert' if checked else 'deaktiviert'}")
 
     def _global_exception(self, etype, value, tb):
         import traceback

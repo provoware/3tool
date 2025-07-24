@@ -64,3 +64,9 @@ ffmpeg -i eingang.mp4 -vf "hflip" gespiegelt.mp4
 ffmpeg -i eingang.mp4 -vf "eq=contrast=1.5" kontrast.mp4
 ```
 `eq` (Equalizer) verändert Helligkeit und Kontrast. Der Wert `1.5` sorgt für ein intensiveres Bild.
+
+## Nur die ersten 30 Sekunden
+```bash
+ffmpeg -i eingang.mp4 -ss 0 -t 30 -c copy kurz.mp4
+```
+`-ss` legt den Startpunkt fest, `-t` die Dauer. Hier wird nur der erste Abschnitt übernommen.

@@ -63,6 +63,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
 - Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast". Daneben steht das neue Theme "Modern" mit frischen Farben bereit.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
+- Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 
 ## Hilfe-Fenster
