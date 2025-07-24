@@ -1,12 +1,12 @@
 # Aufgabenliste
 
-- [ ] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [x] Projekt testen: `python3 videobatch_extra.py --selftest`
 - [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
       ```bash
       python3 -m venv .venv
       source .venv/bin/activate
       ```
-- [ ] Pakete installieren:
+- [x] Pakete installieren:
       ```bash
       pip install -r requirements.txt
       ```
@@ -35,3 +35,5 @@
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
+- [x] Fenstergröße an Bildschirm anpassen (Resize-Bug prüfen)
+- [ ] Verhalten beim Wiederherstellen der Fenstergröße testen
