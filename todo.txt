@@ -12,4 +12,6 @@
       ```
 - [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
+- [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`

@@ -165,6 +165,12 @@ class PairTableModel(QAbstractTableModel):
     def add_pairs(self, new_pairs: List[PairItem]):
         self.beginInsertRows(QModelIndex(), len(self.pairs), len(self.pairs)+len(new_pairs)-1)
         self.pairs.extend(new_pairs); self.endInsertRows()
+    def remove_rows(self, rows: List[int]):
+        for r in sorted(rows, reverse=True):
+            if 0 <= r < len(self.pairs):
+                self.beginRemoveRows(QModelIndex(), r, r)
+                self.pairs.pop(r)
+                self.endRemoveRows()
     def clear(self):
         self.beginResetModel(); self.pairs.clear(); self.endResetModel()
 
@@ -271,6 +277,7 @@ class HelpPane(QtWidgets.QTextBrowser):
                 "<li>START klicken</li></ol>"
                 "<ul><li>Dateiname = Audio + Zeitstempel</li>"
                 "<li>Doppelklick auf Zellen editiert Pfade</li>"
+                "<li>Rechtsklick auf Zeile: Menü</li>"
                 "<li>Tooltips zeigen volle Pfade</li>"
                 "<li>Nach Erfolg Archivierung</li></ul>")
 
@@ -332,6 +339,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setModel(self.model)
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.table.setAlternatingRowColors(True)
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._table_menu)
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
@@ -384,6 +393,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_load       = QtWidgets.QPushButton("Projekt laden")
         self.btn_encode     = QtWidgets.QPushButton("START")
         self.btn_stop       = QtWidgets.QPushButton("Stop"); self.btn_stop.setEnabled(False)
+
+        self.btn_add_images.setToolTip("Bilder (Fotos) auswählen")
+        self.btn_add_audios.setToolTip("Audiodateien auswählen")
+        self.btn_auto_pair.setToolTip("Bilder und Audios automatisch koppeln")
+        self.btn_clear.setToolTip("Listen komplett leeren")
+        self.btn_undo.setToolTip("Letzte Änderung rückgängig machen")
+        self.btn_save.setToolTip("Aktuellen Stand speichern")
+        self.btn_load.setToolTip("Gespeichertes Projekt laden")
+        self.btn_encode.setToolTip("Encoding starten")
+        self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
 
         self.btn_encode.setStyleSheet("font-size:16pt;font-weight:bold;background:#005BBB;color:white;padding:6px 14px;")
 
@@ -655,6 +674,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def _resize_columns(self):
         header = self.table.horizontalHeader()
         header.resizeSections(QHeaderView.ResizeToContents)
+
+    def _table_menu(self, pos: QtCore.QPoint):
+        index = self.table.indexAt(pos)
+        if not index.isValid():
+            return
+        row = index.row()
+        menu = QtWidgets.QMenu(self)
+        act_open = menu.addAction("Im Ordner zeigen")
+        act_remove = menu.addAction("Zeile löschen")
+        action = menu.exec(self.table.viewport().mapToGlobal(pos))
+        if action == act_open:
+            p = self.pairs[row]
+            path = p.output or p.image_path or p.audio_path
+            if path:
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        elif action == act_remove:
+            self._push_history()
+            self.model.remove_rows([row])
+            self._update_counts()
+            self._resize_columns()
 
     def _show_statusbar_path(self, index: QtCore.QModelIndex):
         if not index.isValid(): return

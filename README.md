@@ -24,6 +24,7 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
 
 Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
+Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 
 ## Zusaetzlich
 
