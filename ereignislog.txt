@@ -17,3 +17,4 @@
 [2025-07-24] Zusatztipps-Datei erstellt, Buttons mit Hilfetexten
 [2025-07-24] Profi-Anleitung ergänzt und Hinweis zu libGL hinzugefügt
 [2025-07-24] Laien-Plus Anleitung um Helligkeit und Fade erweitert
+[2025-07-24] Laien-Plus um Tipps zu Ton entfernen, Schnitt und Skalierung erweitert

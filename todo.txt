@@ -38,6 +38,7 @@
       sudo apt install libgl1
       ```
 - [ ] Zusätzliche Laien-Tipps in `ANLEITUNG_LAIENPLUS.md` lesen (Helligkeit & Fade)
+- [ ] Neue Beispiele zu Ton entfernen, Schnitt und Skalierung ausprobieren
 
 
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`

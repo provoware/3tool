@@ -22,11 +22,13 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    python3 videobatch_launcher.py
    ```
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an,
-   installiert die Pakete und führt einen kurzen Selbsttest aus. Danach startet die grafische Oberfläche.
+   installiert die Pakete und führt einen kurzen Selbsttest aus. Anschließend erscheint
+   ein einfacher Assistent ("Oma-Modus") mit großen Knöpfen, der das Hauptprogramm startet.
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
-Dort findest du jetzt auch kurze Befehle zum Aufhellen und sanften Einblenden von Videos.
+Dort findest du jetzt auch kurze Befehle zum Aufhellen, sanften Einblenden,
+Tonspur entfernen, Schneiden und Verkleinern von Videos.
 Im Abschnitt "Weiterführende Befehle" von `ANLEITUNG_GESAMT.md` finden sich
 zusätzliche Kommandos für neugierige Einsteiger.
 Weitere Beispiele stehen in `ANLEITUNG_EXTRA.md`.

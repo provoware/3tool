@@ -43,3 +43,22 @@ ffmpeg -i clip.mp4 -vf "fade=t=in:st=0:d=2" -af "afade=t=in:st=0:d=2" startfade.
 ```
 *`fade`* erstellt eine Ein- oder Ausblendung. *`st`* ist der Startzeitpunkt, *`d`* die Dauer in Sekunden.
 
+
+## 7. Tonspur entfernen
+```bash
+ffmpeg -i eingang.mp4 -an stumm.mp4
+```
+*`-an`* bedeutet "Audio none" und sorgt dafür, dass keine Tonspur im Ergebnis steckt.
+
+## 8. Kurzen Ausschnitt speichern
+```bash
+ffmpeg -i film.mp4 -ss 00:00:10 -t 5 ausschnitt.mp4
+```
+*`-ss`* springt zur Startzeit, *`-t`* legt die Dauer in Sekunden fest.
+
+## 9. Auflösung verkleinern
+```bash
+ffmpeg -i gross.mp4 -vf "scale=1280:720" kleiner.mp4
+```
+*`scale`* (Skalierung) passt Breite und Höhe an, hier auf 1280x720.
+
