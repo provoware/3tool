@@ -115,3 +115,8 @@ ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" schneller.mp4
 ffprobe -v quiet -show_format -show_streams eingang.mp4
 ```
 `ffprobe` ist ein Analyse-Werkzeug (Hilfsprogramm), das Informationen wie Auflösung und Kodierung ausgibt.
+
+## 18. Modernes Theme nutzen
+
+- Öffne das Menü **Theme** im Hauptfenster.
+- Wähle **Modern**. Dieses Design bietet gute Lesbarkeit und angenehme Farben.

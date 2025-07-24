@@ -63,7 +63,7 @@
 - [ ] Favoriten-Bereich testen
 - [ ] Bilder zu Favoriten hinzufügen
 - [ ] Favoriten per Drag&Drop nutzen
-- [ ] Verschiedene Themes ausprobieren
+- [x] Verschiedene Themes ausprobieren
 - [ ] Logging-Bereich beobachten
 - [x] Schriftgröße ändern
 

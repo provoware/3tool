@@ -39,7 +39,8 @@ THEMES = {
     "Blau": "QWidget{background-color:#1e1e2d;color:#c7d8f4;} QPushButton{background-color:#3d59ab;color:white;}",
     "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
     "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
-    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
+    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}",
+    "Modern": "QWidget{background-color:#f0f0f0;color:#202020;} QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
 }
 
 # ---------- Helpers ----------
@@ -595,6 +596,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         top_buttons = QtWidgets.QGridLayout()
         top_buttons.setSpacing(4)
+        top_buttons.setContentsMargins(4, 4, 4, 4)
         btn_defs = [
             (self.btn_add_images, "Bilder oder Ordner auswählen"),
             (self.btn_add_audios, "Audiodateien hinzufügen"),
@@ -611,10 +613,12 @@ class MainWindow(QtWidgets.QMainWindow):
             top_buttons.addWidget(self._wrap_button(btn, tip), row, col)
         for i in range(4):
             top_buttons.setColumnStretch(i, 1)
+        btn_box = QtWidgets.QGroupBox("Aktionen")
+        btn_box.setLayout(top_buttons)
 
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(self.dashboard)
-        central_layout.addLayout(top_buttons)
+        central_layout.addWidget(btn_box)
         central_layout.addWidget(outer_split)
         central = QtWidgets.QWidget(); central.setLayout(central_layout)
         self.setCentralWidget(central)
@@ -643,7 +647,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_out_open.clicked.connect(self._open_out_dir)
 
         self._apply_font()
-        self._apply_theme(self.settings.value("ui/theme", "Standard"))
+        self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
 

@@ -36,7 +36,7 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 ## Neues in der Oberfläche
 
 - **Favoriten** – Bilder lassen sich per Rechtsklick zu einer Favoritenliste hinzufügen. Im Tab "Favoriten" können sie per Drag&Drop in den Arbeitsbereich gezogen werden.
-- **Farb-Themes** – über das Menü "Theme" stehen sechs unterschiedliche Farbkombinationen bereit. Das Theme "Kontrast" bietet hohe Lesbarkeit.
+- **Farb-Themes** – über das Menü "Theme" stehen sieben unterschiedliche Farbkombinationen bereit. Neu ist das freundliche Design "Modern". Das Theme "Kontrast" bietet weiterhin hohe Lesbarkeit.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 - **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
@@ -59,7 +59,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 ## Bedienhilfen
 
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
-- Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast".
+- Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast". Daneben steht das neue Theme "Modern" mit frischen Farben bereit.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 
