@@ -20,7 +20,9 @@ def in_venv() -> bool:
             or os.environ.get("VIRTUAL_ENV"))
 
 def venv_python() -> Path:
-    return ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+    """Return path to launcher venv or current interpreter if missing."""
+    path = ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+    return path if path.exists() else Path(sys.executable)
 
 def ensure_venv() -> None:
     if not ENV_DIR.exists():
@@ -46,7 +48,7 @@ def bootstrap_console():
     if not in_venv():
         ensure_venv()
         reboot_into_venv()
-    if os.environ.get(FLAG) != "1":
+    elif ENV_DIR.exists() and os.environ.get(FLAG) != "1":
         reboot_into_venv()
 
     py = str(venv_python())

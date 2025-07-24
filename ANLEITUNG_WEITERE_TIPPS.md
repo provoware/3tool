@@ -95,3 +95,15 @@ ffmpeg -i film.mp4 -vf reverse -af areverse rueckwaerts.mp4
 ```
 Die Filter `reverse` und `areverse` (umkehren) lassen Bild und Ton rückwärts laufen.
 
+## Tonspur zeitlich verschieben
+```bash
+ffmpeg -i film.mp4 -af adelay=2000|2000 verschoben.mp4
+```
+`adelay` (Audio-Verzögerung) schiebt die Tonspur hier um zwei Sekunden nach hinten. Die zwei Werte stehen für linke und rechte Spur.
+
+## Metadaten eines Videos anzeigen
+```bash
+ffprobe -v quiet -show_format -show_streams eingang.mp4
+```
+`ffprobe` ist ein Analyse-Programm von ffmpeg. Es listet alle Daten wie Auflösung und Kodierung auf.
+

@@ -21,3 +21,4 @@
 [2025-07-24] Log-Bereich dokumentiert und Aufgabe abgehakt
 [2025-07-24] Favoriten erklärt, neue Tipps ergänzt und Aufgaben erledigt
 [2025-07-24] Bereiche mit Überschriften gruppiert, README-Menüeintrag getestet
+[2025-07-24] Launcher erkennt vorhandene Umgebungen, neue ffmpeg-Tipps ergänzt; Aufgaben 'Launcher starten' und 'Ereignislog aktualisieren' erledigt

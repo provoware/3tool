@@ -10,7 +10,7 @@
       ```bash
       pip install -r requirements.txt
       ```
-- [ ] Tool über den Launcher starten: `python3 videobatch_launcher.py`
+- [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
 - [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
@@ -20,7 +20,7 @@
 - [ ] "Pfad kopieren" im Kontextmenü testen
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [x] Knopf "Ausgabeordner öffnen" testen
-- [ ] Ereignislog aktualisieren: `ereignislog.txt`
+- [x] Ereignislog aktualisieren: `ereignislog.txt`
 - [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [ ] Abschnitt "Weiterführende Befehle" lesen
 - [x] Neues Hilfefenster prüfen
