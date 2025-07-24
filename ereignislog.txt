@@ -6,3 +6,4 @@
 [2025-07-24] Zusätzliche Hinweise für Laien erstellt
 [2025-07-24] Zusätzliche Befehle für Laien hinzugefügt
 [2025-07-24] Neue Modi (Slideshow, Video+Audio, Multi-Audio) und Anleitung hinzugefügt
+[2025-07-24] Praktische Beispiele und Videolaengen-Anpassung eingefuehrt

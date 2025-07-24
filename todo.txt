@@ -18,6 +18,7 @@
 - [ ] Zusätzliche Hinweise lesen: `ANLEITUNG_ZUSATZ.md`
 - [ ] Weitere Befehle lesen: `ANLEITUNG_EXTRA_BEFEHLE.md`
 - [ ] Neue Modi nachlesen: `ANLEITUNG_MODI.md`
+- [ ] Praktische Beispiele lesen: `ANLEITUNG_PRAKTISCH.md`
 - [ ] Modus "Slideshow" ausprobieren
 - [ ] Modus "Video + Audio" ausprobieren
 - [ ] Modus "Mehrere Audios, ein Bild" ausprobieren

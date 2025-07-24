@@ -202,9 +202,15 @@ class EncodeWorker(QtCore.QObject):
                 duration = item.duration or 1
                 mode = self.settings.get("mode","Standard")
                 if mode == "Video + Audio":
-                    cmd = ["ffmpeg","-y","-i",item.image_path,"-i",item.audio_path,
-                           "-c:v","copy","-c:a","aac","-b:a",ab,
-                           "-shortest","-preset",preset,"-crf",str(crf),item.output]
+                    vdur = probe_duration(item.image_path)
+                    extra = max(0.0, duration - vdur)
+                    cmd = ["ffmpeg","-y","-i",item.image_path,"-i",item.audio_path]
+                    if extra>0:
+                        cmd += ["-vf",f"tpad=stop_mode=clone:stop_duration={extra}","-c:v","libx264"]
+                    else:
+                        cmd += ["-c:v","copy"]
+                    cmd += ["-c:a","aac","-b:a",ab,
+                            "-shortest","-preset",preset,"-crf",str(crf),item.output]
                 elif mode == "Slideshow":
                     img_dir = Path(item.image_path)
                     imgs = []
@@ -281,7 +287,7 @@ class DropListWidget(QtWidgets.QListWidget):
         else: super().dragMoveEvent(e)
     def dropEvent(self,e):
         files=[u.toLocalFile() for u in e.mimeData().urls()]
-        acc=[f for f in files if f.lower().endswith(self.patterns)]
+        acc=[f for f in files if Path(f).is_dir() or f.lower().endswith(self.patterns)]
         if acc: self.add_files(acc); self.files_dropped.emit(acc)
         e.acceptProposedAction()
     def add_files(self, files:List[str]):
@@ -489,22 +495,23 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
 
         m_datei = menubar.addMenu("Datei")
-        act_quit = QAction("Beenden", self); act_quit.triggered.connect(self.close)
+        act_quit = QAction("Beenden", self); act_quit.setToolTip("Programm schließen"); act_quit.triggered.connect(self.close)
         m_datei.addAction(act_quit)
 
         m_ansicht = menubar.addMenu("Ansicht")
-        act_font_plus  = QAction("Schrift +", self);  act_font_plus.triggered.connect(lambda: self._change_font(1))
-        act_font_minus = QAction("Schrift -", self);  act_font_minus.triggered.connect(lambda: self._change_font(-1))
-        act_font_reset = QAction("Schrift Reset", self); act_font_reset.triggered.connect(lambda: self._set_font(11))
+        act_font_plus  = QAction("Schrift +", self);  act_font_plus.setToolTip("Schriftgröße erhöhen"); act_font_plus.triggered.connect(lambda: self._change_font(1))
+        act_font_minus = QAction("Schrift -", self);  act_font_minus.setToolTip("Schriftgröße verkleinern"); act_font_minus.triggered.connect(lambda: self._change_font(-1))
+        act_font_reset = QAction("Schrift Reset", self); act_font_reset.setToolTip("Schriftgröße zurücksetzen"); act_font_reset.triggered.connect(lambda: self._set_font(11))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
 
         m_option = menubar.addMenu("Optionen")
         self.act_copy_only = QAction("Dateien nur kopieren (nicht verschieben)", self, checkable=True, checked=self.copy_only)
+        self.act_copy_only.setToolTip("Originaldateien behalten")
         self.act_copy_only.triggered.connect(self._toggle_copy_mode)
         m_option.addAction(self.act_copy_only)
 
         m_hilfe = menubar.addMenu("Hilfe")
-        act_log = QAction("Logdatei öffnen", self); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
+        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
         m_hilfe.addAction(act_log)
 
     def _change_font(self, delta:int):
@@ -553,9 +560,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ----- file actions -----
     def _pick_images(self):
-        files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",str(Path.cwd()),
-                                                       "Bilder (*.jpg *.jpeg *.png *.bmp *.webp)")
-        if files: self._on_images_added(files)
+        mode=self.mode_combo.currentText()
+        if mode=="Slideshow":
+            d=QtWidgets.QFileDialog.getExistingDirectory(self,"Ordner mit Bildern wählen",str(Path.cwd()))
+            if d: self._on_images_added([d])
+        else:
+            files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",str(Path.cwd()),
+                                                          "Bilder (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mkv *.avi *.mov)")
+            if files: self._on_images_added(files)
     def _pick_audios(self):
         files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Audios wählen",str(Path.cwd()),
                                                        "Audio (*.mp3 *.wav *.flac *.m4a *.aac)")

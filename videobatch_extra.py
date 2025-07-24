@@ -68,10 +68,17 @@ def cli_video(video:str, audio:str, out_dir:str,
     if not Path(video).exists() or not Path(audio).exists():
         print("Datei fehlt"); return 1
     out_file=build_out_name(audio, out_dir_p)
-    cmd=["ffmpeg","-y","-i",video,"-i",audio,
-         "-c:v","copy","-c:a","aac","-b:a",abitrate,
-         "-shortest","-preset",preset,"-crf",str(crf),
-         str(out_file)]
+    vdur = probe_duration(video)
+    adur = probe_duration(audio)
+    extra = max(0.0, adur - vdur)
+    cmd=["ffmpeg","-y","-i",video,"-i",audio]
+    if extra>0:
+        cmd += ["-vf",f"tpad=stop_mode=clone:stop_duration={extra}","-c:v","libx264"]
+    else:
+        cmd += ["-c:v","copy"]
+    cmd += ["-c:a","aac","-b:a",abitrate,
+            "-shortest","-preset",preset,"-crf",str(crf),
+            str(out_file)]
     res=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
     if res.returncode!=0:
         print("FFmpeg-Fehler:", res.stderr.splitlines()[-1] if res.stderr else "unbekannt")
