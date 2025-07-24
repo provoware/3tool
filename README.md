@@ -26,6 +26,7 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
 Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
 Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 Noch mehr Hinweise bietet `ANLEITUNG_WEITER.md`.
+Weitere Beispiele gibt es in `ANLEITUNG_MEHR.md`.
 
 ## Zusaetzlich
 

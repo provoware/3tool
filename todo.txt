@@ -14,6 +14,8 @@
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
 - [ ] Weiterführende Hinweise lesen: `ANLEITUNG_WEITER.md`
+- [ ] Weitere Beispiele lesen: `ANLEITUNG_MEHR.md`
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
+- [ ] Knopf "Ausgabeordner öffnen" testen
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`

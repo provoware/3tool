@@ -351,6 +351,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Einstellungen
         self.out_dir_edit  = QtWidgets.QLineEdit(str(self.settings.value("encode/out_dir", default_output_dir(), str)))
+        self.btn_out_open  = QtWidgets.QToolButton(); self.btn_out_open.setText("Öffnen")
+        self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
         self.preset_combo  = QtWidgets.QComboBox(); self.preset_combo.addItems(
             ["ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"])
@@ -362,7 +364,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
 
         form = QtWidgets.QFormLayout()
-        self._add_form(form,"Ausgabeordner",self.out_dir_edit,"Zielordner für MP4s")
+        out_wrap_layout = QtWidgets.QHBoxLayout(); out_wrap_layout.setContentsMargins(0,0,0,0)
+        out_wrap_layout.addWidget(self.out_dir_edit); out_wrap_layout.addWidget(self.btn_out_open)
+        out_wrap = QtWidgets.QWidget(); out_wrap.setLayout(out_wrap_layout)
+        self._add_form(form,"Ausgabeordner",out_wrap,"Zielordner für MP4s")
         self._add_form(form,"CRF",self.crf_spin,"Qualität (0=lossless, 23=Standard)")
         self._add_form(form,"Preset",self.preset_combo,"x264 Preset (schneller = größere Datei)")
         self._add_form(form,"Breite",self.width_spin,"Video-Breite in Pixel")
@@ -442,6 +447,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.clicked.connect(self._start_encode)
         self.btn_stop.clicked.connect(self._stop_encode)
         self.table.doubleClicked.connect(self._show_statusbar_path)
+        self.btn_out_open.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.out_dir_edit.text())))
 
         self._apply_font()
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
