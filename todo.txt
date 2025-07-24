@@ -1,0 +1,17 @@
+# Aufgabenliste
+
+- [ ] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
+      ```bash
+      python3 -m venv .venv
+      source .venv/bin/activate
+      ```
+- [ ] Pakete installieren:
+      ```bash
+      pip install -r requirements.txt
+      ```
+- [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
+- [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
+- [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
+- [ ] Ereignislog aktualisieren: `ereignislog.txt`
