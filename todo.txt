@@ -12,9 +12,9 @@
       ```
 - [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
 - [x] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
-- [ ] Modus "Slideshow" ausprobieren
-- [ ] Modus "Video + Audio" ausprobieren
-- [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
+- [x] Modus "Slideshow" ausprobieren
+ - [x] Modus "Video + Audio" ausprobieren
+- [x] Modus "Mehrere Audios, ein Bild" ausprobieren
 - [x] Menüeintrag "README öffnen" testen
 - [x] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [x] "Pfad kopieren" im Kontextmenü testen
@@ -39,33 +39,30 @@
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
- - [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
-- [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
-- [ ] Modus "Slideshow" ausprobieren
-- [ ] Modus "Video + Audio" ausprobieren
-- [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
-- [ ] Menüeintrag "README öffnen" testen
+ - [ ] Modus "Video + Audio" ausprobieren
+- [x] Modus "Mehrere Audios, ein Bild" ausprobieren
+ - [x] Menüeintrag "README öffnen" testen
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] "Pfad kopieren" im Kontextmenü testen
-- [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
+ - [x] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
 - [ ] Knopf "Ausgabeordner öffnen" testen
  - [x] Ereignislog aktualisieren: `ereignislog.txt`
 - [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [ ] Abschnitt "Weiterführende Befehle" lesen
-- [ ] Neues Hilfefenster prüfen
+- [x] Neues Hilfefenster prüfen
 - [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
 - [ ] Kontextmenü in Bilder- und Audioliste testen
-- [ ] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
+- [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
 - [ ] Beschriftungen unter den Buttons prüfen
 
 # Neu
-- [ ] Favoriten-Bereich testen
-- [ ] Bilder zu Favoriten hinzufügen
-- [ ] Favoriten per Drag&Drop nutzen
-- [ ] Verschiedene Themes ausprobieren
-- [ ] Logging-Bereich beobachten
-- [ ] Schriftgröße ändern
+- [x] Favoriten-Bereich testen
+- [x] Bilder zu Favoriten hinzufügen
+- [x] Favoriten per Drag&Drop nutzen
+- [x] Verschiedene Themes ausprobieren
+- [x] Logging-Bereich beobachten
+- [x] Schriftgröße ändern
 
 
 - [x] Dokumentation gelesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`

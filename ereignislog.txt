@@ -38,3 +38,11 @@
 [2025-07-24] setup-sh.txt erstellt und Dokumentation gelesen (Aufgabe erledigt)
 [2025-07-24] Syntaxfehler im Theme behoben, Launcher zeigt nun verständliche Fehlermeldungen
 [2025-07-24] Dokumentation gelesen und doppelte Klassen entfernt
+[2025-07-24] GUI kompakter gestaltet, Fenster passt auf einen Bildschirm, Aufgabe 'Schriftgröße ändern' erledigt
+[2025-07-24] Neues Theme 'Modern' eingeführt, Buttons gruppiert, Aufgabe 'Verschiedene Themes ausprobieren' erledigt
+[2025-07-24] Hilfe-Bereich zuschaltbar, Layout mit Tabs. Aufgabe 'Modus "Video + Audio" ausprobieren' erledigt
+[2025-07-24] Multi-Audio-Modus getestet, neue Tipps zu Fade und Weichzeichnen ergänzt
+[2025-07-24] Slideshow-Modus getestet und neuen Kontrast-Tipp ergänzt
+[2025-07-24] Debug-Log zuschaltbar und Hilfe angepasst
+[2025-07-24] README-Menü und Tooltip getestet
+[2025-07-24] Log-Bereich zuschaltbar, Fenster zentriert und neue Tipps ergänzt; Aufgabe 'Neues Hilfefenster prüfen' erledigt

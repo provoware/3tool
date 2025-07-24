@@ -115,3 +115,45 @@ ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" schneller.mp4
 ffprobe -v quiet -show_format -show_streams eingang.mp4
 ```
 `ffprobe` ist ein Analyse-Werkzeug (Hilfsprogramm), das Informationen wie Auflösung und Kodierung ausgibt.
+
+## 18. Modernes Theme nutzen
+
+- Öffne das Menü **Theme** im Hauptfenster.
+- Wähle **Modern**. Dieses Design bietet gute Lesbarkeit und angenehme Farben.
+
+## 19. Hilfe-Bereich ein- oder ausblenden
+
+- Im Menü **Ansicht** gibt es den neuen Punkt **Hilfe-Bereich**.
+- Nimm den Haken weg, wenn du mehr Platz brauchst.
+- Setze ihn wieder, um die kurzen Hinweise anzuzeigen.
+
+## 20. Mehrere Audios mit einem Bild
+
+- Im Tab **Bilder** ein einzelnes Bild auswählen.
+- Unter **Audios** mehrere Tondateien hinzufügen.
+- Bei **Modus** die Option **Mehrere Audios, 1 Bild** wählen.
+- Auf **Auto-Paaren** klicken und danach **START** drücken.
+
+```bash
+python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud ton1.mp3 ton2.mp3 --out output
+```
+`multi-audio` nutzt das gleiche Bild für alle Audios.
+
+## 21. Kontrast stärker machen
+
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=contrast=1.5" kontrast.mp4
+```
+`eq` (Equalizer) passt Helligkeit und Kontrast an. Der Wert `1.5` sorgt für ein satteres Bild.
+
+## 22. Video in Schleife abspielen
+```bash
+ffmpeg -stream_loop -1 -i clip.mp4 -c copy loop.mp4
+```
+`stream_loop -1` bedeutet, dass das Video immer wiederholt wird. Es entsteht eine Endlosschleife.
+
+## 23. Logo einfügen
+```bash
+ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
+```
+`overlay` (Überlagerung) setzt das Logo 10 Pixel vom linken und oberen Rand ins Bild.

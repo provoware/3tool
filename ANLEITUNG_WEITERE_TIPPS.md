@@ -183,3 +183,27 @@ ffmpeg -i film.mp4 -vf tpad=stop_mode=clone:stop_duration=3 startbild.mp4
 ffmpeg -i hochkant.mp4 -vf transpose=1 gedreht.mp4
 ```
 `transpose` (Drehen) dreht hier das Bild einmal im Uhrzeigersinn.
+
+## Weiches Ein- und Ausblenden
+```bash
+ffmpeg -i film.mp4 -vf "fade=t=in:st=0:d=2,fade=t=out:st=8:d=2" -af "afade=t=in:st=0:d=2,afade=t=out:st=8:d=2" fade.mp4
+```
+`fade` (Übergang) blendet Bild und Ton sanft ein und aus.
+
+## Bild weichzeichnen
+```bash
+ffmpeg -i eingang.mp4 -vf "boxblur=2:1" weich.mp4
+```
+`boxblur` (Weichzeichner) glättet das Bild.
+
+## Video in Schleife wiedergeben
+```bash
+ffmpeg -stream_loop -1 -i clip.mp4 -c copy loop.mp4
+```
+`stream_loop -1` (endlose Wiederholung) spielt die Eingabedatei immer wieder ab. Mit `-c copy` wird nur kopiert, ohne Qualitätsverlust.
+
+## Wasserzeichen einblenden
+```bash
+ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
+```
+`overlay` (Überlagerung) legt das Logo 10 Pixel vom linken und oberen Rand ins Bild.

@@ -52,3 +52,21 @@ python3 videobatch_extra.py --mode video --img film.mp4 --aud kommentar.mp3 --ou
 python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud sprache*.mp3 --out output
 ```
 `multi-audio` erstellt für jede Audiodatei ein eigenes Video mit demselben Bild.
+
+## Video spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf "hflip" gespiegelt.mp4
+```
+`hflip` (horizontal spiegeln) dreht das Bild an einer senkrechten Achse.
+
+## Kontrast erhöhen
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=contrast=1.5" kontrast.mp4
+```
+`eq` (Equalizer) verändert Helligkeit und Kontrast. Der Wert `1.5` sorgt für ein intensiveres Bild.
+
+## Nur die ersten 30 Sekunden
+```bash
+ffmpeg -i eingang.mp4 -ss 0 -t 30 -c copy kurz.mp4
+```
+`-ss` legt den Startpunkt fest, `-t` die Dauer. Hier wird nur der erste Abschnitt übernommen.

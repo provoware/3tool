@@ -36,10 +36,13 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 ## Neues in der Oberfläche
 
 - **Favoriten** – Bilder lassen sich per Rechtsklick zu einer Favoritenliste hinzufügen. Im Tab "Favoriten" können sie per Drag&Drop in den Arbeitsbereich gezogen werden.
-- **Farb-Themes** – über das Menü "Theme" stehen sechs unterschiedliche Farbkombinationen bereit. Das Theme "Kontrast" bietet hohe Lesbarkeit.
+- **Farb-Themes** – über das Menü "Theme" stehen sieben unterschiedliche Farbkombinationen bereit. Neu ist das freundliche Design "Modern". Das Theme "Kontrast" bietet weiterhin hohe Lesbarkeit.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 - **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
+- **Hilfe-Bereich ausblenden** – über "Ansicht" lässt sich der rechte Hilfeblock
+  ein- oder ausblenden.
+- **Log-Bereich ausblenden** – im gleichen Menü kann man den unteren Protokollbereich verstecken.
 - **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
@@ -59,8 +62,10 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 ## Bedienhilfen
 
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
-- Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast".
+- Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast". Daneben steht das neue Theme "Modern" mit frischen Farben bereit.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
+- Über "Ansicht → Log-Bereich" kann diese Anzeige ausgeblendet werden.
+- Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 
 ## Hilfe-Fenster
@@ -73,4 +78,6 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 * In `0000-testall` liegt ein Beispielskript, um Prueftools wie `flake8` oder `black` einzurichten.
 * Ereignisse und Aenderungen werden in `ereignislog.txt` festgehalten.
 
+* Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
+* Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.

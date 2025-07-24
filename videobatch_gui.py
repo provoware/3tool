@@ -39,7 +39,8 @@ THEMES = {
     "Blau": "QWidget{background-color:#1e1e2d;color:#c7d8f4;} QPushButton{background-color:#3d59ab;color:white;}",
     "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
     "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
-    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
+    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}",
+    "Modern": "QWidget{background-color:#f0f0f0;color:#202020;} QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
 }
 
 # ---------- Helpers ----------
@@ -424,7 +425,9 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Hilfe-Menü zeigt README und Logdatei</li>"
             "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
             "<li>Tooltips zeigen volle Pfade</li>"
+            "<li>Menü 'Optionen' hat einen Debug-Schalter für mehr Meldungen</li>"
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
+            "<li>Unter 'Ansicht' kann der Log-Bereich ein- oder ausgeblendet werden</li>"
             "</ul>"
         )
 
@@ -461,10 +464,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("VideoBatchTool 4.1 – Bild + Audio → MP4")
-        self.resize(1500,900)
+        screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
+        w = min(1200, int(screen.width() * 0.9))
+        h = min(800, int(screen.height() * 0.9))
+        self.resize(w, h)
+        geo = self.frameGeometry()
+        geo.moveCenter(screen.center())
+        self.move(geo.topLeft())
+        self.setMinimumSize(800, 600)
 
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
         self._font_size = self.settings.value("ui/font_size", 11, int)
+        self.debug_mode = self.settings.value("ui/debug", False, bool)
+        logger.setLevel(logging.DEBUG if self.debug_mode else logging.INFO)
 
         sys.excepthook = self._global_exception
 
@@ -550,20 +562,33 @@ class MainWindow(QtWidgets.QMainWindow):
 
         help_box = QtWidgets.QGroupBox("Hilfe")
         hb_lay = QtWidgets.QVBoxLayout(help_box); hb_lay.addWidget(self.help_pane)
+        self.help_box = help_box
 
-        left_split  = QtWidgets.QSplitter(Qt.Vertical); left_split.addWidget(pool_box); left_split.addWidget(self.settings_widget)
-        right_split = QtWidgets.QSplitter(Qt.Vertical); right_split.addWidget(table_box); right_split.addWidget(help_box)
-        grid_split  = QtWidgets.QSplitter(Qt.Horizontal); grid_split.addWidget(left_split); grid_split.addWidget(right_split)
+        left_tabs = QtWidgets.QTabWidget()
+        left_tabs.addTab(pool_box, "Dateien")
+        left_tabs.addTab(self.settings_widget, "Einstellungen")
+
+        right_split = QtWidgets.QSplitter(Qt.Vertical)
+        right_split.addWidget(table_box)
+        right_split.addWidget(help_box)
+        right_split.setStretchFactor(0, 3)
+        right_split.setStretchFactor(1, 1)
+
+        grid_split  = QtWidgets.QSplitter(Qt.Horizontal)
+        grid_split.addWidget(left_tabs)
+        grid_split.addWidget(right_split)
+        grid_split.setStretchFactor(0, 1)
+        grid_split.setStretchFactor(1, 2)
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
 
-        log_box = QtWidgets.QGroupBox("Protokoll")
-        bl = QtWidgets.QVBoxLayout(log_box)
+        self.log_box = QtWidgets.QGroupBox("Protokoll")
+        bl = QtWidgets.QVBoxLayout(self.log_box)
         bl.addWidget(self.progress_total)
         bl.addWidget(self.log_edit)
 
-        outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(log_box)
+        outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(self.log_box)
         outer_split.setStretchFactor(0,4); outer_split.setStretchFactor(1,1)
 
         # Buttons
@@ -587,9 +612,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.setToolTip("Encoding starten")
         self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
 
-        self.btn_encode.setStyleSheet("font-size:16pt;font-weight:bold;background:#005BBB;color:white;padding:6px 14px;")
+        self.btn_encode.setStyleSheet("font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;")
 
-        top_buttons = QtWidgets.QHBoxLayout()
+        top_buttons = QtWidgets.QGridLayout()
+        top_buttons.setSpacing(4)
+        top_buttons.setContentsMargins(4, 4, 4, 4)
         btn_defs = [
             (self.btn_add_images, "Bilder oder Ordner auswählen"),
             (self.btn_add_audios, "Audiodateien hinzufügen"),
@@ -601,13 +628,17 @@ class MainWindow(QtWidgets.QMainWindow):
             (self.btn_encode, "Videos jetzt erstellen"),
             (self.btn_stop, "Laufenden Vorgang abbrechen"),
         ]
-        for btn, tip in btn_defs:
-            top_buttons.addWidget(self._wrap_button(btn, tip))
-        top_buttons.addStretch(1)
+        for i, (btn, tip) in enumerate(btn_defs):
+            row, col = divmod(i, 4)
+            top_buttons.addWidget(self._wrap_button(btn, tip), row, col)
+        for i in range(4):
+            top_buttons.setColumnStretch(i, 1)
+        btn_box = QtWidgets.QGroupBox("Aktionen")
+        btn_box.setLayout(top_buttons)
 
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(self.dashboard)
-        central_layout.addLayout(top_buttons)
+        central_layout.addWidget(btn_box)
         central_layout.addWidget(outer_split)
         central = QtWidgets.QWidget(); central.setLayout(central_layout)
         self.setCentralWidget(central)
@@ -617,6 +648,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.copy_only = False
         self._build_menus()
+        self._toggle_help(self.act_show_help.isChecked())
+        self._toggle_log(self.act_show_log.isChecked())
 
         self._history: List[List[PairItem]] = []
         self.thread: Optional[QtCore.QThread] = None
@@ -636,7 +669,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_out_open.clicked.connect(self._open_out_dir)
 
         self._apply_font()
-        self._apply_theme(self.settings.value("ui/theme", "Standard"))
+        self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
 
@@ -653,6 +686,14 @@ class MainWindow(QtWidgets.QMainWindow):
         act_font_minus = QAction("Schrift -", self);  act_font_minus.setToolTip("Schriftgröße verkleinern"); act_font_minus.triggered.connect(lambda: self._change_font(-1))
         act_font_reset = QAction("Schrift Reset", self); act_font_reset.setToolTip("Schriftgröße zurücksetzen"); act_font_reset.triggered.connect(lambda: self._set_font(11))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
+        self.act_show_help = QAction("Hilfe-Bereich", self, checkable=True,
+                                     checked=self.settings.value("ui/show_help", True, bool))
+        self.act_show_help.toggled.connect(self._toggle_help)
+        m_ansicht.addAction(self.act_show_help)
+        self.act_show_log = QAction("Log-Bereich", self, checkable=True,
+                                    checked=self.settings.value("ui/show_log", True, bool))
+        self.act_show_log.toggled.connect(self._toggle_log)
+        m_ansicht.addAction(self.act_show_log)
 
         m_theme = menubar.addMenu("Theme")
         for name in THEMES.keys():
@@ -665,6 +706,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.act_copy_only.setToolTip("Originaldateien behalten")
         self.act_copy_only.triggered.connect(self._toggle_copy_mode)
         m_option.addAction(self.act_copy_only)
+        self.act_debug = QAction("Debug-Log", self, checkable=True, checked=self.debug_mode)
+        self.act_debug.setToolTip("Detailiertes Protokoll aktivieren")
+        self.act_debug.triggered.connect(self._toggle_debug)
+        m_option.addAction(self.act_debug)
 
         m_hilfe = menubar.addMenu("Hilfe")
         act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
@@ -728,15 +773,21 @@ class MainWindow(QtWidgets.QMainWindow):
         """Return button with help label underneath."""
         button.setToolTip(help_text); button.setStatusTip(help_text)
         lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
+        button.setMaximumHeight(28)
         box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)
+        box.setSpacing(1)
         box.addWidget(button); box.addWidget(lbl)
         w = QtWidgets.QWidget(); w.setLayout(box)
         return w
 
-    def _log(self, msg:str):
-        self.log_edit.appendPlainText(msg)
-        self.dashboard.log(msg)
-        logger.info(msg)
+    def _log(self, msg:str, level=logging.INFO):
+        if level >= logging.INFO or self.debug_mode:
+            self.log_edit.appendPlainText(msg)
+            self.dashboard.log(msg)
+        logger.log(level, msg)
+
+    def _debug(self, msg:str):
+        self._log(f"DEBUG: {msg}", logging.DEBUG)
 
     def _push_history(self):
         snap=[]
@@ -777,13 +828,16 @@ class MainWindow(QtWidgets.QMainWindow):
         for f in files:
             self.image_list.add_files([f])
             self.model.add_pairs([PairItem(f)])
+            self._debug(f"Bild hinzugefügt: {f}")
         self._update_counts()
         self._resize_columns()
         self._log(f"{len(files)} Bild(er) hinzugefügt")
 
     def _on_audios_added(self, files: List[str]):
         self._push_history()
-        for f in files: self.audio_list.add_files([f])
+        for f in files:
+            self.audio_list.add_files([f])
+            self._debug(f"Audio hinzugefügt: {f}")
         it=iter(files)
         for p in self.pairs:
             if p.audio_path is None:
@@ -821,6 +875,7 @@ class MainWindow(QtWidgets.QMainWindow):
         imgs=[self.image_list.item(i).data(Qt.UserRole) for i in range(self.image_list.count())]
         auds=[self.audio_list.item(i).data(Qt.UserRole) for i in range(self.audio_list.count())]
         imgs.sort(); auds.sort()
+        self._debug(f"Auto-Pair start mit {len(imgs)} Bild(er) und {len(auds)} Audio(s)")
         self.model.clear()
         new=[]
         mode=self.mode_combo.currentText()
@@ -841,6 +896,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for img, aud in zip(imgs, auds):
                 p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
         self.model.add_pairs(new)
+        self._debug(f"Auto-Pair Ergebnis: {[(p.image_path, p.audio_path) for p in new][:3]} ...")
         self._update_counts()
         self._resize_columns()
         self._log(f"Auto-Pair erstellt {len(new)} Paar(e)")
@@ -988,6 +1044,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.copy_only=checked
         self._log(f"Archivmodus: Dateien werden {'kopiert' if checked else 'verschoben'}.")
 
+    def _toggle_help(self, checked: bool):
+        self.help_box.setVisible(checked)
+        self.settings.setValue("ui/show_help", checked)
+
+    def _toggle_log(self, checked: bool):
+        self.log_box.setVisible(checked)
+        self.settings.setValue("ui/show_log", checked)
+
+    def _toggle_debug(self, checked: bool):
+        self.debug_mode = checked
+        logger.setLevel(logging.DEBUG if checked else logging.INFO)
+        self.settings.setValue("ui/debug", checked)
+        self._log(f"Debug-Log {'aktiviert' if checked else 'deaktiviert'}")
+
     def _global_exception(self, etype, value, tb):
         import traceback
         msg="".join(traceback.format_exception(etype,value,tb))
@@ -997,6 +1067,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _resize_columns(self):
         header = self.table.horizontalHeader()
         header.resizeSections(QHeaderView.ResizeToContents)
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._resize_columns()
 
     def _table_menu(self, pos: QtCore.QPoint):
         index = self.table.indexAt(pos)
