@@ -18,3 +18,4 @@
 [2025-07-24] Profi-Anleitung ergänzt und Hinweis zu libGL hinzugefügt
 [2025-07-24] Laien-Plus Anleitung um Helligkeit und Fade erweitert
 [2025-07-24] Laien-Plus um Tipps zu Ton entfernen, Schnitt und Skalierung erweitert
+[2025-07-24] Extra-Anleitung um Befehle für Drehung, Spiegelung, Logo und Untertitel ergänzt
