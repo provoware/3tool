@@ -107,3 +107,16 @@ ffprobe -v quiet -show_format -show_streams eingang.mp4
 ```
 `ffprobe` ist ein Analyse-Programm von ffmpeg. Es listet alle Daten wie Auflösung und Kodierung auf.
 
+## Untertitel aus Video speichern
+```bash
+ffmpeg -i film.mp4 -map 0:s:0 subs.srt
+```
+`-map` (Zuordnung) wählt hier die erste Untertitelspur und speichert sie als
+`subs.srt`.
+
+## Verwackeltes Video stabilisieren
+```bash
+ffmpeg -i wackelig.mp4 -vf deshake stabil.mp4
+```
+`deshake` versucht, sichtbare Bewegungen zu glätten.
+

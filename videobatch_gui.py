@@ -853,7 +853,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if not path: return
         data={"pairs":[{"image":p.image_path,"audio":p.audio_path,"output":p.output} for p in self.pairs],
               "settings":self._gather_settings()}
-        Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
+        try:
+            Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern", str(e))
+            self._log(f"Fehler beim Speichern: {e}")
+            return
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):

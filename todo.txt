@@ -32,8 +32,8 @@
 - [x] Favoriten-Bereich testen
 - [x] Bilder zu Favoriten hinzufügen
 - [x] Favoriten per Drag&Drop nutzen
-- [ ] Verschiedene Themes ausprobieren
-- [ ] Theme "Kontrast" testen
+- [x] Verschiedene Themes ausprobieren
+- [x] Theme "Kontrast" testen
 - [x] Logging-Bereich beobachten
 - [x] Schriftgröße ändern
 - [ ] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen

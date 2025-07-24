@@ -64,3 +64,8 @@ Mit dem Knopf **Öffnen** im Hauptfenster wird der Ausgabeordner angezeigt.
 - Wechsle zum Tab **Favoriten**. Dort findest du das gespeicherte Bild.
 - Ziehe das Bild per Drag&Drop in den Arbeitsbereich, um es sofort zu verwenden.
 - Im unteren Log-Bereich erscheinen alle Schritte als Meldung.
+
+## 10. Kontrast-Theme einschalten
+- Öffne das Menü **Theme** oben im Fenster.
+- Wähle dort **Kontrast**. Dadurch erscheinen gelbe Buchstaben auf schwarzem Hintergrund.
+- Diese Ansicht hilft, wenn die Augen nicht mehr so fit sind.
