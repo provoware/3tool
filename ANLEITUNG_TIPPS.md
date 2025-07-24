@@ -34,3 +34,21 @@ python3 videobatch_extra.py --img bild.jpg --aud ton.mp3 --out output
 ```
 
 Dieser Befehl erstellt ein einzelnes Video ohne die GUI.
+
+## Slideshow mit vielen Bildern
+```bash
+python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out output
+```
+Dabei wird ein ganzer Ordner voller Bilder nacheinander gezeigt.
+
+## Vorhandenes Video mit neuem Ton
+```bash
+python3 videobatch_extra.py --mode video --img film.mp4 --aud kommentar.mp3 --out output
+```
+`--mode video` nutzt das vorhandene Bildmaterial und ersetzt nur die Tonspur.
+
+## Gleiches Bild für mehrere Audios
+```bash
+python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud sprache*.mp3 --out output
+```
+`multi-audio` erstellt für jede Audiodatei ein eigenes Video mit demselben Bild.

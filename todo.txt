@@ -38,4 +38,4 @@
 - [x] Schriftgröße ändern
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
-- [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
+- [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`

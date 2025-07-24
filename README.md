@@ -38,6 +38,7 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 - **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
+- **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio

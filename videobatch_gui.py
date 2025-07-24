@@ -915,6 +915,16 @@ class MainWindow(QtWidgets.QMainWindow):
         invalid=[p for p in self.pairs if not p.valid]
         if invalid:
             QtWidgets.QMessageBox.critical(self,"Validierungsfehler",invalid[0].validation_msg); return
+        out_dir = Path(self.out_dir_edit.text().strip())
+        try:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            test_file = out_dir/".write_test"
+            test_file.touch()
+            test_file.unlink()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Ordnerproblem", str(e))
+            self._log(f"Encoding abgebrochen: Ordnerproblem ({e})")
+            return
         self.btn_encode.setEnabled(False); self.btn_stop.setEnabled(True)
         self.progress_total.setValue(0); self.dashboard.set_progress(0); self._log("Starte Encoding …")
         self.worker = EncodeWorker(self.pairs, self._gather_settings(), self.copy_only)

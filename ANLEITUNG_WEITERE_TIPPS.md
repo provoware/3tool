@@ -135,3 +135,21 @@ ffmpeg -i film.mp4 -vf "crop=1280:720:0:60" ohne_rand.mp4
 Der Filter `crop` (beschneiden) entfernt hier oben und unten 60 Pixel und gibt
 ein 1280 × 720-Bild zurück.
 
+## Text ins Bild schreiben
+```bash
+ffmpeg -i eingang.mp4 -vf "drawtext=text='Hallo':fontcolor=white:x=10:y=10" mit_text.mp4
+```
+`drawtext` (Text einblenden) fügt Schrift an der angegebenen Position ein.
+
+## Video als GIF speichern
+```bash
+ffmpeg -i kurz.mp4 -vf "fps=10,scale=320:-1:flags=lanczos" anim.gif
+```
+Damit entsteht aus dem Video eine animierte GIF-Datei.
+
+## Jede Sekunde ein Bild speichern
+```bash
+ffmpeg -i film.mp4 -vf fps=1 bilder/bild_%03d.png
+```
+`fps=1` (Frames pro Sekunde) legt hier fest, dass genau ein Bild pro Sekunde ausgegeben wird.
+

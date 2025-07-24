@@ -24,3 +24,5 @@
 [2025-07-24] Launcher erkennt vorhandene Umgebungen, neue ffmpeg-Tipps ergänzt; Aufgaben 'Launcher starten' und 'Ereignislog aktualisieren' erledigt
 [2025-07-24] Kontrast-Theme getestet, neue Tipps und verbessertes Speichern
 [2025-07-24] Schrift-und-Farben-Abschnitt gelesen, neue ffmpeg-Tipps hinzugefuegt
+[2025-07-24] Ausgabeordner-Prüfung eingebaut
+[2025-07-24] Neue Beispiele in ANLEITUNG_TIPPS.md hinzugefügt und Aufgabe erledigt
