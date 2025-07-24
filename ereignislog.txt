@@ -1,0 +1,17 @@
+[2025-07-24] Repository untersucht. Dokumentations- und Setup-Dateien wurden hinzugefuegt.
+[2025-07-24] Einsteiger-Anleitung und Eventlog erstellt, README angepasst.
+[2025-07-24] GUI-Tooltips erweitert, Kontextmenü hinzugefügt und Tipps-Dokument erstellt.
+[2025-07-24] Weiterfuehrende Anleitung erstellt, Tooltip fuer Tabelle.
+[2025-07-24] Weitere Tipps und Button zum Öffnen des Ausgabeordners
+[2025-07-24] Zusätzliche Hinweise für Laien erstellt
+[2025-07-24] Zusätzliche Befehle für Laien hinzugefügt
+[2025-07-24] Neue Modi (Slideshow, Video+Audio, Multi-Audio) und Anleitung hinzugefügt
+[2025-07-24] Praktische Beispiele und Videolaengen-Anpassung eingefuehrt
+[2025-07-24] GUI-Verbesserungen (Auto-Pair Slideshow, README-Menü) und neue Anleitung 'ANLEITUNG_NUTZERPLUS.md'
+[2025-07-24] Anleitungen zusammengefasst in ANLEITUNG_GESAMT.md
+[2025-07-24] Tipps erweitert und Hilfe-Panel überarbeitet
+[2025-07-24] Slideshow-Autopair verbessert, neue Laien-Anleitung und Readme-Update
+[2025-07-24] Weiterführende Befehle ergänzt und Kontextmenü erweitert
+[2025-07-24] Neues Dokument ANLEITUNG_EXTRA.md und Kontextmenü für Listen
+
+[2025-07-24] Zusatztipps-Datei erstellt, Buttons mit Hilfetexten

@@ -6,7 +6,7 @@
 # =========================================
 
 from __future__ import annotations
-import sys, json, shutil, subprocess, logging
+import sys, json, shutil, subprocess, logging, tempfile
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Any
@@ -116,8 +116,8 @@ class PairItem:
             self.valid=False; self.validation_msg=f"Bild fehlt: {ip}"; return
         if not ap.exists():
             self.valid=False; self.validation_msg=f"Audio fehlt: {ap}"; return
-        if ip.suffix.lower() not in (".jpg",".jpeg",".png",".bmp",".webp"):
-            self.valid=False; self.validation_msg="Ungültiges Bildformat"; return
+        if not ip.is_dir() and ip.suffix.lower() not in (".jpg",".jpeg",".png",".bmp",".webp",".mp4",".mkv",".avi",".mov"):
+            self.valid=False; self.validation_msg="Ungültiges Bild/Video"; return
         if ap.suffix.lower() not in (".mp3",".wav",".flac",".m4a",".aac"):
             self.valid=False; self.validation_msg="Ungültiges Audioformat"; return
         self.valid=True; self.validation_msg=""
@@ -165,6 +165,12 @@ class PairTableModel(QAbstractTableModel):
     def add_pairs(self, new_pairs: List[PairItem]):
         self.beginInsertRows(QModelIndex(), len(self.pairs), len(self.pairs)+len(new_pairs)-1)
         self.pairs.extend(new_pairs); self.endInsertRows()
+    def remove_rows(self, rows: List[int]):
+        for r in sorted(rows, reverse=True):
+            if 0 <= r < len(self.pairs):
+                self.beginRemoveRows(QModelIndex(), r, r)
+                self.pairs.pop(r)
+                self.endRemoveRows()
     def clear(self):
         self.beginResetModel(); self.pairs.clear(); self.endResetModel()
 
@@ -194,10 +200,42 @@ class EncodeWorker(QtCore.QObject):
                 w,h = self.settings["width"], self.settings["height"]
                 crf = self.settings["crf"]; preset=self.settings["preset"]; ab=self.settings["abitrate"]
                 duration = item.duration or 1
-                cmd = ["ffmpeg","-y","-loop","1","-i",item.image_path,"-i",item.audio_path,
-                       "-c:v","libx264","-tune","stillimage",
-                       "-vf",f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
-                       "-c:a","aac","-b:a",ab,"-shortest","-preset",preset,"-crf",str(crf),item.output]
+                mode = self.settings.get("mode","Standard")
+                if mode == "Video + Audio":
+                    vdur = probe_duration(item.image_path)
+                    extra = max(0.0, duration - vdur)
+                    cmd = ["ffmpeg","-y","-i",item.image_path,"-i",item.audio_path]
+                    if extra>0:
+                        cmd += ["-vf",f"tpad=stop_mode=clone:stop_duration={extra}","-c:v","libx264"]
+                    else:
+                        cmd += ["-c:v","copy"]
+                    cmd += ["-c:a","aac","-b:a",ab,
+                            "-shortest","-preset",preset,"-crf",str(crf),item.output]
+                elif mode == "Slideshow":
+                    img_dir = Path(item.image_path)
+                    imgs = []
+                    for ext in ("*.jpg","*.jpeg","*.png","*.bmp","*.webp"):
+                        imgs.extend(sorted(img_dir.glob(ext)))
+                    if not imgs:
+                        raise Exception("Keine Bilder für Slideshow")
+                    per = duration/len(imgs) if duration else 2
+                    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as f:
+                        for im in imgs:
+                            f.write(f"file '{im}'\n")
+                            f.write(f"duration {per}\n")
+                        f.write(f"file '{imgs[-1]}'\n")
+                        list_path = f.name
+                    cmd = ["ffmpeg","-y","-f","concat","-safe","0","-i",list_path,
+                           "-i",item.audio_path,
+                           "-c:v","libx264",
+                           "-vf",f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                           "-c:a","aac","-b:a",ab,
+                           "-shortest","-preset",preset,"-crf",str(crf),item.output]
+                else:
+                    cmd = ["ffmpeg","-y","-loop","1","-i",item.image_path,"-i",item.audio_path,
+                           "-c:v","libx264","-tune","stillimage",
+                           "-vf",f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                           "-c:a","aac","-b:a",ab,"-shortest","-preset",preset,"-crf",str(crf),item.output]
                 proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
                 for line in proc.stderr:
                     if self._stop: proc.kill(); break
@@ -241,6 +279,7 @@ class DropListWidget(QtWidgets.QListWidget):
         self.setAlternatingRowColors(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setToolTip(title); self.setStatusTip(title)
+        self.itemDoubleClicked.connect(self._open_item)
     def dragEnterEvent(self,e):
         if e.mimeData().hasUrls(): e.acceptProposedAction()
         else: super().dragEnterEvent(e)
@@ -249,7 +288,7 @@ class DropListWidget(QtWidgets.QListWidget):
         else: super().dragMoveEvent(e)
     def dropEvent(self,e):
         files=[u.toLocalFile() for u in e.mimeData().urls()]
-        acc=[f for f in files if f.lower().endswith(self.patterns)]
+        acc=[f for f in files if Path(f).is_dir() or f.lower().endswith(self.patterns)]
         if acc: self.add_files(acc); self.files_dropped.emit(acc)
         e.acceptProposedAction()
     def add_files(self, files:List[str]):
@@ -257,6 +296,27 @@ class DropListWidget(QtWidgets.QListWidget):
             it=QtWidgets.QListWidgetItem(Path(f).name); it.setData(Qt.UserRole,f); self.addItem(it)
     def selected_paths(self)->List[str]:
         return [i.data(Qt.UserRole) for i in self.selectedItems()]
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+        elif act==act_remove:
+            self.takeItem(self.row(item))
+        e.accept()
+    def _open_item(self,item:QtWidgets.QListWidgetItem):
+        path=item.data(Qt.UserRole)
+        if path:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
 
 class HelpPane(QtWidgets.QTextBrowser):
     def __init__(self):
@@ -264,15 +324,24 @@ class HelpPane(QtWidgets.QTextBrowser):
         self.setOpenExternalLinks(True)
         self.setHtml(self._html())
     def _html(self)->str:
-        return ("<h2>Bedienhilfe</h2>"
-                "<ol><li>Bilder & Audios hinzufügen/ziehen</li>"
-                "<li>Auto-Paaren oder manuell zuweisen</li>"
-                "<li>Einstellungen prüfen</li>"
-                "<li>START klicken</li></ol>"
-                "<ul><li>Dateiname = Audio + Zeitstempel</li>"
-                "<li>Doppelklick auf Zellen editiert Pfade</li>"
-                "<li>Tooltips zeigen volle Pfade</li>"
-                "<li>Nach Erfolg Archivierung</li></ul>")
+        return (
+            "<h2>Bedienhilfe</h2>"
+            "<ol>"
+            "<li>Bilder oder Ordner sowie Audios hineinziehen</li>"
+            "<li>Gewünschten Modus wählen (Standard, Slideshow, Video + Audio, Mehrere Audios)</li>"
+            "<li>Mit 'Auto-Paaren' Dateien koppeln oder selbst zuweisen</li>"
+            "<li>Einstellungen prüfen und START klicken</li>"
+            "</ol>"
+            "<ul>"
+            "<li>Doppelklick editiert Pfade, Rechtsklick öffnet Menü</li>"
+            "<li>Kontextmenü kann Pfad kopieren oder Zeile löschen</li>"
+            "<li>Rechtsklick auf die Listen öffnet ein Menü zum Entfernen</li>"
+            "<li>Hilfe-Menü zeigt README und Logdatei</li>"
+            "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
+            "<li>Tooltips zeigen volle Pfade</li>"
+            "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
+            "</ul>"
+        )
 
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):
@@ -317,7 +386,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pairs: List[PairItem] = []
         self.model = PairTableModel(self.pairs)
 
-        self.dashboard = InfoDashboard(); self.dashboard.set_env(check_ffmpeg(), True)
+        ff_ok = check_ffmpeg()
+        self.dashboard = InfoDashboard(); self.dashboard.set_env(ff_ok, True)
+        if not ff_ok:
+            QtWidgets.QMessageBox.warning(self, "FFmpeg fehlt", "Bitte FFmpeg installieren, sonst kann kein Video erzeugt werden.")
 
         self.image_list = DropListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
         self.audio_list = DropListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
@@ -332,6 +404,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setModel(self.model)
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.table.setAlternatingRowColors(True)
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._table_menu)
+        self.table.setToolTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
+        self.table.setStatusTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
@@ -340,6 +416,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Einstellungen
         self.out_dir_edit  = QtWidgets.QLineEdit(str(self.settings.value("encode/out_dir", default_output_dir(), str)))
+        self.out_dir_edit.setPlaceholderText("Zielordner für fertige Videos")
+        self.btn_out_open  = QtWidgets.QToolButton(); self.btn_out_open.setText("Öffnen")
+        self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
         self.preset_combo  = QtWidgets.QComboBox(); self.preset_combo.addItems(
             ["ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"])
@@ -347,16 +426,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width_spin    = QtWidgets.QSpinBox(); self.width_spin.setRange(16,7680); self.width_spin.setValue(self.settings.value("encode/width",1920,int))
         self.height_spin   = QtWidgets.QSpinBox(); self.height_spin.setRange(16,4320); self.height_spin.setValue(self.settings.value("encode/height",1080,int))
         self.abitrate_edit = QtWidgets.QLineEdit(self.settings.value("encode/abitrate","192k",str))
+        self.abitrate_edit.setPlaceholderText("z.B. 192k")
+        self.mode_combo   = QtWidgets.QComboBox();
+        self.mode_combo.addItems(["Standard","Slideshow","Video + Audio","Mehrere Audios, 1 Bild"])
+        self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
+        self.mode_combo.setCurrentText(self.settings.value("encode/mode","Standard",str))
         self.clear_after   = QtWidgets.QCheckBox("Nach Fertigstellung Listen leeren")
         self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
 
         form = QtWidgets.QFormLayout()
-        self._add_form(form,"Ausgabeordner",self.out_dir_edit,"Zielordner für MP4s")
+        out_wrap_layout = QtWidgets.QHBoxLayout(); out_wrap_layout.setContentsMargins(0,0,0,0)
+        out_wrap_layout.addWidget(self.out_dir_edit); out_wrap_layout.addWidget(self.btn_out_open)
+        out_wrap = QtWidgets.QWidget(); out_wrap.setLayout(out_wrap_layout)
+        self._add_form(form,"Ausgabeordner",out_wrap,"Zielordner für MP4s")
         self._add_form(form,"CRF",self.crf_spin,"Qualität (0=lossless, 23=Standard)")
         self._add_form(form,"Preset",self.preset_combo,"x264 Preset (schneller = größere Datei)")
         self._add_form(form,"Breite",self.width_spin,"Video-Breite in Pixel")
         self._add_form(form,"Höhe",self.height_spin,"Video-Höhe in Pixel")
         self._add_form(form,"Audio-Bitrate",self.abitrate_edit,"z.B. 192k, 256k")
+        self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
         form.addRow("", self.clear_after)
 
         self.settings_widget = QtWidgets.QWidget(); self.settings_widget.setLayout(form)
@@ -385,12 +473,32 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode     = QtWidgets.QPushButton("START")
         self.btn_stop       = QtWidgets.QPushButton("Stop"); self.btn_stop.setEnabled(False)
 
+        self.btn_add_images.setToolTip("Bilder (Fotos) auswählen")
+        self.btn_add_audios.setToolTip("Audiodateien auswählen")
+        self.btn_auto_pair.setToolTip("Bilder und Audios automatisch koppeln")
+        self.btn_clear.setToolTip("Listen komplett leeren")
+        self.btn_undo.setToolTip("Letzte Änderung rückgängig machen")
+        self.btn_save.setToolTip("Aktuellen Stand speichern")
+        self.btn_load.setToolTip("Gespeichertes Projekt laden")
+        self.btn_encode.setToolTip("Encoding starten")
+        self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
+
         self.btn_encode.setStyleSheet("font-size:16pt;font-weight:bold;background:#005BBB;color:white;padding:6px 14px;")
 
         top_buttons = QtWidgets.QHBoxLayout()
-        for b in (self.btn_add_images,self.btn_add_audios,self.btn_auto_pair,self.btn_clear,
-                  self.btn_undo,self.btn_save,self.btn_load,self.btn_encode,self.btn_stop):
-            top_buttons.addWidget(b)
+        btn_defs = [
+            (self.btn_add_images, "Bilder oder Ordner auswählen"),
+            (self.btn_add_audios, "Audiodateien hinzufügen"),
+            (self.btn_auto_pair, "Dateien automatisch koppeln"),
+            (self.btn_clear, "Listen komplett leeren"),
+            (self.btn_undo, "Letzten Schritt rückgängig"),
+            (self.btn_save, "Projekt auf Platte sichern"),
+            (self.btn_load, "Gespeichertes Projekt laden"),
+            (self.btn_encode, "Videos jetzt erstellen"),
+            (self.btn_stop, "Laufenden Vorgang abbrechen"),
+        ]
+        for btn, tip in btn_defs:
+            top_buttons.addWidget(self._wrap_button(btn, tip))
         top_buttons.addStretch(1)
 
         central_layout = QtWidgets.QVBoxLayout()
@@ -421,6 +529,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.clicked.connect(self._start_encode)
         self.btn_stop.clicked.connect(self._stop_encode)
         self.table.doubleClicked.connect(self._show_statusbar_path)
+        self.btn_out_open.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.out_dir_edit.text())))
 
         self._apply_font()
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
@@ -431,22 +540,25 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
 
         m_datei = menubar.addMenu("Datei")
-        act_quit = QAction("Beenden", self); act_quit.triggered.connect(self.close)
+        act_quit = QAction("Beenden", self); act_quit.setToolTip("Programm schließen"); act_quit.triggered.connect(self.close)
         m_datei.addAction(act_quit)
 
         m_ansicht = menubar.addMenu("Ansicht")
-        act_font_plus  = QAction("Schrift +", self);  act_font_plus.triggered.connect(lambda: self._change_font(1))
-        act_font_minus = QAction("Schrift -", self);  act_font_minus.triggered.connect(lambda: self._change_font(-1))
-        act_font_reset = QAction("Schrift Reset", self); act_font_reset.triggered.connect(lambda: self._set_font(11))
+        act_font_plus  = QAction("Schrift +", self);  act_font_plus.setToolTip("Schriftgröße erhöhen"); act_font_plus.triggered.connect(lambda: self._change_font(1))
+        act_font_minus = QAction("Schrift -", self);  act_font_minus.setToolTip("Schriftgröße verkleinern"); act_font_minus.triggered.connect(lambda: self._change_font(-1))
+        act_font_reset = QAction("Schrift Reset", self); act_font_reset.setToolTip("Schriftgröße zurücksetzen"); act_font_reset.triggered.connect(lambda: self._set_font(11))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
 
         m_option = menubar.addMenu("Optionen")
         self.act_copy_only = QAction("Dateien nur kopieren (nicht verschieben)", self, checkable=True, checked=self.copy_only)
+        self.act_copy_only.setToolTip("Originaldateien behalten")
         self.act_copy_only.triggered.connect(self._toggle_copy_mode)
         m_option.addAction(self.act_copy_only)
 
         m_hilfe = menubar.addMenu("Hilfe")
-        act_log = QAction("Logdatei öffnen", self); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
+        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(Path('README.md').resolve()))))
+        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
+        m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
 
     def _change_font(self, delta:int):
@@ -468,6 +580,15 @@ class MainWindow(QtWidgets.QMainWindow):
         box = QtWidgets.QVBoxLayout(); box.addWidget(widget); box.addWidget(hint)
         wrap = QtWidgets.QWidget(); wrap.setLayout(box)
         layout.addRow(label, wrap)
+
+    def _wrap_button(self, button: QtWidgets.QAbstractButton, help_text: str) -> QtWidgets.QWidget:
+        """Return button with help label underneath."""
+        button.setToolTip(help_text); button.setStatusTip(help_text)
+        lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
+        box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)
+        box.addWidget(button); box.addWidget(lbl)
+        w = QtWidgets.QWidget(); w.setLayout(box)
+        return w
 
     def _log(self, msg:str):
         self.log_edit.appendPlainText(msg)
@@ -495,9 +616,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ----- file actions -----
     def _pick_images(self):
-        files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",str(Path.cwd()),
-                                                       "Bilder (*.jpg *.jpeg *.png *.bmp *.webp)")
-        if files: self._on_images_added(files)
+        mode=self.mode_combo.currentText()
+        if mode=="Slideshow":
+            d=QtWidgets.QFileDialog.getExistingDirectory(self,"Ordner mit Bildern wählen",str(Path.cwd()))
+            if d: self._on_images_added([d])
+        else:
+            files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",str(Path.cwd()),
+                                                          "Bilder (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mkv *.avi *.mov)")
+            if files: self._on_images_added(files)
     def _pick_audios(self):
         files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Audios wählen",str(Path.cwd()),
                                                        "Audio (*.mp3 *.wav *.flac *.m4a *.aac)")
@@ -530,8 +656,23 @@ class MainWindow(QtWidgets.QMainWindow):
         imgs.sort(); auds.sort()
         self.model.clear()
         new=[]
-        for img,aud in zip(imgs,auds):
-            p=PairItem(img,aud); p.update_duration(); p.validate(); new.append(p)
+        mode=self.mode_combo.currentText()
+        if mode=="Mehrere Audios, 1 Bild" and imgs:
+            img = imgs[0]
+            for aud in auds:
+                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
+        elif mode=="Slideshow":
+            if len(imgs)==len(auds):
+                pairs = zip(imgs, auds)
+            elif len(imgs)==1:
+                pairs = ((imgs[0], a) for a in auds)
+            else:
+                pairs = zip(imgs, auds)
+            for img, aud in pairs:
+                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
+        else:
+            for img, aud in zip(imgs, auds):
+                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
         self.model.add_pairs(new)
         self._update_counts()
         self._resize_columns()
@@ -577,6 +718,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width_spin.setValue(s.get("width", self.width_spin.value()))
         self.height_spin.setValue(s.get("height", self.height_spin.value()))
         self.abitrate_edit.setText(s.get("abitrate", self.abitrate_edit.text()))
+        self.mode_combo.setCurrentText(s.get("mode", self.mode_combo.currentText()))
         self._update_counts()
         self._resize_columns()
         self._log(f"Projekt geladen: {path}")
@@ -588,7 +730,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 "preset": self.preset_combo.currentText(),
                 "width": self.width_spin.value(),
                 "height": self.height_spin.value(),
-                "abitrate": self.abitrate_edit.text().strip() or "192k"}
+                "abitrate": self.abitrate_edit.text().strip() or "192k",
+                "mode": self.mode_combo.currentText()}
 
     def _start_encode(self):
         if not self.pairs: return
@@ -656,6 +799,33 @@ class MainWindow(QtWidgets.QMainWindow):
         header = self.table.horizontalHeader()
         header.resizeSections(QHeaderView.ResizeToContents)
 
+    def _table_menu(self, pos: QtCore.QPoint):
+        index = self.table.indexAt(pos)
+        if not index.isValid():
+            return
+        row = index.row()
+        menu = QtWidgets.QMenu(self)
+        act_open = menu.addAction("Im Ordner zeigen")
+        act_copy = menu.addAction("Pfad kopieren")
+        act_remove = menu.addAction("Zeile löschen")
+        action = menu.exec(self.table.viewport().mapToGlobal(pos))
+        if action == act_open:
+            p = self.pairs[row]
+            path = p.output or p.image_path or p.audio_path
+            if path:
+                QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        elif action == act_copy:
+            p = self.pairs[row]
+            path = p.output or p.image_path or p.audio_path
+            if path:
+                QtWidgets.QApplication.clipboard().setText(str(path))
+                self.statusBar().showMessage("Pfad kopiert", 2000)
+        elif action == act_remove:
+            self._push_history()
+            self.model.remove_rows([row])
+            self._update_counts()
+            self._resize_columns()
+
     def _show_statusbar_path(self, index: QtCore.QModelIndex):
         if not index.isValid(): return
         if index.column() in (2,3,5):
@@ -672,6 +842,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("encode/width", s["width"])
         self.settings.setValue("encode/height", s["height"])
         self.settings.setValue("encode/abitrate", s["abitrate"])
+        self.settings.setValue("encode/mode", s["mode"])
         super().closeEvent(event)
 
 # ---- Public

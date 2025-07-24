@@ -1,0 +1,32 @@
+# Aufgabenliste
+
+- [ ] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
+      ```bash
+      python3 -m venv .venv
+      source .venv/bin/activate
+      ```
+- [ ] Pakete installieren:
+      ```bash
+      pip install -r requirements.txt
+      ```
+- [ ] Tool ueber den Launcher starten: `python3 videobatch_launcher.py`
+- [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md` und `ANLEITUNG_LAIENPLUS.md`
+- [ ] Modus "Slideshow" ausprobieren
+- [ ] Modus "Video + Audio" ausprobieren
+- [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
+- [ ] Menüeintrag "README öffnen" testen
+- [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
+- [ ] "Pfad kopieren" im Kontextmenü testen
+- [ ] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
+- [ ] Knopf "Ausgabeordner öffnen" testen
+- [ ] Ereignislog aktualisieren: `ereignislog.txt`
+- [ ] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
+- [ ] Abschnitt "Weiterführende Befehle" lesen
+- [ ] Neues Hilfefenster prüfen
+- [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
+- [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
+- [ ] Kontextmenü in Bilder- und Audioliste testen
+- [ ] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
+- [ ] Beschriftungen unter den Buttons prüfen
+
