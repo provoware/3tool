@@ -32,6 +32,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger("VideoBatchTool")
 
+# ---------- Themes ----------
+THEMES = {
+    "Standard": "",
+    "Dunkel": "QWidget{background-color:#2b2b2b;color:#ffffff;} QPushButton{background-color:#444;color:white;}",
+    "Blau": "QWidget{background-color:#1e1e2d;color:#c7d8f4;} QPushButton{background-color:#3d59ab;color:white;}",
+    "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
+    "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}"
+}
+
 # ---------- Helpers ----------
 def which(p: str): return shutil.which(p)
 def check_ffmpeg(): return which("ffmpeg") and which("ffprobe")
@@ -276,6 +285,7 @@ class DropListWidget(QtWidgets.QListWidget):
         super().__init__()
         self.patterns=patterns
         self.setAcceptDrops(True)
+        self.setDragEnabled(True)
         self.setAlternatingRowColors(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setToolTip(title); self.setStatusTip(title)
@@ -291,6 +301,15 @@ class DropListWidget(QtWidgets.QListWidget):
         acc=[f for f in files if Path(f).is_dir() or f.lower().endswith(self.patterns)]
         if acc: self.add_files(acc); self.files_dropped.emit(acc)
         e.acceptProposedAction()
+    def startDrag(self, supportedActions):
+        item=self.currentItem()
+        if not item:
+            return
+        mime=QtCore.QMimeData()
+        mime.setUrls([QtCore.QUrl.fromLocalFile(item.data(Qt.UserRole))])
+        drag=QtGui.QDrag(self)
+        drag.setMimeData(mime)
+        drag.exec(Qt.CopyAction)
     def add_files(self, files:List[str]):
         for f in files:
             it=QtWidgets.QListWidgetItem(Path(f).name); it.setData(Qt.UserRole,f); self.addItem(it)
@@ -317,6 +336,54 @@ class DropListWidget(QtWidgets.QListWidget):
         path=item.data(Qt.UserRole)
         if path:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+
+class ImageListWidget(DropListWidget):
+    add_to_fav = Signal(str)
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_fav=menu.addAction("Zu Favoriten")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+        elif act==act_remove:
+            self.takeItem(self.row(item))
+        elif act==act_fav:
+            self.add_to_fav.emit(path)
+        e.accept()
+
+class FavoriteListWidget(DropListWidget):
+    use_fav = Signal(str)
+    removed = Signal(str)
+    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
+        item=self.itemAt(e.pos())
+        if not item:
+            return
+        path=item.data(Qt.UserRole)
+        menu=QtWidgets.QMenu(self)
+        act_open=menu.addAction("Im Ordner zeigen")
+        act_copy=menu.addAction("Pfad kopieren")
+        act_use=menu.addAction("Zum Arbeitsbereich")
+        act_remove=menu.addAction("Entfernen")
+        act=menu.exec(e.globalPos())
+        if act==act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+        elif act==act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+        elif act==act_use:
+            self.use_fav.emit(path)
+        elif act==act_remove:
+            self.removed.emit(path)
+            self.takeItem(self.row(item))
+        e.accept()
 
 class HelpPane(QtWidgets.QTextBrowser):
     def __init__(self):
@@ -401,14 +468,19 @@ class MainWindow(QtWidgets.QMainWindow):
         if not ff_ok:
             QtWidgets.QMessageBox.warning(self, "FFmpeg fehlt", "Bitte FFmpeg installieren, sonst kann kein Video erzeugt werden.")
 
-        self.image_list = DropListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
+        self.image_list = ImageListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
         self.audio_list = DropListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
+        self.favorite_list = FavoriteListWidget("Favoriten", (".jpg",".jpeg",".png",".bmp",".webp"))
+        self.image_list.add_to_fav.connect(self._add_to_favorites)
+        self.favorite_list.use_fav.connect(self._use_favorite)
+        self.favorite_list.removed.connect(lambda p: self._log(f"Favorit entfernt: {p}"))
         self.image_list.files_dropped.connect(self._on_images_added)
         self.audio_list.files_dropped.connect(self._on_audios_added)
 
         pool_tabs = QtWidgets.QTabWidget()
         pool_tabs.addTab(self.image_list, "Bilder")
         pool_tabs.addTab(self.audio_list, "Audios")
+        pool_tabs.addTab(self.favorite_list, "Favoriten")
 
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.model)
@@ -542,6 +614,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_out_open.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.out_dir_edit.text())))
 
         self._apply_font()
+        self._apply_theme(self.settings.value("ui/theme", "Standard"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
 
@@ -558,6 +631,12 @@ class MainWindow(QtWidgets.QMainWindow):
         act_font_minus = QAction("Schrift -", self);  act_font_minus.setToolTip("Schriftgröße verkleinern"); act_font_minus.triggered.connect(lambda: self._change_font(-1))
         act_font_reset = QAction("Schrift Reset", self); act_font_reset.setToolTip("Schriftgröße zurücksetzen"); act_font_reset.triggered.connect(lambda: self._set_font(11))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
+
+        m_theme = menubar.addMenu("Theme")
+        for name in THEMES.keys():
+            act = QAction(name, self)
+            act.triggered.connect(lambda _=False, n=name: self._apply_theme(n))
+            m_theme.addAction(act)
 
         m_option = menubar.addMenu("Optionen")
         self.act_copy_only = QAction("Dateien nur kopieren (nicht verschieben)", self, checkable=True, checked=self.copy_only)
@@ -583,6 +662,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def _apply_font(self):
         f = QtGui.QFont("DejaVu Sans", self._font_size)
         self.setFont(f)
+
+    def _apply_theme(self, name: str):
+        css = THEMES.get(name, "")
+        QtWidgets.QApplication.instance().setStyleSheet(css)
+        self.settings.setValue("ui/theme", name)
+        self._log(f"Theme gewechselt: {name}")
 
     def _add_form(self, layout: QtWidgets.QFormLayout, label: str, widget: QtWidgets.QWidget, help_text: str):
         widget.setToolTip(help_text); widget.setStatusTip(help_text)
@@ -658,6 +743,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.layoutChanged.emit()
         self._update_counts()
         self._resize_columns()
+
+    def _add_to_favorites(self, path: str):
+        for i in range(self.favorite_list.count()):
+            if self.favorite_list.item(i).data(Qt.UserRole) == path:
+                return
+        self.favorite_list.add_files([path])
+        self._log(f"Favorit hinzugefügt: {path}")
+
+    def _use_favorite(self, path: str):
+        self._on_images_added([path])
+        self._log(f"Favorit genutzt: {path}")
 
     def _auto_pair(self):
         self._push_history()
