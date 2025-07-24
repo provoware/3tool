@@ -386,17 +386,36 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("VideoBatchTool 4.1 – Bild + Audio → MP4")
-        # Groesse an Bildschirm anpassen (dynamisch)
-        screen = QtWidgets.QApplication.primaryScreen()
-        if screen:
-            geo = screen.availableGeometry()
-            w = min(1500, geo.width() - 50)
-            h = min(900,  geo.height() - 50)
-            self.resize(w, h)
-        else:
-            self.resize(1200, 800)
-
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
+
+        # Fenstergröße aus vorheriger Sitzung wiederherstellen
+        saved_geo = self.settings.value("ui/geometry", b"", bytes)
+        restored = False
+        if saved_geo:
+            restored = self.restoreGeometry(saved_geo)
+            self.restoreState(self.settings.value("ui/window_state", b"", bytes))
+
+        # Falls keine gespeicherte Größe vorhanden ist oder sie nicht auf den
+        # Bildschirm passt, auf sinnvolle Maße reduzieren
+        if not restored:
+            screen = QtWidgets.QApplication.primaryScreen()
+            if screen:
+                geo = screen.availableGeometry()
+                w = min(1500, geo.width() - 50)
+                h = min(900, geo.height() - 50)
+                self.resize(w, h)
+            else:
+                self.resize(1200, 800)
+        else:
+            screen = QtWidgets.QApplication.primaryScreen()
+            if screen:
+                geo = screen.availableGeometry()
+                g = self.geometry()
+                if g.width() > geo.width() or g.height() > geo.height():
+                    w = min(g.width(), geo.width() - 50)
+                    h = min(g.height(), geo.height() - 50)
+                    self.resize(w, h)
+
         self._font_size = self.settings.value("ui/font_size", 11, int)
 
         sys.excepthook = self._global_exception
@@ -550,8 +569,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_out_open.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.out_dir_edit.text())))
 
         self._apply_font()
-        self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
-        self.restoreState(self.settings.value("ui/window_state", b"", bytes))
 
     # ----- UI helpers -----
     def _build_menus(self):

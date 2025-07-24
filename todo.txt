@@ -35,4 +35,5 @@
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
 - [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] Ereignislog aktualisieren: `ereignislog.txt`
-- [ ] Fenstergröße an Bildschirm anpassen (Resize-Bug prüfen)
+- [x] Fenstergröße an Bildschirm anpassen (Resize-Bug prüfen)
+- [ ] Verhalten beim Wiederherstellen der Fenstergröße testen
