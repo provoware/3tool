@@ -26,6 +26,7 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
+Dort findest du jetzt auch kurze Befehle zum Aufhellen und sanften Einblenden von Videos.
 Im Abschnitt "Weiterführende Befehle" von `ANLEITUNG_GESAMT.md` finden sich
 zusätzliche Kommandos für neugierige Einsteiger.
 Weitere Beispiele stehen in `ANLEITUNG_EXTRA.md`.

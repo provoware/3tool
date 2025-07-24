@@ -30,3 +30,16 @@ ffmpeg -i eingang.mp4 -filter:a "volume=1.5" lauter.mp4
 *`volume`* bestimmt die Lautstärke (1.5 = 150 Prozent).
 
 Weitere Tipps findest du in `ANLEITUNG_GESAMT.md`.
+
+## 5. Helligkeit anpassen
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=brightness=0.1" heller.mp4
+```
+*`eq`* steht für "equalizer" (Bildkorrektur). *`brightness`* erhöht die Helligkeit.
+
+## 6. Sanfte Einblendung am Anfang
+```bash
+ffmpeg -i clip.mp4 -vf "fade=t=in:st=0:d=2" -af "afade=t=in:st=0:d=2" startfade.mp4
+```
+*`fade`* erstellt eine Ein- oder Ausblendung. *`st`* ist der Startzeitpunkt, *`d`* die Dauer in Sekunden.
+
