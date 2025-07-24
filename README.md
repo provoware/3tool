@@ -28,6 +28,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 Noch mehr Hinweise bietet `ANLEITUNG_WEITER.md`.
 Weitere Beispiele gibt es in `ANLEITUNG_MEHR.md`.
 Ergänzende Vorschläge enthält `ANLEITUNG_ZUSATZ.md`.
+Weitere Befehle zeigt `ANLEITUNG_EXTRA_BEFEHLE.md`.
 
 ## Zusaetzlich
 
