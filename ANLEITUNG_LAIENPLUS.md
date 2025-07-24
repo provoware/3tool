@@ -145,3 +145,15 @@ python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud ton1.mp3 ton
 ffmpeg -i eingang.mp4 -vf "eq=contrast=1.5" kontrast.mp4
 ```
 `eq` (Equalizer) passt Helligkeit und Kontrast an. Der Wert `1.5` sorgt für ein satteres Bild.
+
+## 22. Video in Schleife abspielen
+```bash
+ffmpeg -stream_loop -1 -i clip.mp4 -c copy loop.mp4
+```
+`stream_loop -1` bedeutet, dass das Video immer wiederholt wird. Es entsteht eine Endlosschleife.
+
+## 23. Logo einfügen
+```bash
+ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
+```
+`overlay` (Überlagerung) setzt das Logo 10 Pixel vom linken und oberen Rand ins Bild.

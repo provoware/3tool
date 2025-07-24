@@ -42,6 +42,7 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
 - **Hilfe-Bereich ausblenden** – über "Ansicht" lässt sich der rechte Hilfeblock
   ein- oder ausblenden.
+- **Log-Bereich ausblenden** – im gleichen Menü kann man den unteren Protokollbereich verstecken.
 - **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
@@ -63,6 +64,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
 - Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast". Daneben steht das neue Theme "Modern" mit frischen Farben bereit.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
+- Über "Ansicht → Log-Bereich" kann diese Anzeige ausgeblendet werden.
 - Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 

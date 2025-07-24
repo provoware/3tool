@@ -427,6 +427,7 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Tooltips zeigen volle Pfade</li>"
             "<li>Menü 'Optionen' hat einen Debug-Schalter für mehr Meldungen</li>"
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
+            "<li>Unter 'Ansicht' kann der Log-Bereich ein- oder ausgeblendet werden</li>"
             "</ul>"
         )
 
@@ -467,6 +468,9 @@ class MainWindow(QtWidgets.QMainWindow):
         w = min(1200, int(screen.width() * 0.9))
         h = min(800, int(screen.height() * 0.9))
         self.resize(w, h)
+        geo = self.frameGeometry()
+        geo.moveCenter(screen.center())
+        self.move(geo.topLeft())
         self.setMinimumSize(800, 600)
 
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
@@ -579,12 +583,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
 
-        log_box = QtWidgets.QGroupBox("Protokoll")
-        bl = QtWidgets.QVBoxLayout(log_box)
+        self.log_box = QtWidgets.QGroupBox("Protokoll")
+        bl = QtWidgets.QVBoxLayout(self.log_box)
         bl.addWidget(self.progress_total)
         bl.addWidget(self.log_edit)
 
-        outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(log_box)
+        outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(self.log_box)
         outer_split.setStretchFactor(0,4); outer_split.setStretchFactor(1,1)
 
         # Buttons
@@ -645,6 +649,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.copy_only = False
         self._build_menus()
         self._toggle_help(self.act_show_help.isChecked())
+        self._toggle_log(self.act_show_log.isChecked())
 
         self._history: List[List[PairItem]] = []
         self.thread: Optional[QtCore.QThread] = None
@@ -685,6 +690,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                      checked=self.settings.value("ui/show_help", True, bool))
         self.act_show_help.toggled.connect(self._toggle_help)
         m_ansicht.addAction(self.act_show_help)
+        self.act_show_log = QAction("Log-Bereich", self, checkable=True,
+                                    checked=self.settings.value("ui/show_log", True, bool))
+        self.act_show_log.toggled.connect(self._toggle_log)
+        m_ansicht.addAction(self.act_show_log)
 
         m_theme = menubar.addMenu("Theme")
         for name in THEMES.keys():
@@ -1038,6 +1047,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _toggle_help(self, checked: bool):
         self.help_box.setVisible(checked)
         self.settings.setValue("ui/show_help", checked)
+
+    def _toggle_log(self, checked: bool):
+        self.log_box.setVisible(checked)
+        self.settings.setValue("ui/show_log", checked)
 
     def _toggle_debug(self, checked: bool):
         self.debug_mode = checked
