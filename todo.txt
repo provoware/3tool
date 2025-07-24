@@ -27,6 +27,9 @@
 - [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
 - [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
 - [ ] Kontextmenü in Bilder- und Audioliste testen
+- [ ] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
+- [ ] Beschriftungen unter den Buttons prüfen
+
 
 - [ ] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [ ] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`

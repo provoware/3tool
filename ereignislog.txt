@@ -13,3 +13,5 @@
 [2025-07-24] Slideshow-Autopair verbessert, neue Laien-Anleitung und Readme-Update
 [2025-07-24] Weiterführende Befehle ergänzt und Kontextmenü erweitert
 [2025-07-24] Neues Dokument ANLEITUNG_EXTRA.md und Kontextmenü für Listen
+
+[2025-07-24] Zusatztipps-Datei erstellt, Buttons mit Hilfetexten

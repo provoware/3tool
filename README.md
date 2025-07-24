@@ -28,6 +28,7 @@ Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
 Im Abschnitt "Weiterführende Befehle" von `ANLEITUNG_GESAMT.md` finden sich
 zusätzliche Kommandos für neugierige Einsteiger.
 Weitere Beispiele stehen in `ANLEITUNG_EXTRA.md`.
+Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio

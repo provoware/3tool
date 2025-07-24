@@ -396,7 +396,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pairs: List[PairItem] = []
         self.model = PairTableModel(self.pairs)
 
-        self.dashboard = InfoDashboard(); self.dashboard.set_env(check_ffmpeg(), True)
+        ff_ok = check_ffmpeg()
+        self.dashboard = InfoDashboard(); self.dashboard.set_env(ff_ok, True)
+        if not ff_ok:
+            QtWidgets.QMessageBox.warning(self, "FFmpeg fehlt", "Bitte FFmpeg installieren, sonst kann kein Video erzeugt werden.")
 
         self.image_list = DropListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
         self.audio_list = DropListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
@@ -433,6 +436,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width_spin    = QtWidgets.QSpinBox(); self.width_spin.setRange(16,7680); self.width_spin.setValue(self.settings.value("encode/width",1920,int))
         self.height_spin   = QtWidgets.QSpinBox(); self.height_spin.setRange(16,4320); self.height_spin.setValue(self.settings.value("encode/height",1080,int))
         self.abitrate_edit = QtWidgets.QLineEdit(self.settings.value("encode/abitrate","192k",str))
+        self.abitrate_edit.setPlaceholderText("z.B. 192k")
         self.mode_combo   = QtWidgets.QComboBox();
         self.mode_combo.addItems(["Standard","Slideshow","Video + Audio","Mehrere Audios, 1 Bild"])
         self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
@@ -492,9 +496,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.setStyleSheet("font-size:16pt;font-weight:bold;background:#005BBB;color:white;padding:6px 14px;")
 
         top_buttons = QtWidgets.QHBoxLayout()
-        for b in (self.btn_add_images,self.btn_add_audios,self.btn_auto_pair,self.btn_clear,
-                  self.btn_undo,self.btn_save,self.btn_load,self.btn_encode,self.btn_stop):
-            top_buttons.addWidget(b)
+        btn_defs = [
+            (self.btn_add_images, "Bilder oder Ordner auswählen"),
+            (self.btn_add_audios, "Audiodateien hinzufügen"),
+            (self.btn_auto_pair, "Dateien automatisch koppeln"),
+            (self.btn_clear, "Listen komplett leeren"),
+            (self.btn_undo, "Letzten Schritt rückgängig"),
+            (self.btn_save, "Projekt auf Platte sichern"),
+            (self.btn_load, "Gespeichertes Projekt laden"),
+            (self.btn_encode, "Videos jetzt erstellen"),
+            (self.btn_stop, "Laufenden Vorgang abbrechen"),
+        ]
+        for btn, tip in btn_defs:
+            top_buttons.addWidget(self._wrap_button(btn, tip))
         top_buttons.addStretch(1)
 
         central_layout = QtWidgets.QVBoxLayout()
@@ -576,6 +590,15 @@ class MainWindow(QtWidgets.QMainWindow):
         box = QtWidgets.QVBoxLayout(); box.addWidget(widget); box.addWidget(hint)
         wrap = QtWidgets.QWidget(); wrap.setLayout(box)
         layout.addRow(label, wrap)
+
+    def _wrap_button(self, button: QtWidgets.QAbstractButton, help_text: str) -> QtWidgets.QWidget:
+        """Return button with help label underneath."""
+        button.setToolTip(help_text); button.setStatusTip(help_text)
+        lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
+        box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)
+        box.addWidget(button); box.addWidget(lbl)
+        w = QtWidgets.QWidget(); w.setLayout(box)
+        return w
 
     def _log(self, msg:str):
         self.log_edit.appendPlainText(msg)
