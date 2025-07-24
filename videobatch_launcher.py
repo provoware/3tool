@@ -20,7 +20,9 @@ def in_venv() -> bool:
             or os.environ.get("VIRTUAL_ENV"))
 
 def venv_python() -> Path:
-    return ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+    """Return path to launcher venv or current interpreter if missing."""
+    path = ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+    return path if path.exists() else Path(sys.executable)
 
 def ensure_venv() -> None:
     if not ENV_DIR.exists():
@@ -37,16 +39,29 @@ def pip_install(py: str, pkgs: list[str]) -> None:
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade"] + pkgs)
 
 def reboot_into_venv():
-    py  = str(venv_python())
+    py_path = Path(venv_python())
+    if not py_path.exists():
+        try:
+            ensure_venv()
+        except Exception as e:
+            print("Konnte virtuelle Umgebung nicht erstellen:", e)
+            py_path = Path(sys.executable)
+        else:
+            py_path = Path(venv_python()) if (ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python").exists() else Path(sys.executable)
+
     env = os.environ.copy()
     env[FLAG] = "1"
-    os.execvpe(py, [py, str(SELF)], env)
+    try:
+        os.execvpe(str(py_path), [str(py_path), str(SELF)], env)
+    except FileNotFoundError:
+        print("Python-Interpreter nicht gefunden:", py_path)
+        os.execvpe(sys.executable, [sys.executable, str(SELF)], env)
 
 def bootstrap_console():
     if not in_venv():
         ensure_venv()
         reboot_into_venv()
-    if os.environ.get(FLAG) != "1":
+    elif ENV_DIR.exists() and os.environ.get(FLAG) != "1":
         reboot_into_venv()
 
     py = str(venv_python())
@@ -133,8 +148,12 @@ def main():
                     try:
                         sp.check_call(["sudo", "apt", "update"])
                         sp.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        QtWidgets.QMessageBox.warning(
+                            self,
+                            "Fehler",
+                            f"ffmpeg konnte nicht automatisch installiert werden.\n{e}"
+                        )
                 self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
 
             self.setEnabled(True)

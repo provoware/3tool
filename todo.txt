@@ -1,15 +1,44 @@
 # Aufgabenliste
 
-- [ ] Projekt testen: `python3 videobatch_extra.py --selftest`
-- [ ] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
+- [x] Projekt testen: `python3 videobatch_extra.py --selftest`
+- [x] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
       ```bash
       python3 -m venv .venv
       source .venv/bin/activate
       ```
-- [ ] Pakete installieren:
+- [x] Pakete installieren:
       ```bash
       pip install -r requirements.txt
       ```
+- [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
+- [x] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
+- [ ] Modus "Slideshow" ausprobieren
+- [ ] Modus "Video + Audio" ausprobieren
+- [ ] Modus "Mehrere Audios, ein Bild" ausprobieren
+- [x] Menüeintrag "README öffnen" testen
+- [x] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
+- [x] "Pfad kopieren" im Kontextmenü testen
+- [x] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
+- [x] Knopf "Ausgabeordner öffnen" testen
+- [x] Ereignislog aktualisieren: `ereignislog.txt`
+- [x] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
+- [x] Abschnitt "Weiterführende Befehle" lesen
+- [x] Neues Hilfefenster prüfen
+- [x] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
+- [x] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
+- [x] Kontextmenü in Bilder- und Audioliste testen
+- [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
+- [x] Beschriftungen unter den Buttons prüfen
+- [x] Favoriten-Bereich testen
+- [x] Bilder zu Favoriten hinzufügen
+- [x] Favoriten per Drag&Drop nutzen
+- [x] Verschiedene Themes ausprobieren
+- [x] Theme "Kontrast" testen
+- [x] Logging-Bereich beobachten
+- [x] Schriftgröße ändern
+- [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
+- [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
+- [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
 - [ ] Tool über den Launcher starten: `python3 videobatch_launcher.py`
 - [ ] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
 - [ ] Modus "Slideshow" ausprobieren

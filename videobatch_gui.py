@@ -38,6 +38,8 @@ THEMES = {
     "Dunkel": "QWidget{background-color:#2b2b2b;color:#ffffff;} QPushButton{background-color:#444;color:white;}",
     "Blau": "QWidget{background-color:#1e1e2d;color:#c7d8f4;} QPushButton{background-color:#3d59ab;color:white;}",
     "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
+    "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
+    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
     "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}"
 }
 
@@ -57,8 +59,8 @@ def probe_duration(path: str) -> float:
         for st in pr.get("streams", []):
             if st.get("codec_type") == "audio":
                 return float(st.get("duration", 0) or 0)
-    except Exception:
-        pass
+    except Exception as e:
+        print("Fehler beim Prüfen der Dauer:", e, file=sys.stderr)
     return 0.0
 
 def get_used_dir() -> Path:
@@ -80,7 +82,8 @@ def safe_move(src: Path, dst_dir: Path, copy_only: bool=False) -> Path:
         shutil.copy2(src, tgt)
         if not copy_only:
             try: src.unlink()
-            except Exception: pass
+            except Exception as e:
+                print("Fehler beim Löschen:", e, file=sys.stderr)
     return tgt
 
 def make_thumb(path: str, size: Tuple[int,int]=(160,90)) -> QtGui.QPixmap:
@@ -255,7 +258,8 @@ class EncodeWorker(QtCore.QObject):
                             elapsed=float(h_)*3600+float(m_)*60+float(s_)
                             perc=min(100.0, elapsed/duration*100.0)
                             item.progress=perc; self.row_progress.emit(i,perc)
-                        except Exception: pass
+                        except Exception as e:
+                            print("Fehler beim Lesen des Fortschritts:", e, file=sys.stderr)
                 proc.wait()
                 if proc.returncode!=0:
                     item.status="FEHLER"; self.row_error.emit(i,"FFmpeg-Fehler")
@@ -471,16 +475,6 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
             "</ul>"
         )
-        return ("<h2>Bedienhilfe</h2>"
-                "<ol><li>Bilder & Audios hinzufügen/ziehen</li>"
-                "<li>Auto-Paaren oder manuell zuweisen</li>"
-                "<li>Einstellungen prüfen</li>"
-                "<li>START klicken</li></ol>"
-                "<ul><li>Dateiname = Audio + Zeitstempel</li>"
-                "<li>Doppelklick auf Zellen editiert Pfade</li>"
-                "<li>Rechtsklick auf Zeile: Menü</li>"
-                "<li>Tooltips zeigen volle Pfade</li>"
-                "<li>Nach Erfolg Archivierung</li></ul>")
 
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):
@@ -544,6 +538,9 @@ class MainWindow(QtWidgets.QMainWindow):
         pool_tabs.addTab(self.audio_list, "Audios")
         pool_tabs.addTab(self.favorite_list, "Favoriten")
 
+        pool_box = QtWidgets.QGroupBox("Dateilisten")
+        pb_lay = QtWidgets.QVBoxLayout(pool_box); pb_lay.addWidget(pool_tabs)
+
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.model)
         self.table.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
@@ -591,17 +588,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
         form.addRow("", self.clear_after)
 
-        self.settings_widget = QtWidgets.QWidget(); self.settings_widget.setLayout(form)
+        settings_box = QtWidgets.QGroupBox("Einstellungen")
+        settings_box.setLayout(form)
 
-        left_split  = QtWidgets.QSplitter(Qt.Vertical); left_split.addWidget(pool_tabs); left_split.addWidget(self.settings_widget)
-        right_split = QtWidgets.QSplitter(Qt.Vertical); right_split.addWidget(self.table); right_split.addWidget(self.help_pane)
+        self.settings_widget = settings_box
+
+        table_box = QtWidgets.QGroupBox("Paare")
+        tb_lay = QtWidgets.QVBoxLayout(table_box); tb_lay.addWidget(self.table)
+
+        help_box = QtWidgets.QGroupBox("Hilfe")
+        hb_lay = QtWidgets.QVBoxLayout(help_box); hb_lay.addWidget(self.help_pane)
+
+        left_split  = QtWidgets.QSplitter(Qt.Vertical); left_split.addWidget(pool_box); left_split.addWidget(self.settings_widget)
+        right_split = QtWidgets.QSplitter(Qt.Vertical); right_split.addWidget(table_box); right_split.addWidget(help_box)
         grid_split  = QtWidgets.QSplitter(Qt.Horizontal); grid_split.addWidget(left_split); grid_split.addWidget(right_split)
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
 
-        log_box = QtWidgets.QWidget(); bl = QtWidgets.QVBoxLayout(log_box)
-        bl.addWidget(self.progress_total); bl.addWidget(self.log_edit)
+        log_box = QtWidgets.QGroupBox("Protokoll")
+        bl = QtWidgets.QVBoxLayout(log_box)
+        bl.addWidget(self.progress_total)
+        bl.addWidget(self.log_edit)
 
         outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(log_box)
         outer_split.setStretchFactor(0,4); outer_split.setStretchFactor(1,1)
@@ -673,7 +681,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.clicked.connect(self._start_encode)
         self.btn_stop.clicked.connect(self._stop_encode)
         self.table.doubleClicked.connect(self._show_statusbar_path)
-        self.btn_out_open.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(self.out_dir_edit.text())))
+        self.btn_out_open.clicked.connect(self._open_out_dir)
 
         self._apply_font()
         self._apply_theme(self.settings.value("ui/theme", "Standard"))
@@ -707,10 +715,12 @@ class MainWindow(QtWidgets.QMainWindow):
         m_option.addAction(self.act_copy_only)
 
         m_hilfe = menubar.addMenu("Hilfe")
-        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(Path('README.md').resolve()))))
-        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE))))
+        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
+        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(self._open_logfile)
+        act_help = QAction("Kurzanleitung", self); act_help.setToolTip("Kurzes Hilfefenster anzeigen"); act_help.triggered.connect(self._show_help_window)
         m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
+        m_hilfe.addAction(act_help)
 
     def _change_font(self, delta:int):
         self._set_font(self._font_size + delta)
@@ -731,6 +741,29 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().setStyleSheet(css)
         self.settings.setValue("ui/theme", name)
         self._log(f"Theme gewechselt: {name}")
+
+    def _open_out_dir(self):
+        path = self.out_dir_edit.text()
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        self._log(f"Ausgabeordner geöffnet: {path}")
+
+    def _open_readme(self):
+        path = str(Path('README.md').resolve())
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
+        self._log("README geöffnet")
+
+    def _open_logfile(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE)))
+        self._log("Logdatei geöffnet")
+
+    def _show_help_window(self):
+        dlg = QtWidgets.QDialog(self)
+        dlg.setWindowTitle("Kurzanleitung")
+        layout = QtWidgets.QVBoxLayout(dlg)
+        layout.addWidget(HelpPane())
+        dlg.resize(400, 300)
+        dlg.exec()
+        self._log("Hilfefenster geöffnet")
 
     def _add_form(self, layout: QtWidgets.QFormLayout, label: str, widget: QtWidgets.QWidget, help_text: str):
         widget.setToolTip(help_text); widget.setStatusTip(help_text)
@@ -882,13 +915,24 @@ class MainWindow(QtWidgets.QMainWindow):
         if not path: return
         data={"pairs":[{"image":p.image_path,"audio":p.audio_path,"output":p.output} for p in self.pairs],
               "settings":self._gather_settings()}
-        Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
+        try:
+            Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern", str(e))
+            self._log(f"Fehler beim Speichern: {e}")
+            return
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):
-        path,_=QtWidgets.QFileDialog.getOpenFileName(self,"Projekt laden",str(Path.cwd()),"JSON (*.json)")
-        if not path: return
-        data=json.loads(Path(path).read_text(encoding="utf-8"))
+        path,_ = QtWidgets.QFileDialog.getOpenFileName(self, "Projekt laden", str(Path.cwd()), "JSON (*.json)")
+        if not path:
+            return
+        try:
+            data = json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Fehler beim Laden", str(e))
+            self._log(f"Fehler beim Laden: {e}")
+            return
         self._push_history()
         self.model.clear()
         new=[]
@@ -919,13 +963,30 @@ class MainWindow(QtWidgets.QMainWindow):
                 "mode": self.mode_combo.currentText()}
 
     def _start_encode(self):
-        if not self.pairs: return
+        if not self.pairs:
+            QtWidgets.QMessageBox.information(
+                self,
+                "Keine Paare",
+                "Bitte zuerst Bilder und Audios hinzufügen.",
+            )
+            self._log("Encoding abgebrochen: keine Paare")
+            return
         if any(p.audio_path is None for p in self.pairs):
             QtWidgets.QMessageBox.warning(self,"Fehlende Audios","Nicht alle Bilder haben ein Audio."); return
         for p in self.pairs: p.validate()
         invalid=[p for p in self.pairs if not p.valid]
         if invalid:
             QtWidgets.QMessageBox.critical(self,"Validierungsfehler",invalid[0].validation_msg); return
+        out_dir = Path(self.out_dir_edit.text().strip())
+        try:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            test_file = out_dir/".write_test"
+            test_file.touch()
+            test_file.unlink()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Ordnerproblem", str(e))
+            self._log(f"Encoding abgebrochen: Ordnerproblem ({e})")
+            return
         self.btn_encode.setEnabled(False); self.btn_stop.setEnabled(True)
         self.progress_total.setValue(0); self.dashboard.set_progress(0); self._log("Starte Encoding …")
         self.worker = EncodeWorker(self.pairs, self._gather_settings(), self.copy_only)
