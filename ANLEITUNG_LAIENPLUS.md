@@ -120,3 +120,9 @@ ffprobe -v quiet -show_format -show_streams eingang.mp4
 
 - Öffne das Menü **Theme** im Hauptfenster.
 - Wähle **Modern**. Dieses Design bietet gute Lesbarkeit und angenehme Farben.
+
+## 19. Hilfe-Bereich ein- oder ausblenden
+
+- Im Menü **Ansicht** gibt es den neuen Punkt **Hilfe-Bereich**.
+- Nimm den Haken weg, wenn du mehr Platz brauchst.
+- Setze ihn wieder, um die kurzen Hinweise anzuzeigen.

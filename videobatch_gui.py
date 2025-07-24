@@ -555,10 +555,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         help_box = QtWidgets.QGroupBox("Hilfe")
         hb_lay = QtWidgets.QVBoxLayout(help_box); hb_lay.addWidget(self.help_pane)
+        self.help_box = help_box
 
-        left_split  = QtWidgets.QSplitter(Qt.Vertical); left_split.addWidget(pool_box); left_split.addWidget(self.settings_widget)
-        right_split = QtWidgets.QSplitter(Qt.Vertical); right_split.addWidget(table_box); right_split.addWidget(help_box)
-        grid_split  = QtWidgets.QSplitter(Qt.Horizontal); grid_split.addWidget(left_split); grid_split.addWidget(right_split)
+        left_tabs = QtWidgets.QTabWidget()
+        left_tabs.addTab(pool_box, "Dateien")
+        left_tabs.addTab(self.settings_widget, "Einstellungen")
+
+        right_split = QtWidgets.QSplitter(Qt.Vertical)
+        right_split.addWidget(table_box)
+        right_split.addWidget(help_box)
+        right_split.setStretchFactor(0, 3)
+        right_split.setStretchFactor(1, 1)
+
+        grid_split  = QtWidgets.QSplitter(Qt.Horizontal)
+        grid_split.addWidget(left_tabs)
+        grid_split.addWidget(right_split)
+        grid_split.setStretchFactor(0, 1)
+        grid_split.setStretchFactor(1, 2)
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
@@ -628,6 +641,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.copy_only = False
         self._build_menus()
+        self._toggle_help(self.act_show_help.isChecked())
 
         self._history: List[List[PairItem]] = []
         self.thread: Optional[QtCore.QThread] = None
@@ -664,6 +678,10 @@ class MainWindow(QtWidgets.QMainWindow):
         act_font_minus = QAction("Schrift -", self);  act_font_minus.setToolTip("Schriftgröße verkleinern"); act_font_minus.triggered.connect(lambda: self._change_font(-1))
         act_font_reset = QAction("Schrift Reset", self); act_font_reset.setToolTip("Schriftgröße zurücksetzen"); act_font_reset.triggered.connect(lambda: self._set_font(11))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
+        self.act_show_help = QAction("Hilfe-Bereich", self, checkable=True,
+                                     checked=self.settings.value("ui/show_help", True, bool))
+        self.act_show_help.toggled.connect(self._toggle_help)
+        m_ansicht.addAction(self.act_show_help)
 
         m_theme = menubar.addMenu("Theme")
         for name in THEMES.keys():
@@ -1000,6 +1018,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _toggle_copy_mode(self, checked: bool):
         self.copy_only=checked
         self._log(f"Archivmodus: Dateien werden {'kopiert' if checked else 'verschoben'}.")
+
+    def _toggle_help(self, checked: bool):
+        self.help_box.setVisible(checked)
+        self.settings.setValue("ui/show_help", checked)
 
     def _global_exception(self, etype, value, tb):
         import traceback

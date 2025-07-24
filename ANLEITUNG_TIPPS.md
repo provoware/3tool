@@ -52,3 +52,9 @@ python3 videobatch_extra.py --mode video --img film.mp4 --aud kommentar.mp3 --ou
 python3 videobatch_extra.py --mode multi-audio --img bild.jpg --aud sprache*.mp3 --out output
 ```
 `multi-audio` erstellt für jede Audiodatei ein eigenes Video mit demselben Bild.
+
+## Video spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf "hflip" gespiegelt.mp4
+```
+`hflip` (horizontal spiegeln) dreht das Bild an einer senkrechten Achse.

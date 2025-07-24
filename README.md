@@ -40,6 +40,8 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 - **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
+- **Hilfe-Bereich ausblenden** – über "Ansicht" lässt sich der rechte Hilfeblock
+  ein- oder ausblenden.
 - **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
