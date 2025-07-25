@@ -162,3 +162,8 @@ ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
 
 - Klappe links die **Sidebar** auf oder zu über das Menü **Ansicht**.
 - Ziehe die Trennleiste ("Splitter") zwischen Raster und Log, um die Höhen zu ändern.
+
+## 25. Seitenleiste schnell ausblenden
+
+- Öffne das Menü **Ansicht**.
+- Setze oder entferne den Haken bei **Sidebar**.

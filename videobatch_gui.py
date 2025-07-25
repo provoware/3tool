@@ -516,8 +516,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # aufklappbare Seitenleiste
         self.sidebar = QtWidgets.QDockWidget("Dateilisten", self)
-        self.sidebar.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable | QtWidgets.QDockWidget.DockWidgetMovable)
+        self.sidebar.setFeatures(
+            QtWidgets.QDockWidget.DockWidgetClosable
+            | QtWidgets.QDockWidget.DockWidgetMovable
+        )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.sidebar)
+        self.sidebar.setVisible(
+            self.settings.value("ui/show_sidebar", True, bool)
+        )
 
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.model)
@@ -703,6 +709,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                     checked=self.settings.value("ui/show_log", True, bool))
         self.act_show_log.toggled.connect(self._toggle_log)
         m_ansicht.addAction(self.act_show_log)
+        self.act_show_sidebar = QAction("Sidebar", self, checkable=True,
+                                        checked=self.sidebar.isVisible())
+        self.act_show_sidebar.toggled.connect(self._toggle_sidebar)
+        m_ansicht.addAction(self.act_show_sidebar)
 
         m_theme = menubar.addMenu("Theme")
         for name in THEMES.keys():
@@ -1060,6 +1070,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _toggle_log(self, checked: bool):
         self.log_box.setVisible(checked)
         self.settings.setValue("ui/show_log", checked)
+
+    def _toggle_sidebar(self, checked: bool):
+        self.sidebar.setVisible(checked)
+        self.settings.setValue("ui/show_sidebar", checked)
 
     def _toggle_debug(self, checked: bool):
         self.debug_mode = checked

@@ -39,10 +39,10 @@
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
- - [ ] Modus "Video + Audio" ausprobieren
+- [x] Modus "Video + Audio" ausprobieren
 - [x] Modus "Mehrere Audios, ein Bild" ausprobieren
  - [x] Menüeintrag "README öffnen" testen
-- [ ] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
+- [x] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
 - [ ] "Pfad kopieren" im Kontextmenü testen
  - [x] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
  - [x] Knopf "Ausgabeordner öffnen" testen
