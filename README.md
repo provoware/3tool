@@ -43,6 +43,8 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Hilfe-Bereich ausblenden** – über "Ansicht" lässt sich der rechte Hilfeblock
   ein- oder ausblenden.
 - **Log-Bereich ausblenden** – im gleichen Menü kann man den unteren Protokollbereich verstecken.
+- **Einklappbare Sidebar** – links zeigen die Dateilisten eine Seitenleiste, die sich ein- oder ausblenden lässt.
+- **Flexibles 3×3 Raster** – mittig gibt es ein 3×3 Panelraster. Eine Ziehleiste ("Splitter") regelt die Höhe des Logs.
 - **Ordner-Prüfung** – vor dem Start wird geprüft, ob der Ausgabeordner vorhanden und beschreibbar ist.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
