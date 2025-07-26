@@ -43,18 +43,18 @@
 - [x] Modus "Mehrere Audios, ein Bild" ausprobieren
  - [x] Menüeintrag "README öffnen" testen
 - [x] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
-- [ ] "Pfad kopieren" im Kontextmenü testen
+- [x] "Pfad kopieren" im Kontextmenü testen
  - [x] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
  - [x] Knopf "Ausgabeordner öffnen" testen
  - [x] Ereignislog aktualisieren: `ereignislog.txt`
 - [x] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
 - [x] Abschnitt "Weiterführende Befehle" lesen
 - [x] Neues Hilfefenster prüfen
-- [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
+- [x] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
  - [x] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
  - [x] Kontextmenü in Bilder- und Audioliste testen
 - [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
-- [ ] Beschriftungen unter den Buttons prüfen
+- [x] Beschriftungen unter den Buttons prüfen
 
 # Neu
 - [x] Favoriten-Bereich testen

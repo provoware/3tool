@@ -84,3 +84,25 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 * Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
 * Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.
+
+## Release-Vorbereitung
+
+Vor der Veröffentlichung ("Release") sollten alle Funktionen noch einmal getestet werden.
+Gehe die Datei `todo.txt` durch und prüfe, ob überall `[x]` steht.
+Für das finale Paket empfiehlt sich folgendes Vorgehen:
+
+1. **Abhängigkeiten ("Dependencies") prüfen**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Automatische Tests ausführen**:
+   ```bash
+   python3 videobatch_extra.py --selftest
+   ```
+3. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
+   ```bash
+   zip -r videobatchtool.zip .
+   ```
+4. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
+
+Damit ist das Tool bereit für den Upload oder die Weitergabe.
