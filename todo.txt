@@ -51,7 +51,7 @@
 - [x] Abschnitt "Weiterführende Befehle" lesen
 - [x] Neues Hilfefenster prüfen
 - [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
-- [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
+ - [x] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
  - [x] Kontextmenü in Bilder- und Audioliste testen
 - [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
 - [ ] Beschriftungen unter den Buttons prüfen

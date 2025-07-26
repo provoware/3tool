@@ -50,3 +50,4 @@
 2025-07-24 Noch mehr Beispiele und Weiterfuehrende Befehle gelesen
 [2025-07-24] Kontextmenü in Listen getestet und Öffnen-Knopf geprüft
 [2025-07-25] Sidebar schaltbar und 3x3 Raster optimiert; Aufgaben 'Modus Video + Audio ausprobieren' und 'Neue Kontextmenü-Funktionen ausprobieren' erledigt
+[2025-07-26] ANLEITUNG_EXTRA.md gelesen (Aufgabe 'Neues Dokument ANLEITUNG_EXTRA.md lesen' erledigt)
