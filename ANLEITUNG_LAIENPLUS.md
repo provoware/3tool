@@ -157,3 +157,13 @@ ffmpeg -stream_loop -1 -i clip.mp4 -c copy loop.mp4
 ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
 ```
 `overlay` (Überlagerung) setzt das Logo 10 Pixel vom linken und oberen Rand ins Bild.
+
+## 24. Fenster flexibel anpassen
+
+- Klappe links die **Sidebar** auf oder zu über das Menü **Ansicht**.
+- Ziehe die Trennleiste ("Splitter") zwischen Raster und Log, um die Höhen zu ändern.
+
+## 25. Seitenleiste schnell ausblenden
+
+- Öffne das Menü **Ansicht**.
+- Setze oder entferne den Haken bei **Sidebar**.

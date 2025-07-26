@@ -53,3 +53,15 @@ ffmpeg -i eingang.mp4 -vf "pad=iw+40:ih+40:20:20:black" mit_rand.mp4
 ```
 *`pad`* fügt Ränder hinzu. `iw` und `ih` stehen für Breite und Höhe des Originals.
 
+## 9. Ton lauter machen
+```bash
+ffmpeg -i eingang.mp4 -filter:a "volume=1.5" lauter.mp4
+```
+Der Filter `volume` (Lautstärke) verstärkt den Ton hier um 50 %.
+
+## 10. Video in Graustufen
+```bash
+ffmpeg -i eingang.mp4 -vf "format=gray" grau.mp4
+```
+`format=gray` wandelt das Video in Schwarz-Weiß um.
+
