@@ -85,6 +85,20 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 * Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.
 
+## Fehleranalyse und Optimierung
+
+Mit dem Programm `flake8` laesst sich der Quellcode (Text des Programms) auf Fehler und Stil-Regeln (PEP8) pruefen.
+```bash
+pip install flake8
+flake8 videobatch_extra.py videobatch_gui.py videobatch_launcher.py
+```
+Erscheinen Meldungen, sollte man die Zeilen pruefen.
+
+Als Zusatz hilft der Selbsttest:
+```bash
+python3 videobatch_extra.py --selftest
+```
+
 ## Release-Vorbereitung
 
 Vor der Veröffentlichung ("Release") sollten alle Funktionen noch einmal getestet werden.

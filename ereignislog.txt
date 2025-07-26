@@ -52,3 +52,4 @@
 [2025-07-25] Sidebar schaltbar und 3x3 Raster optimiert; Aufgaben 'Modus Video + Audio ausprobieren' und 'Neue Kontextmenü-Funktionen ausprobieren' erledigt
 [2025-07-26] ANLEITUNG_EXTRA.md gelesen (Aufgabe 'Neues Dokument ANLEITUNG_EXTRA.md lesen' erledigt)
 [2025-07-26] Pfad kopieren getestet, Auto-Pair mit mehreren Slideshow-Ordnern ausprobiert und Beschriftungen unter den Buttons geprueft (Aufgaben erledigt)
+[2025-07-26] Codeanalyse mit flake8 durchgefuehrt (Aufgabe 'Codeanalyse mit flake8 durchfuehren' erledigt)
