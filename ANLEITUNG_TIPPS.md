@@ -25,6 +25,14 @@ sudo apt-get install ffmpeg
 
 Im Tabellenbereich kann man nun mit der rechten Maustaste auf eine Zeile klicken und "Im Ordner zeigen" auswählen. Dadurch öffnet sich der Ordner, in dem sich die Datei befindet.
 
+## Schriftgröße reparieren
+
+Wenn die Schrift unerwartet sehr groß oder klein erscheint, ist vielleicht eine falsche Einstellung gespeichert. Wähle im Menü **Ansicht** den Punkt **Schrift Reset**, um zur Standardgröße 11 zurückzukehren. Bleibt das Problem bestehen, lösche die Datei `~/.config/Provoware/VideoBatchTool.conf` (Konfigurationsdatei) und starte das Programm neu.
+
+## Fehlermeldungen finden
+
+Bei einem unerwarteten Fehler zeigt das Programm ein rotes Hinweisfenster. Die ausführliche Meldung steht im Logfile (Protokolldatei) unter `~/.videobatchtool/logs`. Öffne die neueste Datei dort mit einem Texteditor, um die Details zu sehen.
+
 ## Weitere Befehle
 
 Das Tool lässt sich auch komplett über die Kommandozeile nutzen:
