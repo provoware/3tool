@@ -668,7 +668,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.doubleClicked.connect(self._show_statusbar_path)
         self.btn_out_open.clicked.connect(self._open_out_dir)
 
-        self._apply_font()
+        self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
@@ -1060,9 +1060,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _global_exception(self, etype, value, tb):
         import traceback
-        msg="".join(traceback.format_exception(etype,value,tb))
-        QtWidgets.QMessageBox.critical(self,"Unerwarteter Fehler",msg)
-        self._log(msg)
+        msg = "".join(traceback.format_exception(etype, value, tb))
+        self._log(msg, logging.ERROR)
+        short = msg if len(msg) < 1000 else msg[:1000] + "\n...\nSiehe Logdatei für Details."
+        QtWidgets.QMessageBox.critical(self, "Unerwarteter Fehler", short)
 
     def _resize_columns(self):
         header = self.table.horizontalHeader()
