@@ -457,6 +457,23 @@ class InfoDashboard(QtWidgets.QWidget):
         self.env_lbl.setText(f"Env: {'OK' if imp_ok else 'FEHLT'}")
     def log(self,msg): self.mini_log.appendPlainText(msg)
 
+def _create_panel_grid(rows: int = 3, cols: int = 3) -> QtWidgets.QWidget:
+    """Erzeugt ein flexibles Raster mit gleich großen Feldern."""
+    grid_widget = QtWidgets.QWidget()
+    grid = QtWidgets.QGridLayout(grid_widget)
+    grid.setSpacing(5)
+    for r in range(rows):
+        grid.setRowStretch(r, 1)
+        for c in range(cols):
+            grid.setColumnStretch(c, 1)
+            panel = QtWidgets.QGroupBox(f"Panel {r*cols + c + 1}")
+            lay = QtWidgets.QVBoxLayout(panel)
+            lbl = QtWidgets.QLabel(f"Inhalt {r*cols + c + 1}")
+            lbl.setAlignment(Qt.AlignCenter)
+            lay.addWidget(lbl)
+            grid.addWidget(panel, r, c)
+    return grid_widget
+
 # ---------- MainWindow ----------
 class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
@@ -497,13 +514,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_list.files_dropped.connect(self._on_images_added)
         self.audio_list.files_dropped.connect(self._on_audios_added)
 
-        pool_tabs = QtWidgets.QTabWidget()
-        pool_tabs.addTab(self.image_list, "Bilder")
-        pool_tabs.addTab(self.audio_list, "Audios")
-        pool_tabs.addTab(self.favorite_list, "Favoriten")
-
-        pool_box = QtWidgets.QGroupBox("Dateilisten")
-        pb_lay = QtWidgets.QVBoxLayout(pool_box); pb_lay.addWidget(pool_tabs)
+        # aufklappbare Seitenleiste
+        self.sidebar = QtWidgets.QDockWidget("Dateilisten", self)
+        self.sidebar.setFeatures(
+            QtWidgets.QDockWidget.DockWidgetClosable
+            | QtWidgets.QDockWidget.DockWidgetMovable
+        )
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.sidebar)
+        self.sidebar.setVisible(
+            self.settings.value("ui/show_sidebar", True, bool)
+        )
 
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.model)
@@ -567,18 +587,9 @@ class MainWindow(QtWidgets.QMainWindow):
         left_tabs = QtWidgets.QTabWidget()
         left_tabs.addTab(pool_box, "Dateien")
         left_tabs.addTab(self.settings_widget, "Einstellungen")
+        self.sidebar.setWidget(left_tabs)
 
-        right_split = QtWidgets.QSplitter(Qt.Vertical)
-        right_split.addWidget(table_box)
-        right_split.addWidget(help_box)
-        right_split.setStretchFactor(0, 3)
-        right_split.setStretchFactor(1, 1)
-
-        grid_split  = QtWidgets.QSplitter(Qt.Horizontal)
-        grid_split.addWidget(left_tabs)
-        grid_split.addWidget(right_split)
-        grid_split.setStretchFactor(0, 1)
-        grid_split.setStretchFactor(1, 2)
+        panel_grid = _create_panel_grid()
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
@@ -588,8 +599,12 @@ class MainWindow(QtWidgets.QMainWindow):
         bl.addWidget(self.progress_total)
         bl.addWidget(self.log_edit)
 
-        outer_split = QtWidgets.QSplitter(Qt.Vertical); outer_split.addWidget(grid_split); outer_split.addWidget(self.log_box)
-        outer_split.setStretchFactor(0,4); outer_split.setStretchFactor(1,1)
+        # Log-Bereich flexibel einteilbar
+        main_splitter = QtWidgets.QSplitter(Qt.Vertical)
+        main_splitter.addWidget(panel_grid)
+        main_splitter.addWidget(self.log_box)
+        main_splitter.setStretchFactor(0, 4)
+        main_splitter.setStretchFactor(1, 1)
 
         # Buttons
         self.btn_add_images = QtWidgets.QPushButton("Bilder wählen")
@@ -639,7 +654,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(self.dashboard)
         central_layout.addWidget(btn_box)
-        central_layout.addWidget(outer_split)
+        central_layout.addWidget(main_splitter)
         central = QtWidgets.QWidget(); central.setLayout(central_layout)
         self.setCentralWidget(central)
 
@@ -694,6 +709,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                     checked=self.settings.value("ui/show_log", True, bool))
         self.act_show_log.toggled.connect(self._toggle_log)
         m_ansicht.addAction(self.act_show_log)
+        self.act_show_sidebar = QAction("Sidebar", self, checkable=True,
+                                        checked=self.sidebar.isVisible())
+        self.act_show_sidebar.toggled.connect(self._toggle_sidebar)
+        m_ansicht.addAction(self.act_show_sidebar)
 
         m_theme = menubar.addMenu("Theme")
         for name in THEMES.keys():
@@ -1051,6 +1070,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _toggle_log(self, checked: bool):
         self.log_box.setVisible(checked)
         self.settings.setValue("ui/show_log", checked)
+
+    def _toggle_sidebar(self, checked: bool):
+        self.sidebar.setVisible(checked)
+        self.settings.setValue("ui/show_sidebar", checked)
 
     def _toggle_debug(self, checked: bool):
         self.debug_mode = checked

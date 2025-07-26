@@ -46,3 +46,6 @@
 [2025-07-24] Debug-Log zuschaltbar und Hilfe angepasst
 [2025-07-24] README-Menü und Tooltip getestet
 [2025-07-24] Log-Bereich zuschaltbar, Fenster zentriert und neue Tipps ergänzt; Aufgabe 'Neues Hilfefenster prüfen' erledigt
+2025-07-24 Noch mehr Beispiele und Weiterfuehrende Befehle gelesen
+[2025-07-24] Kontextmenü in Listen getestet und Öffnen-Knopf geprüft
+[2025-07-25] Sidebar schaltbar und 3x3 Raster optimiert; Aufgaben 'Modus Video + Audio ausprobieren' und 'Neue Kontextmenü-Funktionen ausprobieren' erledigt
