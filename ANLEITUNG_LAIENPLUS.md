@@ -701,3 +701,15 @@ ffmpeg -i quelle.mp3 -af "lowpass=f=3000" weniger_hoehen.mp3
 ```
 *`lowpass`* (Tiefpassfilter) laesst nur Frequenzen bis 3000 Hertz durch und daempft schrille Klaenge.
 
+## 108. Ton als FLAC speichern
+```bash
+ffmpeg -i eingang.wav -c:a flac ausgabe.flac
+```
+*`flac`* (Free Lossless Audio Codec) speichert den Ton ohne Qualitaetsverlust in einer kompakten Datei.
+
+## 109. Video in H.265 (HEVC) umwandeln
+```bash
+ffmpeg -i quelle.mp4 -c:v libx265 -c:a copy film_hevc.mp4
+```
+*`libx265`* ist der Encoder fuer den modernen **H.265/HEVC**-Standard (High Efficiency Video Coding) und erzeugt kleine Dateien bei guter Qualitaet. *`-c:a copy`* uebernimmt die Tonspur unveraendert.
+

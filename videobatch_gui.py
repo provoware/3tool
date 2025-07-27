@@ -72,28 +72,41 @@ THEMES = {
 }
 
 # ---------- Helpers ----------
-def which(p: str): return shutil.which(p)
-def check_ffmpeg(): return which("ffmpeg") and which("ffprobe")
+
+
+def which(p: str):
+    return shutil.which(p)
+
+
+def check_ffmpeg():
+    return which("ffmpeg") and which("ffprobe")
+
 
 def get_used_dir() -> Path:
     return Path.home() / "benutzte_dateien"
 
+
 def default_output_dir() -> Path:
     return Path.home() / "Videos" / "VideoBatchTool_Out"
 
-def safe_move(src: Path, dst_dir: Path, copy_only: bool=False) -> Path:
+
+def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
     dst_dir.mkdir(parents=True, exist_ok=True)
     tgt = dst_dir / src.name
     if tgt.exists():
         stem, suf = src.stem, src.suffix
-        tgt = dst_dir / f"{stem}_{datetime.now().strftime('%Y%m%d-%H%M%S')}{suf}"
+        timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+        tgt = dst_dir / f"{stem}_{timestamp}{suf}"
     try:
-        if copy_only: shutil.copy2(src, tgt)
-        else: shutil.move(src, tgt)
+        if copy_only:
+            shutil.copy2(src, tgt)
+        else:
+            shutil.move(src, tgt)
     except Exception:
         shutil.copy2(src, tgt)
         if not copy_only:
-            try: src.unlink()
+            try:
+                src.unlink()
             except Exception as e:
                 print("Fehler beim Löschen:", e, file=sys.stderr)
     return tgt
@@ -103,12 +116,15 @@ def make_thumb(path: str, size: Tuple[int,int]=(160,90)) -> QtGui.QPixmap:
         from PIL import Image
         img = Image.open(path)
         img.thumbnail(size)
-        if img.mode != "RGBA": img = img.convert("RGBA")
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
         data = img.tobytes("raw", "RGBA")
         qimg = QtGui.QImage(data, img.size[0], img.size[1], QtGui.QImage.Format_RGBA8888)
         return QtGui.QPixmap.fromImage(qimg)
     except Exception:
-        pix = QtGui.QPixmap(size[0], size[1]); pix.fill(Qt.gray); return pix
+        pix = QtGui.QPixmap(size[0], size[1])
+        pix.fill(Qt.gray)
+        return pix
 
 
 # ---------- Datenmodell ----------
