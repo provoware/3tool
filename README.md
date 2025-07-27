@@ -26,6 +26,17 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    Bist du bereits in einer eigenen Umgebung, erkennt der Launcher dies und nutzt dein aktuelles Python.
 3. Alternativ kann das Beispielskript `setup.sh` alles in einem Durchlauf erledigen. Ein Muster steht in `setup-sh.txt`.
 
+### Start mit Hilfefenster
+
+Beim ersten Start erscheint ein kleines Setup-Fenster. Es prüft, ob alle
+benötigten Pakete und `ffmpeg` vorhanden sind. Über die Schaltfläche
+**Installieren / Reparieren** lässt sich alles automatisch einrichten.
+Mit dem Parameter `--help` zeigt der Launcher alle verfügbaren Optionen an:
+
+```bash
+python3 videobatch_launcher.py --help
+```
+
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
 Im Abschnitt "Weiterführende Befehle" von `ANLEITUNG_GESAMT.md` finden sich
@@ -71,6 +82,8 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
 - Wenn etwas schlecht zu erkennen ist, nutze das Theme "Kontrast" oder vergrößere die Schrift über "Ansicht".
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
+- Wenn du das Fenster größer oder kleiner ziehst, ordnen sich alle Elemente
+  automatisch neu an. Auch die Trennleisten lassen sich flexibel verschieben.
 
 ## Hilfe-Fenster
 

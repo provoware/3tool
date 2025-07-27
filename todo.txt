@@ -76,3 +76,5 @@
 
 - [x] Sichtbarkeit der Oberflaechenelemente pruefen
 - [x] Weiterfuehrende Laientipps Teil 3 ergaenzen
+- [x] Start-Hilfe ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 4 hinzufuegen

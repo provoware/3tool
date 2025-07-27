@@ -57,3 +57,4 @@
 [2025-07-27] Weiterfuehrende Laienvorschlaege ergaenzt und Fehlermeldungen ausfuehrlicher gestaltet
 [2025-07-27] Backup-Befehl dokumentiert und Tipps fuer Laien erweitert (Aufgabe 'Backup-Befehl ergaenzen' erledigt)
 [2025-07-27] Sichtbarkeit geprueft und Laientipps Teil 3 ergaenzt (Aufgaben erledigt)
+[2025-07-27] Start-Hilfe ergänzt und Laientipps Teil 4 hinzugefügt

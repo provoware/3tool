@@ -118,3 +118,29 @@ beschrieben.
    ```
    Einige Fenster wirken übersichtlicher im Vollbildmodus. Der Parameter
    `--fullscreen` (ganzer Bildschirm) startet das Programm entsprechend.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 4
+
+Diese Befehle geben weiteren Einblick. Sie sind kurz erklaert und koennen
+so uebernommen werden.
+
+1. **Dateigroessen anzeigen**
+   ```bash
+   du -sh *
+   ```
+   `du` (disk usage) zeigt, wie viel Platz jede Datei benoetigt. `-h` gibt
+   die Werte in MB oder GB aus.
+
+2. **Laufende Programme auflisten**
+   ```bash
+   ps aux | head
+   ```
+   `ps aux` listet alle laufenden Prozesse. Mit `head` werden nur die ersten
+   Zeilen angezeigt.
+
+3. **Text in Dateien suchen**
+   ```bash
+   grep -R "Fehler" .
+   ```
+   `grep` sucht nach dem Wort "Fehler" in allen Dateien. `-R` bedeutet
+   rekursiv (auch Unterordner werden durchsucht).
