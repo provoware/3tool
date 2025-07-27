@@ -500,3 +500,15 @@ ffmpeg -i stimme.mp3 -filter:a "asetrate=44100*0.8,atempo=1/0.8" tiefer.mp3
 ffmpeg -i video.mp4 -vf "hqdn3d" sauber.mp4
 ```
 *`hqdn3d`* (High Quality 3D Denoise) glättet das Bild und mindert Rauschen.
+
+## 76. Zeilensprungartefakte entfernen
+```bash
+ffmpeg -i eingang.mp4 -vf yadif sauber.mp4
+```
+*`yadif`* (Yet Another Deinterlacing Filter) beseitigt das Zeilenflimmern bei alten Aufnahmen.
+
+## 77. Gamma korrigieren
+```bash
+ffmpeg -i video.mp4 -vf "eq=gamma=1.3" klarer.mp4
+```
+*`gamma`* (Helligkeitsverteilung) hellt mittlere Bildbereiche auf. Der Wert `1.3` sorgt für mehr Leuchtkraft.
