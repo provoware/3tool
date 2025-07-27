@@ -218,3 +218,10 @@ ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.
 ```
 *`setpts`* (Zeitstempel) halbiert die Abspielzeit des Videos.
 *`atempo`* (Geschwindigkeit des Tons) passt die Tonspur an.
+
+## 32. Video rueckwaerts abspielen
+```bash
+ffmpeg -i eingang.mp4 -vf reverse -af areverse rueckwaerts.mp4
+```
+*`reverse`* (Ruecklauf) dreht das Bild um.
+*`areverse`* spiegelt den Ton.

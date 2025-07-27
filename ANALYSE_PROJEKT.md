@@ -37,6 +37,31 @@ Dieses Dokument sammelt Hinweise zur Verbesserung des Quellcodes.
 - `videobatch_extra.py` meldet FFmpeg-Fehler nur knapp. Eine ausfuehrlichere Meldung waere hilfreich.
 - Im GUI-Teil fehlt teils eine Pruefung, ob Dateien existieren. Das sollte ergaenzt werden.
 
+## Offene Punkte
+
+Diese Punkte koennen als naechste Schritte dienen. Die Sprache bleibt einfach.
+
+1. **CI einrichten** (automatische Tests)
+   ```bash
+   gh actions run
+   ```
+   Eine Pipeline prueft spaeter den Code bei jeder Aenderung.
+
+2. **Code formatieren**
+   ```bash
+   black *.py
+   ```
+   *`black`* ordnet den Code gleichmaessig an.
+
+3. **Fehlerausgaben verbessern**
+   ```bash
+   python3 videobatch_extra.py --debug
+   ```
+   Ein zusaetzlicher Hinweis erklaert moegliche Probleme genauer.
+
+4. **Bedienung vereinfachen**
+   - Eine einheitliche **Start**-Taste koennte mehrere Funktionen ersetzen.
+
 ## Weiterfuehrende Tipps fuer Laien
 
 Diese Hinweise helfen beim Einstieg und koennen direkt in einem Terminal

@@ -97,3 +97,6 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 29 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 30 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 31 ergaenzen
+
+- [x] Offene Punkte analysieren und dokumentieren
+- [x] Weiterfuehrende Laientipps Teil 32 ergaenzen
