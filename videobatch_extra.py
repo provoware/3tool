@@ -88,7 +88,11 @@ def cli_single(
             "-tune",
             "stillimage",
             "-vf",
-            f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2",
+            (
+                "scale="
+                f"{width}:{height}:force_original_aspect_ratio=decrease,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2"
+            ),
             "-c:a",
             "aac",
             "-b:a",
@@ -229,7 +233,11 @@ def cli_slideshow(
         "-c:v",
         "libx264",
         "-vf",
-        f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2",
+        (
+            "scale="
+            f"{width}:{height}:force_original_aspect_ratio=decrease,"
+            f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2"
+        ),
         "-c:a",
         "aac",
         "-b:a",
@@ -253,6 +261,7 @@ def cli_slideshow(
     return 0
 
 
+
 def run_selftests() -> int:
     assert human_time(65) == "01:05"
     with tempfile.TemporaryDirectory() as td:
@@ -261,6 +270,7 @@ def run_selftests() -> int:
         assert re.search(r"a_\d{8}-\d{6}\.mp4$", out.name)
     print("Selftests OK")
     return 0
+
 
 def main() -> None:
     import argparse
@@ -335,6 +345,7 @@ def main() -> None:
             )
         )
     print("GUI starten: python3 videobatch_launcher.py")
+
 
 if __name__ == "__main__":
     main()

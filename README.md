@@ -241,3 +241,7 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   ```
   `mkdir` (make directory) erstellt einen Ordner. `rmdir` (remove directory)
   loescht ihn wieder, wenn er leer ist.
+
+* **Fenstergroesse testen**
+  Ziehe das Hauptfenster mit der Maus groesser oder kleiner.
+  Alle Bereiche passen sich automatisch an, damit nichts verdeckt wird.

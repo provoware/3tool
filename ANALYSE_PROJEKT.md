@@ -326,3 +326,25 @@ kopieren und im Terminal ausfuehren.
    rmdir neuer_ordner
    ```
    `rmdir` (remove directory) loescht ihn wieder, sofern er leer ist.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 13
+
+Auch dieser Abschnitt verwendet einfache Sprache. Alle Befehle koennen direkt kopiert werden.
+
+1. **Letzte Zeilen einer Protokolldatei anzeigen**
+   ```bash
+   tail -n 20 datei.log
+   ```
+   `tail` (letzter Teil) zeigt mit `-n` die gewuenschte Anzahl an Zeilen von unten.
+
+2. **Netzwerkverbindung testen**
+   ```bash
+   ping -c 4 example.com
+   ```
+   `ping` prueft die Verbindung. Die Option `-c` gibt an, wie oft das Paket gesendet wird.
+
+3. **Grosse Dateien finden**
+   ```bash
+   find . -type f -size +50M
+   ```
+   `find` sucht Dateien. Die Angabe `+50M` bedeutet groesser als 50 Megabyte.
