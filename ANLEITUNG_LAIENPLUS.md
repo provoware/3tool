@@ -512,3 +512,10 @@ ffmpeg -i eingang.mp4 -vf yadif sauber.mp4
 ffmpeg -i video.mp4 -vf "eq=gamma=1.3" klarer.mp4
 ```
 *`gamma`* (Helligkeitsverteilung) hellt mittlere Bildbereiche auf. Der Wert `1.3` sorgt für mehr Leuchtkraft.
+
+## 78. Bitrate begrenzen
+```bash
+ffmpeg -i video.mp4 -b:v 1000k -b:a 128k kleiner.mp4
+```
+*`b:v`* (Video-Bitrate) legt die Datenrate des Bildes fest. Mit `1000k` wird es kleiner.
+*`b:a`* (Audio-Bitrate) stellt die Datenrate des Tons ein.

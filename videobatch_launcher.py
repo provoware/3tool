@@ -6,37 +6,49 @@
 # =========================================
 
 from __future__ import annotations
-import sys, os, subprocess, shutil
+import sys
+import os
+import subprocess
+import shutil
 from pathlib import Path
 
 REQ_PKGS = ["PySide6", "Pillow", "ffmpeg-python"]
-ENV_DIR  = Path(".videotool_env").resolve()
-SELF     = Path(__file__).resolve()
-FLAG     = "VT_BOOTSTRAPPED"
+ENV_DIR = Path(".videotool_env").resolve()
+SELF = Path(__file__).resolve()
+FLAG = "VT_BOOTSTRAPPED"
+
 
 def in_venv() -> bool:
     return (hasattr(sys, "real_prefix")
             or getattr(sys, "base_prefix", sys.prefix) != sys.prefix
             or os.environ.get("VIRTUAL_ENV"))
 
+
 def venv_python() -> Path:
     """Return path to launcher venv or current interpreter if missing."""
     path = ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
     return path if path.exists() else Path(sys.executable)
 
+
 def ensure_venv() -> None:
     if not ENV_DIR.exists():
         subprocess.check_call([sys.executable, "-m", "venv", str(ENV_DIR)])
+
 
 def pip_show(py: str, pkg: str) -> bool:
     return subprocess.run([py, "-m", "pip", "show", pkg],
                           stdout=subprocess.DEVNULL,
                           stderr=subprocess.DEVNULL).returncode == 0
 
+
 def pip_install(py: str, pkgs: list[str]) -> None:
-    if not pkgs: return
-    subprocess.check_call([py, "-m", "pip", "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL)
+    if not pkgs:
+        return
+    subprocess.check_call(
+        [py, "-m", "pip", "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL
+    )
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade"] + pkgs)
+
 
 def reboot_into_venv():
     py_path = Path(venv_python())
@@ -47,7 +59,8 @@ def reboot_into_venv():
             print("Konnte virtuelle Umgebung nicht erstellen:", e)
             py_path = Path(sys.executable)
         else:
-            py_path = Path(venv_python()) if (ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python").exists() else Path(sys.executable)
+            path_obj = ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+            py_path = Path(venv_python()) if path_obj.exists() else Path(sys.executable)
 
     env = os.environ.copy()
     env[FLAG] = "1"
@@ -56,6 +69,7 @@ def reboot_into_venv():
     except FileNotFoundError:
         print("Python-Interpreter nicht gefunden:", py_path)
         os.execvpe(sys.executable, [sys.executable, str(SELF)], env)
+
 
 def bootstrap_console():
     if not in_venv():
@@ -68,6 +82,7 @@ def bootstrap_console():
     missing = [p for p in REQ_PKGS if not pip_show(py, p)]
     if missing:
         pip_install(py, missing)
+
 
 def main():
     bootstrap_console()
@@ -89,13 +104,13 @@ def main():
             self._check()
 
         def _build_ui(self):
-            self.info     = QtWidgets.QTextBrowser()
+            self.info = QtWidgets.QTextBrowser()
             self.info.setOpenExternalLinks(True)
             self.progress = QtWidgets.QProgressBar(maximum=100)
 
-            self.btn_fix   = QtWidgets.QPushButton("Installieren / Reparieren")
+            self.btn_fix = QtWidgets.QPushButton("Installieren / Reparieren")
             self.btn_start = QtWidgets.QPushButton("Tool starten →")
-            self.btn_exit  = QtWidgets.QPushButton("Beenden")
+            self.btn_exit = QtWidgets.QPushButton("Beenden")
 
             self.btn_fix.clicked.connect(self._fix_all)
             self.btn_start.clicked.connect(self.accept)
