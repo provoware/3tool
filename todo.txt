@@ -79,3 +79,5 @@
 - [x] Start-Hilfe ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 4 hinzufuegen
 - [x] Weiterfuehrende Laientipps Teil 5 ergaenzen
+- [x] Hilfe fuer aeltere Nutzer pruefen
+- [x] Weiterfuehrende Laientipps Teil 6 ergaenzen

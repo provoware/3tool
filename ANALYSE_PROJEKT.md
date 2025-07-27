@@ -165,4 +165,26 @@ Auch dieser Abschnitt verwendet einfache Sprache. Fachbegriffe werden kurz in Kl
    ```bash
    du -sh ./*
    ```
-   `du` (disk usage) zeigt den belegten Speicher. `-h` sorgt fuer leicht lesbare Werte (MB oder GB).
+`du` (disk usage) zeigt den belegten Speicher. `-h` sorgt fuer leicht lesbare Werte (MB oder GB).
+
+## Weiterfuehrende Tipps fuer Laien – Teil 6
+
+Auch dieser Teil nutzt einfache Sprache und zeigt nuetzliche Befehle.
+
+1. **Ins Elternverzeichnis wechseln**
+   ```bash
+   cd ..
+   ```
+   `cd` (change directory) wechselt in einen anderen Ordner. Mit `..` geht es eins hoch.
+
+2. **Dateiinhalt anzeigen**
+   ```bash
+   cat README.md
+   ```
+   `cat` gibt den Inhalt einer Datei direkt im Terminal aus.
+
+3. **Zuletzt eingegebene Befehle anzeigen**
+   ```bash
+   history | tail
+   ```
+   `history` zeigt die Befehlsgeschichte. `tail` beschränkt die Ausgabe auf die letzten Zeilen.

@@ -87,7 +87,15 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 
 ## Hilfe-Fenster
 
+
 Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeigt dort die wichtigsten Schritte. Es lässt sich jederzeit öffnen.
+
+## Tipps für ältere Nutzer
+
+- Wähle unter "Theme" den Eintrag **Kontrast**, wenn Texte schwer zu lesen sind.
+- Über "Ansicht → Schriftgröße" lässt sich die Schrift schnell vergrößern.
+- Drücke **F11** für den Vollbildmodus. Alle Elemente werden größer dargestellt.
+- Die Hilfe erreichst du jederzeit über **Hilfe → Kurzanleitung** oder die Taste **F1**.
 
 ## Zusaetzlich
 

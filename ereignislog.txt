@@ -59,3 +59,4 @@
 [2025-07-27] Sichtbarkeit geprueft und Laientipps Teil 3 ergaenzt (Aufgaben erledigt)
 [2025-07-27] Start-Hilfe ergänzt und Laientipps Teil 4 hinzugefügt
 [2025-07-27] Weiterfuehrende Laientipps Teil 5 ergaenzt (Aufgabe erledigt)
+[2025-07-27] Hilfe fuer aeltere Nutzer beschrieben und Laientipps Teil 6 hinzugefuegt (Aufgaben erledigt)
