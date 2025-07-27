@@ -367,3 +367,15 @@ ffmpeg -i video.mp4 -af "adelay=1000|1000" verschoben.mp4
 ```
 *`adelay`* (Audio-Verzögerung) startet den Ton erst nach einer Sekunde.
 
+
+## 54. Wasserzeichen hinzufuegen
+```bash
+ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
+```
+*`overlay`* (Ueberlagerung) legt das Logo an der Position 10:10 ins Bild.
+
+## 55. Einzelbilder exportieren
+```bash
+ffmpeg -i video.mp4 bild_%03d.png
+```
+*`%03d`* zaehlt die Bilder mit drei Ziffern.
