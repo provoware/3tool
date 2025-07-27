@@ -218,3 +218,45 @@ ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.
 ```
 *`setpts`* (Zeitstempel) halbiert die Abspielzeit des Videos.
 *`atempo`* (Geschwindigkeit des Tons) passt die Tonspur an.
+
+## 32. Video rueckwaerts abspielen
+```bash
+ffmpeg -i eingang.mp4 -vf reverse -af areverse rueckwaerts.mp4
+```
+*`reverse`* (Ruecklauf) dreht das Bild um.
+*`areverse`* spiegelt den Ton.
+
+## 33. Video in Graustufen umwandeln
+```bash
+ffmpeg -i eingang.mp4 -vf "format=gray" grau.mp4
+```
+*`format=gray`* (Bildformat) entfernt die Farben.
+
+## 34. Verwackeltes Video stabilisieren
+```bash
+ffmpeg -i wackelig.mp4 -vf deshake stabil.mp4
+```
+*`deshake`* (Bildstabilisierung) gleicht ruckelige Bewegungen aus.
+
+## 35. Tonspur aus Video speichern
+```bash
+ffmpeg -i video.mp4 -vn -acodec copy ton.aac
+```
+*`-vn`* (Video nicht) entfernt das Bild.
+*`-acodec copy`* speichert die Tonspur unveraendert.
+
+
+## 36. Video komprimieren
+```bash
+ffmpeg -i input.mp4 -vcodec libx264 -crf 28 kleiner.mp4
+```
+*`libx264`* (Videocodec) komprimiert effizient.
+*`crf`* (Qualitaetsfaktor) steuert die Dateigroesse.
+
+## 37. Ton am Ende ausblenden
+```bash
+ffmpeg -i video.mp4 -af "afade=t=out:st=25:d=5" leise_end.mp4
+```
+*`afade`* (Ton ein- oder ausblenden) senkt die Lautstaerke langsam.
+*`t=out`* bedeutet ausblenden. *`st`* (Startzeit) legt fest, wann es beginnt.
+*`d`* (Dauer) bestimmt, wie lange der Effekt laeuft.

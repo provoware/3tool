@@ -67,7 +67,7 @@ Unterstuetzte Modi:
 * **Slideshow** – ganzer Bilder-Ordner fuer jedes Audio
 * **Video + Audio** – vorhandenes Video mit neuer Tonspur
 * **Mehrere Audios, ein Bild** – gleiches Bild fuer viele Audiodateien
-* **Slideshow mit mehreren Ordnern** – mehrere Bildordner lassen sich der Reihe nach mit den passenden Audios koppeln.  
+* **Slideshow mit mehreren Ordnern** – mehrere Bildordner lassen sich der Reihe nach mit den passenden Audios koppeln.
   Ordner im Tab **Bilder** hinzufügen, Audios auswählen und **Auto-Paaren** klicken.
 Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
 Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
@@ -79,6 +79,8 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
 - Über "Ansicht → Log-Bereich" kann diese Anzeige ausgeblendet werden.
 - Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
+- Wer lieber mit dem Terminal arbeitet, startet das Programm mit `--debug` und
+  sieht dort mehr Hinweise.
 - Wenn etwas schlecht zu erkennen ist, nutze das Theme "Kontrast" oder vergrößere die Schrift über "Ansicht".
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 - Wenn du das Fenster größer oder kleiner ziehst, ordnen sich alle Elemente
@@ -299,3 +301,4 @@ Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
   sha256sum datei.zip
   ```
   `sha256sum` erstellt eine digitale Pruefsumme, um die Datei zu ueberpruefen.
+

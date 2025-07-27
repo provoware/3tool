@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+from subprocess import CompletedProcess, PIPE
 import sys
 import tempfile
 from datetime import datetime
@@ -20,6 +21,9 @@ from pathlib import Path
 from typing import List
 
 import ffmpeg
+
+
+DEBUG = False
 
 
 def human_time(seconds: int) -> str:
@@ -52,6 +56,30 @@ def probe_duration(path: str) -> float:
     return 0.0
 
 
+def run_ffmpeg(cmd: list[str]) -> CompletedProcess[str]:
+    """FFmpeg aufrufen und bei Bedarf Details ausgeben."""
+    if DEBUG:
+        print("Starte:", " ".join(cmd))
+    try:
+        res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    except FileNotFoundError:
+        print("FFmpeg nicht gefunden. Bitte installieren.", file=sys.stderr)
+        return CompletedProcess(cmd, 1, "", "ffmpeg fehlt")
+    if DEBUG and res.stderr:
+        print(res.stderr)
+    return res
+
+
+def verify_files(*paths: str) -> bool:
+    """Prueft, ob Dateien existieren."""
+    ok = True
+    for p in paths:
+        if not Path(p).exists():
+            print(f"Fehlt: {p}")
+            ok = False
+    return ok
+
+
 def cli_single(
     images: List[str],
     audios: List[str],
@@ -70,7 +98,7 @@ def cli_single(
     total = len(images)
     done = 0
     for i, (img, aud) in enumerate(zip(images, audios), 1):
-        if not Path(img).exists() or not Path(aud).exists():
+        if not verify_files(img, aud):
             print(f"[{i}/{total}] FEHLT: {img} / {aud}")
             continue
         out_file = build_out_name(aud, out_dir_p)
@@ -104,8 +132,7 @@ def cli_single(
             str(crf),
             str(out_file),
         ]
-        res = subprocess.run(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, text=True)
+        res = run_ffmpeg(cmd)
         if res.returncode == 0:
             done += 1
         else:
@@ -148,8 +175,7 @@ def cli_video(
 ) -> int:
     out_dir_p = Path(out_dir)
     out_dir_p.mkdir(parents=True, exist_ok=True)
-    if not Path(video).exists() or not Path(audio).exists():
-        print("Datei fehlt")
+    if not verify_files(video, audio):
         return 1
     out_file = build_out_name(audio, out_dir_p)
     vdur = probe_duration(video)
@@ -177,8 +203,7 @@ def cli_video(
         str(crf),
         str(out_file),
     ]
-    res = subprocess.run(cmd, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, text=True)
+    res = run_ffmpeg(cmd)
     if res.returncode != 0:
         err = res.stderr.strip().splitlines()
         msg = err[-1] if err else "unbekannt"
@@ -199,8 +224,8 @@ def cli_slideshow(
     abitrate: str = "192k",
 ) -> int:
     d = Path(img_dir)
-    if not d.exists():
-        print("Ordner fehlt")
+    if not d.exists() or not verify_files(audio):
+        print("Ordner fehlt" if not d.exists() else "Datei fehlt")
         return 1
     images = []
     for ext in ("*.jpg", "*.jpeg", "*.png", "*.bmp", "*.webp"):
@@ -251,12 +276,7 @@ def cli_slideshow(
         str(crf),
         str(out_file),
     ]
-    res = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    res = run_ffmpeg(cmd)
     os.unlink(list_path)
     if res.returncode != 0:
         err = res.stderr.strip().splitlines()
@@ -282,6 +302,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="VideoBatchTool CLI / Tests")
     parser.add_argument("--selftest", action="store_true")
+    parser.add_argument("--debug", action="store_true")
     parser.add_argument("--img", nargs="+")
     parser.add_argument("--aud", nargs="+")
     parser.add_argument("--out", default=".")
@@ -296,6 +317,9 @@ def main() -> None:
     parser.add_argument("--preset", default="ultrafast")
     parser.add_argument("--abitrate", default="192k")
     args = parser.parse_args()
+
+    global DEBUG
+    DEBUG = args.debug
 
     if args.selftest:
         sys.exit(run_selftests())

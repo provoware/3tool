@@ -35,7 +35,35 @@ Dieses Dokument sammelt Hinweise zur Verbesserung des Quellcodes.
 ## Unvollstaendige Stellen
 
 - `videobatch_extra.py` meldet FFmpeg-Fehler nur knapp. Eine ausfuehrlichere Meldung waere hilfreich.
+- Neu: Die Funktion `run_ffmpeg` prueft nun, ob FFmpeg installiert ist und gibt eine verstaendliche Meldung aus.
 - Im GUI-Teil fehlt teils eine Pruefung, ob Dateien existieren. Das sollte ergaenzt werden.
+
+## Offene Punkte
+
+Diese Punkte koennen als naechste Schritte dienen. Die Sprache bleibt einfach.
+
+1. **CI einrichten** (automatische Tests)
+   ```bash
+   gh actions run
+   ```
+   Es gibt jetzt ein Workflow-Skript `.github/workflows/ci.yml`.
+   Bei jeder Aenderung laufen `flake8` und die Selbsttests automatisch.
+
+2. **Code formatieren**
+   ```bash
+   black *.py
+   ```
+   *`black`* ordnet den Code gleichmaessig an.
+
+3. **Fehlerausgaben verbessern**
+   ```bash
+   python3 videobatch_extra.py --debug
+   ```
+   Mit der neuen Option `--debug` erscheinen der aufgerufene FFmpeg-Befehl und
+   sein kompletter Text. Das hilft bei der Fehlersuche.
+
+4. **Bedienung vereinfachen**
+   - Eine einheitliche **Start**-Taste koennte mehrere Funktionen ersetzen.
 
 ## Weiterfuehrende Tipps fuer Laien
 
