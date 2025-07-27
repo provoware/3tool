@@ -581,3 +581,135 @@ ffmpeg -i oben.mp4 -i unten.mp4 -filter_complex vstack untereinander.mp4
 ffmpeg -i eingang.mp4 -vf "tpad=stop_mode=clone:stop_duration=3" -af "apad=pad_dur=3" laenger.mp4
 ```
 *`tpad`* (Zeitpolster) haelt das letzte Bild fuer drei Sekunden fest. *`apad`* (Audiopolster) fuellt den Ton entsprechend auf.
+
+## 89. Tonspur auf Mono umstellen
+```bash
+ffmpeg -i stereo.mp3 -ac 1 mono.mp3
+```
+*`-ac`* (Audio-Kanäle) bestimmt, wie viele Tonspuren ausgegeben werden. Der Wert `1` erzeugt eine einzige Spur (Mono).
+
+## 90. Bildrate erhöhen
+```bash
+ffmpeg -i eingang.mp4 -vf "fps=30" glatter.mp4
+```
+*`fps`* (Bilder pro Sekunde) wandelt das Video auf 30 Bilder pro Sekunde. Dadurch läuft es flüssiger.
+
+## 91. Tiefe Geraeusche entfernen
+```bash
+ffmpeg -i eingang.mp3 -af highpass=f=200 klares_audio.mp3
+```
+*`highpass`* (Hochpassfilter) laesst nur Toene ueber 200 Hertz durch. So verschwinden tiefe Brummtoene.
+
+## 92. Lautstaerke-Spitzen abfangen
+```bash
+ffmpeg -i laut.mp3 -af "alimiter=limit=0.9" angenehmer.mp3
+```
+*`alimiter`* (Begrenzer) schuetzt vor uebersteuerten Stellen. *`limit`* bestimmt die maximale Lautstaerke.
+
+
+## 93. Audiospur auf 48 kHz setzen
+```bash
+ffmpeg -i quelle.mp3 -ar 48000 neu.wav
+```
+*`-ar`* (Samplingrate) bestimmt die Zahl der Messpunkte pro Sekunde. 48000 sorgt fuer klaren Klang.
+
+
+
+## 94. Sanften Rand hinzufuegen
+```bash
+ffmpeg -i original.mp4 -vf vignette rand.mp4
+```
+*`vignette`* (Vignette) dunkelt die Bildraender leicht ab und lenkt den Blick zur Mitte.
+
+## 95. Stille am Anfang entfernen
+```bash
+ffmpeg -i aufnahme.mp3 -af silenceremove=start_periods=1:start_silence=0.1:detect=peak ohne_stille.mp3
+```
+*`silenceremove`* (Stille entfernen) schneidet die Pause am Anfang ab. `start_periods=1` bedeutet, dass nur die erste ruhige Phase genommen wird. `start_silence=0.1` erkennt Stille ab 0,1 Sekunden. `detect=peak` orientiert sich an Lautstärkespitzen.
+
+## 96. Hohe Toene betonen
+```bash
+ffmpeg -i quelle.mp3 -af "equalizer=f=3000:t=q:w=2:g=5" klarer.mp3
+```
+*`equalizer`* (Klangfilter) hebt Frequenzen um 3000 Hertz an. `t=q` wählt einen schmalen Bereich, `w=2` legt die Breite fest und `g=5` verstärkt um 5 Dezibel.
+
+## 97. Video um 180 Grad drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=2,transpose=2" kopfueber.mp4
+```
+*`transpose`* (Bild drehen) rotiert das Video je 90 Grad. Zwei Filter hintereinander ergeben eine Drehung um 180 Grad.
+
+## 98. Laufende Zeit einblenden
+```bash
+ffmpeg -i clip.mp4 -vf "drawtext=text=%{pts\:hms}:fontcolor=white:fontsize=24:x=10:y=10" mit_uhr.mp4
+```
+*`drawtext`* (Text einblenden) zeigt die aktuelle Abspielzeit `pts` (Presentation Time Stamp) im Format Stunden:Minuten:Sekunden.
+
+## 99. Nur den Ton speichern
+```bash
+ffmpeg -i video.mp4 -vn -acodec copy ton.aac
+```
+*`-vn`* (Video None) schaltet das Bild aus. *`-acodec copy`* kopiert die Tonspur ohne Aenderung.
+
+## 100. Video als AVI speichern
+```bash
+ffmpeg -i quellvideo.mp4 -c:v libx264 -c:a aac ausgabe.avi
+```
+*`libx264`* (Videocodec) erzeugt gutes H.264-Bild. *`aac`* (Audio-Codec) ist weit verbreitet.
+
+## 101. Lautstaerke angleichen (Kompressor)
+```bash
+ffmpeg -i laut_leise.mp3 -af "acompressor=threshold=-20dB:ratio=3" ausgeglichen.mp3
+```
+*`acompressor`* (Audio-Kompressor) drueckt laute Stellen zusammen. *`threshold`* (Schwelle) legt den Pegel fest, *`ratio`* (Verhaeltnis) bestimmt, wie stark reduziert wird.
+
+## 102. Schwarze Raender automatisch entfernen
+```bash
+ffmpeg -i eingang.mp4 -vf cropdetect -f null -
+# Werte aus der Ausgabe einsetzen
+ffmpeg -i eingang.mp4 -vf "crop=1280:720:0:0" ohne_rand.mp4
+```
+*`cropdetect`* (Rand-Erkennung) zeigt passende Werte an. *`crop`* (beschneiden) entfernt damit die schwarzen Balken.
+
+## 103. Bass betonen
+```bash
+ffmpeg -i musik.mp3 -af "bass=g=8" bass_boost.mp3
+```
+*`bass`* (Tiefton-Verst\u00e4rker) hebt die tiefen Frequenzen um 8 Dezibel an.
+
+## 104. Stereo-Kanaele vertauschen
+```bash
+ffmpeg -i stereo.mp3 -af "pan=stereo|c0=1|c1=0" vertauscht.mp3
+```
+*`pan`* (Kanalzuordnung) mischt die Tonkanäle neu. *`c0`* steht für links, *`c1`* für rechts. So tauschen sich beide Seiten.
+
+## 105. Ton als OGG speichern
+```bash
+ffmpeg -i eingang.wav -c:a libvorbis ausgabe.ogg
+```
+*`libvorbis`* (Ogg-Vorbis-Codec) speichert das Audio platzsparend im freien **OGG**-Format.
+
+## 106. Video auf 60 Bilder pro Sekunde bringen
+```bash
+ffmpeg -i eingang.mp4 -vf "fps=60" -c:a copy fluesig.mp4
+```
+*`fps`* (frames per second = Bilder pro Sekunde) sorgt fuer ein sehr fluesiges Bild. *`-c:a copy`* uebernimmt den Ton unveraendert.
+
+## 107. Hohe Toene abschneiden
+```bash
+ffmpeg -i quelle.mp3 -af "lowpass=f=3000" weniger_hoehen.mp3
+```
+*`lowpass`* (Tiefpassfilter) laesst nur Frequenzen bis 3000 Hertz durch und daempft schrille Klaenge.
+
+## 108. Ton als FLAC speichern
+```bash
+ffmpeg -i eingang.wav -c:a flac ausgabe.flac
+```
+*`flac`* (Free Lossless Audio Codec) speichert den Ton ohne Qualitaetsverlust in einer kompakten Datei.
+
+## 109. Video in H.265 (HEVC) umwandeln
+```bash
+ffmpeg -i quelle.mp4 -c:v libx265 -c:a copy film_hevc.mp4
+```
+*`libx265`* ist der Encoder fuer den modernen **H.265/HEVC**-Standard (High Efficiency Video Coding) und erzeugt kleine Dateien bei guter Qualitaet. *`-c:a copy`* uebernimmt die Tonspur unveraendert.
+

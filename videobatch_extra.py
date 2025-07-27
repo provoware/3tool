@@ -12,62 +12,13 @@ from __future__ import annotations
 
 import os
 import re
-import subprocess
-from subprocess import CompletedProcess, PIPE
 import sys
 import tempfile
-from datetime import datetime
 from pathlib import Path
 from typing import List
 
-import ffmpeg
-
-
-DEBUG = False
-
-
-def human_time(seconds: int) -> str:
-    seconds = int(seconds)
-    minutes, seconds = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    return (
-        f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-        if hours
-        else f"{minutes:02d}:{seconds:02d}"
-    )
-
-
-def build_out_name(audio: str, out_dir: Path) -> Path:
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return out_dir / f"{Path(audio).stem}_{stamp}.mp4"
-
-
-def probe_duration(path: str) -> float:
-    try:
-        pr = ffmpeg.probe(path)
-        fmt = pr.get("format", {})
-        if "duration" in fmt:
-            return float(fmt["duration"])
-        for st in pr.get("streams", []):
-            if st.get("codec_type") == "audio":
-                return float(st.get("duration", 0) or 0)
-    except Exception as e:
-        print("Fehler beim Prüfen der Dauer:", e, file=sys.stderr)
-    return 0.0
-
-
-def run_ffmpeg(cmd: list[str]) -> CompletedProcess[str]:
-    """FFmpeg aufrufen und bei Bedarf Details ausgeben."""
-    if DEBUG:
-        print("Starte:", " ".join(cmd))
-    try:
-        res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
-    except FileNotFoundError:
-        print("FFmpeg nicht gefunden. Bitte installieren.", file=sys.stderr)
-        return CompletedProcess(cmd, 1, "", "ffmpeg fehlt")
-    if DEBUG and res.stderr:
-        print(res.stderr)
-    return res
+from core.config import cfg
+from core.utils import build_out_name, human_time, probe_duration, run_ffmpeg
 
 
 def verify_files(*paths: str) -> bool:
@@ -318,8 +269,7 @@ def main() -> None:
     parser.add_argument("--abitrate", default="192k")
     args = parser.parse_args()
 
-    global DEBUG
-    DEBUG = args.debug
+    cfg.debug = args.debug
 
     if args.selftest:
         sys.exit(run_selftests())

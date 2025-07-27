@@ -143,13 +143,15 @@ def main():
                 ff_txt = "❌ ffmpeg/ffprobe fehlen"
 
             self.progress.setValue(pct)
-            self.info.setHtml(
-                f"<h3>Status</h3><ul>"
+            html = (
+                "<h3>Status</h3><ul>"
                 f"<li>{pkg_txt}</li>"
                 f"<li>{ff_txt}</li>"
-                f"</ul>"
-                f"<p>Mit »Installieren / Reparieren« wird alles automatisch eingerichtet.</p>"
+                "</ul>"
+                "<p>Mit »Installieren / Reparieren« wird alles automatisch "
+                "eingerichtet.</p>"
             )
+            self.info.setHtml(html)
             self.btn_start.setEnabled(pct == 100)
 
         def _fix_all(self):
@@ -160,7 +162,11 @@ def main():
                 try:
                     pip_install(self.py, self.missing_pkgs)
                 except Exception as e:
-                    QtWidgets.QMessageBox.critical(self, "Fehler", f"Pakete konnten nicht installiert werden:\n{e}")
+                    QtWidgets.QMessageBox.critical(
+                        self,
+                        "Fehler",
+                        f"Pakete konnten nicht installiert werden:\n{e}",
+                    )
 
             if not self.ffmpeg_ok:
                 if sys.platform.startswith("linux"):
@@ -171,7 +177,10 @@ def main():
                         QtWidgets.QMessageBox.warning(
                             self,
                             "Fehler",
-                            f"ffmpeg konnte nicht automatisch installiert werden.\n{e}"
+                            (
+                                "ffmpeg konnte nicht automatisch installiert "
+                                f"werden.\n{e}"
+                            ),
                         )
                 self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
 
