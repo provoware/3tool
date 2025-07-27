@@ -569,3 +569,15 @@ ffmpeg -i eingang.mp4 -vf "drawtext=text='%{localtime}':fontcolor=white:x=10:y=1
 ```
 *`drawtext`* (Textfilter) zeigt das aktuelle Datum an. *`%{localtime}`* steht für die Tageszeit.
 
+
+## 87. Videos untereinander zeigen
+```bash
+ffmpeg -i oben.mp4 -i unten.mp4 -filter_complex vstack untereinander.mp4
+```
+*`vstack`* (vertikal stapeln) legt ein Video ueber dem anderen ab.
+
+## 88. Standbild verlaengern
+```bash
+ffmpeg -i eingang.mp4 -vf "tpad=stop_mode=clone:stop_duration=3" -af "apad=pad_dur=3" laenger.mp4
+```
+*`tpad`* (Zeitpolster) haelt das letzte Bild fuer drei Sekunden fest. *`apad`* (Audiopolster) fuellt den Ton entsprechend auf.
