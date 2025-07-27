@@ -1,2 +1,3 @@
-Ist: 70%
+Ist: 100%
 Soll: 100%
+Tipp: 90 erledigt

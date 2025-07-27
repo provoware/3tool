@@ -40,68 +40,76 @@ pip install -r requirements.txt
 - [x] Codeanalyse mit flake8 durchfuehren
 - [x] Projektanalyse schreiben: `ANALYSE_PROJEKT.md` erstellen
 - [x] Importzeilen bereinigen in `videobatch_extra.py`
-- [x] Weiterfuehrende Laienvorschlaege ergaenzen
 - [x] Fehlermeldungen ausfuehrlicher gestalten
 - [x] Backup-Befehl ergaenzen
 - [x] Sichtbarkeit der Oberflaechenelemente pruefen
-- [x] Weiterfuehrende Laientipps Teil 3 ergaenzen
 - [x] Start-Hilfe ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 4 hinzufuegen
-- [x] Weiterfuehrende Laientipps Teil 5 ergaenzen
 - [x] Hilfe fuer aeltere Nutzer pruefen
-- [x] Weiterfuehrende Laientipps Teil 6 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 7 ergaenzen
 - [x] Aufraeumen vor Release dokumentieren
-- [x] Weiterfuehrende Laientipps Teil 8 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 9 ergaenzen
 - [x] Todo-Liste bereinigen
 - [x] Code auf Platzhalter pruefen
-- [x] Weiterfuehrende Laientipps Teil 10 ergaenzen
 - [x] README auf doppelte Eintraege pruefen
-- [x] Weiterfuehrende Laientipps Teil 11 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 12 ergaenzen
 - [x] Code mit flake8 pruefen
 
 - [x] Fensterflexibilitaet pruefen
-- [x] Weiterfuehrende Laientipps Teil 13 ergaenzen
 - [x] Barrierefreiheit erwaehnen
-- [x] Weiterfuehrende Laientipps Teil 14 ergaenzen
 - [x] Anleitungen zusammenfassen
 - [x] F1-Kurzbefehl implementieren
-- [x] Weiterfuehrende Laientipps Teil 15 ergaenzen
 
 - [x] Buttons mit AccessibleName versehen
-- [x] Weiterfuehrende Laientipps Teil 16 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 17 ergaenzen
 - [x] Barrierefreiheit weiter verbessern
 
 - [x] InfoDashboard zugaenglich machen
-- [x] Weiterfuehrende Laientipps Teil 18 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 19 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 20 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 21 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 22 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 23 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 24 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 25 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 26 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 27 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 28 ergaenzen
 # Neue Aufgaben
 - [x] QShortcut-Fehler korrigieren
-- [x] Weiterfuehrende Laientipps Teil 29 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 30 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 31 ergaenzen
 
 - [x] Offene Punkte analysieren und dokumentieren
-- [x] Weiterfuehrende Laientipps Teil 32 ergaenzen
 - [x] Todo-Liste aufraeumen
-- [x] Weiterfuehrende Laientipps Teil 33 ergaenzen
 - [x] GitHub-Action fuer Lint und Tests einrichten
-- [x] Weiterfuehrende Laientipps Teil 34 ergaenzen
 - [x] Debug-Option dokumentieren
-- [x] Weiterfuehrende Laientipps Teil 35 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 36 ergaenzen
 - [x] Fortschrittsinfo pflegen
-- [x] Weiterfuehrende Laientipps Teil 37 ergaenzen
-- [x] Weiterfuehrende Laientipps Teil 38 ergaenzen
+
+
+
+- [x] Laientipp-Aufgaben entfernen
+
+- [x] Weiterfuehrende Laientipps Teil 56 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 57 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 58 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 59 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 60 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 61 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 62 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 63 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 64 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 65 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 66 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 67 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 68 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 69 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 70 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 71 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 72 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 73 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 74 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 75 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 76 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 77 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 78 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 79 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 80 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 81 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 82 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 83 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 84 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 85 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 86 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 87 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 88 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 89 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 90 ergaenzen
