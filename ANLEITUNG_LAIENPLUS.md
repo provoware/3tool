@@ -334,3 +334,16 @@ ffmpeg -i clip.mp4 -vf "fade=t=in:st=0:d=2,fade=t=out:st=8:d=2" -af "afade=t=in:
 ```
 *`fade`* (Ein- oder Ausblenden) laesst das Bild langsam erscheinen oder verschwinden.
 *`afade`* macht dasselbe fuer den Ton.
+
+## 49. Videos nebeneinander zeigen
+```bash
+ffmpeg -i links.mp4 -i rechts.mp4 -filter_complex hstack nebeneinander.mp4
+```
+*`hstack`* (horizontal stapeln) platziert die Videos Seite an Seite.
+
+## 50. Untertitel einbrennen
+```bash
+ffmpeg -i film.mp4 -vf subtitles=untertitel.srt mit_text.mp4
+```
+*`subtitles`* (Untertitel einblenden) fuegt die Texte dauerhaft ins Bild ein.
+
