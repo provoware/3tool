@@ -519,3 +519,16 @@ ffmpeg -i video.mp4 -b:v 1000k -b:a 128k kleiner.mp4
 ```
 *`b:v`* (Video-Bitrate) legt die Datenrate des Bildes fest. Mit `1000k` wird es kleiner.
 *`b:a`* (Audio-Bitrate) stellt die Datenrate des Tons ein.
+
+## 79. Video halb so groß speichern
+```bash
+ffmpeg -i eingang.mp4 -vf "scale=iw/2:ih/2" halb.mp4
+```
+`scale` (skalieren) teilt Breite und Höhe durch zwei.
+
+## 80. Seitenverhältnis anpassen
+```bash
+ffmpeg -i clip.mp4 -vf "setdar=16/9" breitbild.mp4
+```
+`setdar` (Display Aspect Ratio) gibt das Verhältnis von Breite zu Höhe an. Mit 16/9 erscheint das Bild richtig.
+
