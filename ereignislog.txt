@@ -125,3 +125,4 @@
 [2025-07-27] Laientipps Teil 108 und 109 ergaenzt (Aufgaben 'Weiterfuehrende Laientipps Teil 108 ergaenzen', 'Weiterfuehrende Laientipps Teil 109 ergaenzen' erledigt)
 [2025-07-27] Release-Analyse aktualisiert (Aufgabe 'Release-Analyse aktualisieren' erledigt)
 [2025-07-27] Laientipp Teil 110 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 110 ergaenzen' erledigt)
+[2025-07-27] FERTIG-PUNKTE.md angelegt und todo aktualisiert
