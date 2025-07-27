@@ -416,3 +416,15 @@ ffmpeg -i eingang.mp4 -vf "transpose=1" gedreht.mp4
 ffmpeg -i eingang.mp4 -vf "eq=saturation=1.5" bunter.mp4
 ```
 *`eq`* (Equalizer) passt Werte wie *`saturation`* (Farbintensität) an.
+
+## 62. Farbton verändern
+```bash
+ffmpeg -i eingang.mp4 -vf "hue=h=60:s=0.8" farbig.mp4
+```
+*`hue`* (Farbton) verschiebt die Farben. *`h`* bestimmt die Richtung in Grad, *`s`* (Sättigung) senkt oder erhöht die Farbstärke.
+
+## 63. Tonhöhe erhöhen
+```bash
+ffmpeg -i stimme.mp3 -filter:a "asetrate=44100*1.2,atempo=1/1.2" hoeher.mp3
+```
+*`asetrate`* (Abtastrate) beschleunigt die Tonhöhe. *`atempo`* (Geschwindigkeit) gleicht die Abspielgeschwindigkeit wieder an.
