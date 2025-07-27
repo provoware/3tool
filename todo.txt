@@ -1,6 +1,7 @@
 # Aufgabenliste
 - [x] Typpruefung mit mypy einbinden
 - [ ] CI-Pipeline fuer automatisches Testen anlegen
-- [ ] Dokumentation pruefen und aktualisieren
+- [x] Dokumentation pruefen und aktualisieren
+  - [x] Laientipps Teil 113 und 114 ergaenzen
 - [ ] Version vergeben und Release taggen
 - [x] FERTIG-PUNKTE.md Datei erstellen

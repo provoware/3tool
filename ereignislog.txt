@@ -127,3 +127,4 @@
 [2025-07-27] Laientipp Teil 110 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 110 ergaenzen' erledigt)
 [2025-07-27] FERTIG-PUNKTE.md angelegt und todo aktualisiert
 [2025-07-27] Mypy integriert und Anleitung erweitert
+[2025-07-27] Laien-Tipps 113 und 114 ergaenzt (Aufgabe 'Dokumentation pruefen und aktualisieren' erledigt)

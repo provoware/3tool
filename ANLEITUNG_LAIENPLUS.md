@@ -731,3 +731,15 @@ mypy .
 git status
 ```
 *git* (Versionskontrolle) zeigt so alle geaenderten Dateien an. Das hilft, den Ueberblick zu behalten.
+
+## 113. Neuen Branch erstellen
+```bash
+git switch -c neuer-zweig
+```
+*git switch* (Zweig wechseln) legt mit *-c* (create) einen neuen Branch (Entwicklungszweig) an und aktiviert ihn sofort.
+
+## 114. Änderungen hochladen
+```bash
+git push origin neuer-zweig
+```
+*git push* (hochladen) sendet den aktuellen Branch zum entfernten Repository (Speicherort) namens *origin*.
