@@ -427,3 +427,23 @@ und einfach.
    uname -r
    ```
    `uname` (unix name) gibt Informationen zum Betriebssystemkern (Kernel) aus.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 18
+
+1. **Datei herunterladen**
+   ```bash
+   wget https://beispiel.de/datei.zip
+   ```
+   `wget` (web get) laedt eine Datei aus dem Internet herunter.
+
+2. **Datei ueber Netzwerk kopieren**
+   ```bash
+   scp quelle.txt user@server:/pfad/
+   ```
+   `scp` (secure copy) uebertraegt Dateien sicher auf einen anderen Rechner.
+
+3. **Pruefsumme berechnen**
+   ```bash
+   sha256sum datei.zip
+   ```
+   `sha256sum` erzeugt einen Fingerabdruck (Pruefsumme) der Datei, um Downloads zu verifizieren.

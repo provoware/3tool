@@ -71,3 +71,4 @@
 [2025-07-27] F1-Kurzbefehl ergänzt und Laientipps Teil 15 hinzugefügt (Aufgaben erledigt)
 [2025-07-27] AccessibleName hinzugefuegt und Laientipps Teil 16 ergaenzt
 [2025-07-27] Laientipps Teil 17 ergaenzt und Barrierefreiheit verbessert
+[2025-07-27] InfoDashboard zugaenglich gemacht und Laientipps Teil 18 ergaenzt

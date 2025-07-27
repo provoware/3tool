@@ -79,3 +79,6 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 16 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 17 ergaenzen
 - [x] Barrierefreiheit weiter verbessern
+
+- [x] InfoDashboard zugaenglich machen
+- [x] Weiterfuehrende Laientipps Teil 18 ergaenzen

@@ -287,3 +287,15 @@ Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
   uname -r
   ```
   `uname` (unix name) gibt die Version des Betriebssystemkerns (Kernel) aus.
+
+* **Datei herunterladen**
+  ```bash
+  wget https://beispiel.de/datei.zip
+  ```
+  `wget` (web get) speichert eine Datei aus dem Internet.
+
+* **Pruefsumme kontrollieren**
+  ```bash
+  sha256sum datei.zip
+  ```
+  `sha256sum` erstellt eine digitale Pruefsumme, um die Datei zu ueberpruefen.
