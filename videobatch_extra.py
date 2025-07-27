@@ -23,6 +23,9 @@ from typing import List
 import ffmpeg
 
 
+DEBUG = False
+
+
 def human_time(seconds: int) -> str:
     seconds = int(seconds)
     minutes, seconds = divmod(seconds, 60)
@@ -54,12 +57,17 @@ def probe_duration(path: str) -> float:
 
 
 def run_ffmpeg(cmd: list[str]) -> CompletedProcess[str]:
-    """FFmpeg aufrufen und Fehlermeldung ausgeben, wenn das Programm fehlt."""
+    """FFmpeg aufrufen und bei Bedarf Details ausgeben."""
+    if DEBUG:
+        print("Starte:", " ".join(cmd))
     try:
-        return subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+        res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
     except FileNotFoundError:
         print("FFmpeg nicht gefunden. Bitte installieren.", file=sys.stderr)
         return CompletedProcess(cmd, 1, "", "ffmpeg fehlt")
+    if DEBUG and res.stderr:
+        print(res.stderr)
+    return res
 
 
 def cli_single(
@@ -285,6 +293,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="VideoBatchTool CLI / Tests")
     parser.add_argument("--selftest", action="store_true")
+    parser.add_argument("--debug", action="store_true")
     parser.add_argument("--img", nargs="+")
     parser.add_argument("--aud", nargs="+")
     parser.add_argument("--out", default=".")
@@ -299,6 +308,9 @@ def main() -> None:
     parser.add_argument("--preset", default="ultrafast")
     parser.add_argument("--abitrate", default="192k")
     args = parser.parse_args()
+
+    global DEBUG
+    DEBUG = args.debug
 
     if args.selftest:
         sys.exit(run_selftests())

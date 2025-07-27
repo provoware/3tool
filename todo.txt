@@ -97,3 +97,6 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 32 ergaenzen
 - [x] Todo-Liste aufraeumen
 - [x] Weiterfuehrende Laientipps Teil 33 ergaenzen
+- [x] GitHub-Action fuer Lint und Tests einrichten
+- [x] Weiterfuehrende Laientipps Teil 34 ergaenzen
+- [x] Debug-Option dokumentieren

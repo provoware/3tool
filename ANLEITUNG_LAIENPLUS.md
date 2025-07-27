@@ -231,3 +231,9 @@ ffmpeg -i eingang.mp4 -vf reverse -af areverse rueckwaerts.mp4
 ffmpeg -i eingang.mp4 -vf "format=gray" grau.mp4
 ```
 *`format=gray`* (Bildformat) entfernt die Farben.
+
+## 34. Verwackeltes Video stabilisieren
+```bash
+ffmpeg -i wackelig.mp4 -vf deshake stabil.mp4
+```
+*`deshake`* (Bildstabilisierung) gleicht ruckelige Bewegungen aus.

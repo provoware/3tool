@@ -46,7 +46,8 @@ Diese Punkte koennen als naechste Schritte dienen. Die Sprache bleibt einfach.
    ```bash
    gh actions run
    ```
-   Eine Pipeline prueft spaeter den Code bei jeder Aenderung.
+   Es gibt jetzt ein Workflow-Skript `.github/workflows/ci.yml`.
+   Bei jeder Aenderung laufen `flake8` und die Selbsttests automatisch.
 
 2. **Code formatieren**
    ```bash
@@ -58,7 +59,8 @@ Diese Punkte koennen als naechste Schritte dienen. Die Sprache bleibt einfach.
    ```bash
    python3 videobatch_extra.py --debug
    ```
-   Ein zusaetzlicher Hinweis erklaert moegliche Probleme genauer.
+   Mit der neuen Option `--debug` erscheinen der aufgerufene FFmpeg-Befehl und
+   sein kompletter Text. Das hilft bei der Fehlersuche.
 
 4. **Bedienung vereinfachen**
    - Eine einheitliche **Start**-Taste koennte mehrere Funktionen ersetzen.
