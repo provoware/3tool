@@ -452,3 +452,15 @@ ffmpeg -i greenscreen.mp4 -i hintergrund.jpg -filter_complex "[0:v]colorkey=0x00
 ffmpeg -i clip.mp4 -filter:v "tile=2x2" raster.mp4
 ```
 *`tile`* (Kachelmodus) ordnet Kopien des Videos in 2 Spalten und 2 Reihen an.
+
+## 68. Video mehrmals hintereinander abspielen
+```bash
+ffmpeg -stream_loop 2 -i clip.mp4 -c copy schleife.mp4
+```
+*`-stream_loop`* (Wiederholen) laesst das Video hier insgesamt dreimal laufen, ohne es neu zu kodieren.
+
+## 69. Zwei Clips weich ueberblenden
+```bash
+ffmpeg -i anfang.mp4 -i ende.mp4 -filter_complex "xfade=transition=fade:duration=1:offset=5" uebergang.mp4
+```
+*`xfade`* (Ueberblenden) erzeugt einen weichen Uebergang. *`transition`* legt die Art fest, *`duration`* dauert eine Sekunde und *`offset`* gibt an, wann die Ueberblendung beginnt.
