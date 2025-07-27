@@ -676,3 +676,16 @@ ffmpeg -i eingang.mp4 -vf "crop=1280:720:0:0" ohne_rand.mp4
 ffmpeg -i musik.mp3 -af "bass=g=8" bass_boost.mp3
 ```
 *`bass`* (Tiefton-Verst\u00e4rker) hebt die tiefen Frequenzen um 8 Dezibel an.
+
+## 104. Stereo-Kanaele vertauschen
+```bash
+ffmpeg -i stereo.mp3 -af "pan=stereo|c0=1|c1=0" vertauscht.mp3
+```
+*`pan`* (Kanalzuordnung) mischt die Tonkanäle neu. *`c0`* steht für links, *`c1`* für rechts. So tauschen sich beide Seiten.
+
+## 105. Ton als OGG speichern
+```bash
+ffmpeg -i eingang.wav -c:a libvorbis ausgabe.ogg
+```
+*`libvorbis`* (Ogg-Vorbis-Codec) speichert das Audio platzsparend im freien **OGG**-Format.
+

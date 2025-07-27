@@ -1,3 +1,3 @@
 Ist: 100%
 Soll: 100%
-Tipp: 103 erledigt
+Tipp: 105 erledigt
