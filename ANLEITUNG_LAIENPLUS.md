@@ -392,3 +392,15 @@ ffmpeg -i clip.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.mp4
 ffmpeg -i leise.mp4 -af loudnorm normaler.mp4
 ```
 *`loudnorm`* (Lautheitsnormalisierung) gleicht die Lautstaerke an.
+
+## 58. Ton als WAV speichern
+```bash
+ffmpeg -i quelle.mp3 ziel.wav
+```
+*`wav`* ist ein unkomprimiertes Tonformat. Die Eingabe bleibt sonst unveraendert.
+
+## 59. Vorschau-Bild erstellen
+```bash
+ffmpeg -i film.mp4 -ss 00:00:05 -vframes 1 vorschaubild.png
+```
+*`-ss`* setzt die Startzeit. *`-vframes 1`* speichert genau ein Bild.
