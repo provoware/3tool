@@ -306,3 +306,17 @@ ffmpeg -i kurz.mp4 -vf "fps=12,scale=320:-1:flags=lanczos" kurz.gif
 ffmpeg -i normal.mp4 -vf negate negativ.mp4
 ```
 *`negate`* (Farben umkehren) erzeugt ein Negativbild.
+
+## 45. Text einblenden
+```bash
+ffmpeg -i video.mp4 -vf "drawtext=text='Hallo':fontcolor=white:fontsize=24:x=10:y=10" text.mp4
+```
+*`drawtext`* (Text einblenden) schreibt "Hallo" in das Bild. *`x`* und *`y`* bestimmen die Position.
+
+## 46. Videos zusammenfuegen
+Schreibe in eine Datei `liste.txt` je eine Zeile:
+`file 'erstes.mp4'` und `file 'zweites.mp4'`.
+```bash
+ffmpeg -f concat -safe 0 -i liste.txt -c copy komplett.mp4
+```
+*`concat`* (aneinander haengen) fuegt die Clips zusammen. *`-c copy`* uebernimmt Bild und Ton unveraendert.
