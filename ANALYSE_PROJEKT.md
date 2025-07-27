@@ -210,3 +210,23 @@ Auch dieser Teil nutzt einfache Erklaerungen.
    ffmpeg -i ton.ogg ton.mp3
    ```
    `ffmpeg` (Video-und Audio-Tool) liest `ton.ogg` und erstellt `ton.mp3`.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 8
+
+1. **Festplattenplatz pruefen**
+   ```bash
+   df -h
+   ```
+   `df` (disk free) zeigt mit `-h` die freien und belegten Gigabytes an.
+
+2. **FFmpeg-Ordner in den Pfad aufnehmen**
+   ```bash
+   export PATH="$PATH:/opt/ffmpeg/bin"
+   ```
+   `export` legt eine Umgebungsvariable an. So findet das Terminal das Programm.
+
+3. **Dateirechte anpassen**
+   ```bash
+   chmod +x skript.sh
+   ```
+   `chmod` (change mode) macht eine Datei ausfuehrbar.

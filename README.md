@@ -174,3 +174,21 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   rm *.log
   ```
   `rm` (remove) loescht alle Dateien mit der Endung `.log`.
+
+* **Festplattenplatz pruefen**
+  ```bash
+  df -h
+  ```
+  `df` (disk free) zeigt den freien Speicherplatz an.
+
+* **FFmpeg-Pfad setzen**
+  ```bash
+  export PATH="$PATH:/opt/ffmpeg/bin"
+  ```
+  `export` erweitert eine Umgebungsvariable, damit das Terminal ffmpeg findet.
+
+* **Dateirechte setzen**
+  ```bash
+  chmod +x skript.sh
+  ```
+  `chmod` (change mode) macht eine Datei ausfuehrbar.
