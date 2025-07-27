@@ -204,3 +204,17 @@ nano ~/.videobatchtool/logs/$(ls -t ~/.videobatchtool/logs | head -n 1)
 ```
 
 `nano` ist ein einfacher Texteditor. Die Log-Datei verrät oft die Ursache des Problems.
+
+## 30. Zwei Tonspuren mischen
+```bash
+ffmpeg -i sprache.mp3 -i musik.mp3 -filter_complex "[1:a]volume=0.3[a2];[0:a][a2]amix=inputs=2" mischung.mp3
+```
+*`volume`* (Lautstärke) senkt hier die Musik auf 30 Prozent.
+*`amix`* (Audios mischen) verbindet beide Tonspuren.
+
+## 31. Video schneller abspielen
+```bash
+ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.mp4
+```
+*`setpts`* (Zeitstempel) halbiert die Abspielzeit des Videos.
+*`atempo`* (Geschwindigkeit des Tons) passt die Tonspur an.

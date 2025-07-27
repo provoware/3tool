@@ -207,3 +207,9 @@ ffmpeg -stream_loop -1 -i clip.mp4 -c copy loop.mp4
 ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
 ```
 `overlay` (Überlagerung) legt das Logo 10 Pixel vom linken und oberen Rand ins Bild.
+
+## Ton leiser machen
+```bash
+ffmpeg -i eingang.mp3 -filter:a "volume=0.5" leise.mp3
+```
+*`volume`* (Lautstärke) halbiert hier den Pegel des Tons.

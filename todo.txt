@@ -95,3 +95,5 @@ pip install -r requirements.txt
 # Neue Aufgaben
 - [x] QShortcut-Fehler korrigieren
 - [x] Weiterfuehrende Laientipps Teil 29 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 30 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 31 ergaenzen
