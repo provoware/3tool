@@ -93,3 +93,6 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 71 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 72 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 73 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 74 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 75 ergaenzen

@@ -488,3 +488,15 @@ ffmpeg -i eingang.mp4 -vf "gblur=sigma=5" weich.mp4
 ffmpeg -i eingang.mp4 -vf "pad=iw+100:ih+100:50:50:color=black" mit_rand.mp4
 ```
 *`pad`* (auffuellen) vergroessert die Flaeche. *`iw+100`* und *`ih+100`* fuegen je 100 Pixel hinzu, *`50:50`* positioniert das Original mittig.
+
+## 74. Tonhöhe verringern
+```bash
+ffmpeg -i stimme.mp3 -filter:a "asetrate=44100*0.8,atempo=1/0.8" tiefer.mp3
+```
+*`asetrate`* (Abtastrate) senkt die Tonhöhe. *`atempo`* (Geschwindigkeit) passt die Abspielgeschwindigkeit wieder an.
+
+## 75. Bildrauschen reduzieren
+```bash
+ffmpeg -i video.mp4 -vf "hqdn3d" sauber.mp4
+```
+*`hqdn3d`* (High Quality 3D Denoise) glättet das Bild und mindert Rauschen.
