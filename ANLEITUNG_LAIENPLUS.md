@@ -719,3 +719,15 @@ ffmpeg -i quelle.mp4 -c:v libx265 -c:a copy film_hevc.mp4
 ffmpeg -i eingang.mp3 -af volumedetect -f null -
 ```
 *`volumedetect`* (Lautstaerke-Erkennung) zeigt an, wie laut der Ton ist. *`-f null -`* schreibt keine Datei.
+
+## 111. Code pruefen
+```bash
+mypy .
+```
+*mypy* (statischer Typpruefer) kontrolliert den Code auf Tippfehler bei den Typangaben. Er meldet Zeilen mit Unstimmigkeiten.
+
+## 112. Git-Status anzeigen
+```bash
+git status
+```
+*git* (Versionskontrolle) zeigt so alle geaenderten Dateien an. Das hilft, den Ueberblick zu behalten.

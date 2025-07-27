@@ -1,5 +1,5 @@
 # Aufgabenliste
-- [ ] Typpruefung mit mypy einbinden
+- [x] Typpruefung mit mypy einbinden
 - [ ] CI-Pipeline fuer automatisches Testen anlegen
 - [ ] Dokumentation pruefen und aktualisieren
 - [ ] Version vergeben und Release taggen
