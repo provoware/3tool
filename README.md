@@ -227,3 +227,17 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   grep -i "wort" datei.txt
   ```
   `grep` (search) findet das Wort unabhaengig von Gross- und Kleinschreibung.
+
+* **Dateien zaehlen**
+  ```bash
+  ls | wc -l
+  ```
+  `wc` (word count) ermittelt die Anzahl gelisteter Dateien.
+
+* **Neuen Ordner anlegen und entfernen**
+  ```bash
+  mkdir neuer_ordner
+  rmdir neuer_ordner
+  ```
+  `mkdir` (make directory) erstellt einen Ordner. `rmdir` (remove directory)
+  loescht ihn wieder, wenn er leer ist.

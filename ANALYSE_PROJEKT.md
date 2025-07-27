@@ -303,3 +303,26 @@ kopieren und ausprobieren.
    ```
    `ps aux` listet alle Prozesse. `grep` filtert hier nur Zeilen, in denen
    "python" vorkommt.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 12
+
+Auch dieser Abschnitt enthaelt einfache Beispiele. Jede Zeile laesst sich
+kopieren und im Terminal ausfuehren.
+
+1. **Dateien zaehlen** (Anzahl bestimmen)
+   ```bash
+   ls | wc -l
+   ```
+   `wc` (word count) zaehlt hier alle Zeilen und damit die angezeigten Dateien.
+
+2. **Leeren Ordner anlegen**
+   ```bash
+   mkdir neuer_ordner
+   ```
+   `mkdir` (make directory) erstellt einen neuen Ordner.
+
+3. **Ordner entfernen**
+   ```bash
+   rmdir neuer_ordner
+   ```
+   `rmdir` (remove directory) loescht ihn wieder, sofern er leer ist.

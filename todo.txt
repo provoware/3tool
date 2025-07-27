@@ -64,3 +64,5 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 10 ergaenzen
 - [x] README auf doppelte Eintraege pruefen
 - [x] Weiterfuehrende Laientipps Teil 11 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 12 ergaenzen
+- [x] Code mit flake8 pruefen
