@@ -72,3 +72,6 @@
 [2025-07-27] AccessibleName hinzugefuegt und Laientipps Teil 16 ergaenzt
 [2025-07-27] Laientipps Teil 17 ergaenzt und Barrierefreiheit verbessert
 [2025-07-27] InfoDashboard zugaenglich gemacht und Laientipps Teil 18 ergaenzt
+[2025-07-27] Laientipps Teil 19 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 19 ergaenzen' erledigt)
+[2025-07-27] pool_box Fehler behoben und Laientipps Teil 20 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 20 ergaenzen' erledigt)
+[2025-07-27] Wasserzeichen-Tipp ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 28 ergaenzen' erledigt)

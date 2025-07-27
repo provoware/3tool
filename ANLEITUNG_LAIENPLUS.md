@@ -167,3 +167,30 @@ ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
 
 - Öffne das Menü **Ansicht**.
 - Setze oder entferne den Haken bei **Sidebar**.
+
+## 26. Video ohne Ton speichern
+
+Manchmal reicht das Bild allein. So erzeugst du ein stummes Video:
+
+```bash
+ffmpeg -i eingang.mp4 -an ohne_ton.mp4
+```
+*`-an`* (Audio None, also ohne Ton) entfernt die Tonspur, das Video bleibt erhalten.
+
+## 27. Untertitel einbinden
+
+Wenn du eine Untertiteldatei hast, kannst du sie so in das Video schreiben:
+
+```bash
+ffmpeg -i video.mp4 -i text.srt -c:v copy -c:a copy -c:s mov_text video_mit_untertitel.mp4
+```
+*`mov_text`* (MP4-Untertitel) speichert die Texte direkt in der Datei.
+
+## 28. Wasserzeichen einblenden
+
+Ein kleines Logo oder ein Schriftzug kann dein Video schützen. So fügst du ihn ein:
+
+```bash
+ffmpeg -i video.mp4 -i wasserzeichen.png -filter_complex "overlay=W-w-10:H-h-10" video_mit_wz.mp4
+```
+*`overlay`* (Überlagerung) setzt das Wasserzeichen zehn Pixel vom unteren und rechten Rand.
