@@ -194,3 +194,13 @@ Ein kleines Logo oder ein Schriftzug kann dein Video schützen. So fügst du ihn
 ffmpeg -i video.mp4 -i wasserzeichen.png -filter_complex "overlay=W-w-10:H-h-10" video_mit_wz.mp4
 ```
 *`overlay`* (Überlagerung) setzt das Wasserzeichen zehn Pixel vom unteren und rechten Rand.
+
+## 29. Log-Datei prüfen bei Fehlern
+
+Falls das Programm nicht startet oder eine rote Meldung erscheint, lohnt sich ein Blick in die Protokolldatei ("Log"). Damit öffnest du die neueste Datei:
+
+```bash
+nano ~/.videobatchtool/logs/$(ls -t ~/.videobatchtool/logs | head -n 1)
+```
+
+`nano` ist ein einfacher Texteditor. Die Log-Datei verrät oft die Ursache des Problems.
