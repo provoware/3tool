@@ -361,3 +361,9 @@ ffmpeg -i wacklig.mp4 -vf deshake ruhiger.mp4
 ```
 *`deshake`* (Bildstabilisierung) gleicht Zittern aus.
 
+## 53. Tonspur verschieben
+```bash
+ffmpeg -i video.mp4 -af "adelay=1000|1000" verschoben.mp4
+```
+*`adelay`* (Audio-Verzögerung) startet den Ton erst nach einer Sekunde.
+
