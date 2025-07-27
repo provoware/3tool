@@ -119,4 +119,13 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
    ```
 4. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
 
+## Backup erstellen
+
+Vor größeren Änderungen lohnt sich eine Sicherungskopie:
+```bash
+zip -r backup.zip .
+```
+Der Befehl `zip` fasst alle Dateien zu einem Archiv zusammen. So lässt sich der
+aktuelle Stand leicht wiederherstellen.
+
 Damit ist das Tool bereit für den Upload oder die Weitergabe.

@@ -62,3 +62,32 @@ ausprobiert werden. Fachbegriffe stehen in Klammern und werden erklaert.
    flake8 videobatch_extra.py
    ```
    `flake8` ist ein Analysewerkzeug, das auf moegliche Tippfehler hinweist.
+
+## Weiterfuehrende Tipps fuer Laien – Teil&nbsp;2
+
+Diese Tipps gehen noch einen Schritt weiter und zeigen nuetzliche Befehle in
+leichter Sprache. Wie zuvor stehen Fachbegriffe in Klammern und werden kurz
+erklaert.
+
+1. **Backup anlegen** (Sicherungskopie)
+   ```bash
+   zip -r backup.zip .
+   ```
+   Das Programm `zip` verpackt alle Dateien im aktuellen Ordner zu einer
+   kompakten Kopie. So laesst sich der Stand leicht wiederherstellen.
+
+2. **Projekt aktualisieren**
+   ```bash
+   git pull
+   ```
+   `git` ist eine Versionsverwaltung. Der Befehl `pull` holt die neuesten
+   Aenderungen von der Quelle.
+
+3. **Virtuelle Umgebung entfernen**
+   ```bash
+   deactivate
+   rm -r .venv
+   ```
+   Mit `deactivate` verlaesst du die Umgebung. Anschliessend loescht `rm -r`
+   (remove) den Ordner `.venv`. Beim naechsten Start richtet der Launcher sie
+   automatisch neu ein.

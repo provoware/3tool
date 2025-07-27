@@ -72,3 +72,4 @@
 - [x] Importzeilen bereinigen in `videobatch_extra.py`
 - [x] Weiterfuehrende Laienvorschlaege ergaenzen
 - [x] Fehlermeldungen ausfuehrlicher gestalten
+- [x] Backup-Befehl ergaenzen
