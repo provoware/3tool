@@ -176,3 +176,12 @@ Manchmal reicht das Bild allein. So erzeugst du ein stummes Video:
 ffmpeg -i eingang.mp4 -an ohne_ton.mp4
 ```
 *`-an`* (Audio None, also ohne Ton) entfernt die Tonspur, das Video bleibt erhalten.
+
+## 27. Untertitel einbinden
+
+Wenn du eine Untertiteldatei hast, kannst du sie so in das Video schreiben:
+
+```bash
+ffmpeg -i video.mp4 -i text.srt -c:v copy -c:a copy -c:s mov_text video_mit_untertitel.mp4
+```
+*`mov_text`* (MP4-Untertitel) speichert die Texte direkt in der Datei.

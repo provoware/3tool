@@ -551,6 +551,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_list.files_dropped.connect(self._on_images_added)
         self.audio_list.files_dropped.connect(self._on_audios_added)
 
+        pool_tabs = QtWidgets.QTabWidget()
+        pool_tabs.addTab(self.image_list, "Bilder")
+        pool_tabs.addTab(self.audio_list, "Audios")
+        pool_tabs.addTab(self.favorite_list, "Favoriten")
+
+        pool_box = QtWidgets.QGroupBox("Dateilisten")
+        pb_lay = QtWidgets.QVBoxLayout(pool_box)
+        pb_lay.addWidget(pool_tabs)
+
         # aufklappbare Seitenleiste
         self.sidebar = QtWidgets.QDockWidget("Dateilisten", self)
         self.sidebar.setFeatures(
