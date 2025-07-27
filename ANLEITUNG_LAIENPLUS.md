@@ -464,3 +464,15 @@ ffmpeg -stream_loop 2 -i clip.mp4 -c copy schleife.mp4
 ffmpeg -i anfang.mp4 -i ende.mp4 -filter_complex "xfade=transition=fade:duration=1:offset=5" uebergang.mp4
 ```
 *`xfade`* (Ueberblenden) erzeugt einen weichen Uebergang. *`transition`* legt die Art fest, *`duration`* dauert eine Sekunde und *`offset`* gibt an, wann die Ueberblendung beginnt.
+
+## 70. Video vertikal spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf vflip kopfueber.mp4
+```
+*`vflip`* (vertikal spiegeln) dreht das Bild auf den Kopf.
+
+## 71. Schwarze Balken abschneiden
+```bash
+ffmpeg -i film.mp4 -vf "crop=iw:ih-80:0:40" ohne_balken.mp4
+```
+*`crop`* (Bild zuschneiden) behaelt die volle Breite *`iw`*. *`ih-80`* nimmt 80 Pixel von der Hoehe weg, *`0:40`* verschiebt den Ausschnitt um 40 Pixel nach unten.
