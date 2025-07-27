@@ -532,3 +532,15 @@ ffmpeg -i clip.mp4 -vf "setdar=16/9" breitbild.mp4
 ```
 `setdar` (Display Aspect Ratio) gibt das Verhältnis von Breite zu Höhe an. Mit 16/9 erscheint das Bild richtig.
 
+## 81. Video in WebM speichern
+```bash
+ffmpeg -i eingang.mp4 -c:v libvpx-vp9 -c:a libopus ausgabe.webm
+```
+*`libvpx-vp9`* (Videocodec) komprimiert modern, *`libopus`* (Audiocodec) liefert guten Klang.
+
+## 82. Lauftext einblenden
+```bash
+ffmpeg -i video.mp4 -vf "drawtext=text=Hallo\\ :fontcolor=white:fontsize=24:x=w/2-text_w/2:y=h-40*t" abspann.mp4
+```
+*`drawtext`* (Text einblenden) zeigt "Hallo" und lässt den Text nach oben wandern, weil `t` die Zeit ist.
+
