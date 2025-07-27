@@ -245,3 +245,10 @@ ffmpeg -i video.mp4 -vn -acodec copy ton.aac
 *`-vn`* (Video nicht) entfernt das Bild.
 *`-acodec copy`* speichert die Tonspur unveraendert.
 
+
+## 36. Video komprimieren
+```bash
+ffmpeg -i input.mp4 -vcodec libx264 -crf 28 kleiner.mp4
+```
+*`libx264`* (Videocodec) komprimiert effizient.
+*`crf`* (Qualitaetsfaktor) steuert die Dateigroesse.

@@ -101,3 +101,4 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 34 ergaenzen
 - [x] Debug-Option dokumentieren
 - [x] Weiterfuehrende Laientipps Teil 35 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 36 ergaenzen
