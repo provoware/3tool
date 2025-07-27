@@ -670,3 +670,9 @@ ffmpeg -i eingang.mp4 -vf cropdetect -f null -
 ffmpeg -i eingang.mp4 -vf "crop=1280:720:0:0" ohne_rand.mp4
 ```
 *`cropdetect`* (Rand-Erkennung) zeigt passende Werte an. *`crop`* (beschneiden) entfernt damit die schwarzen Balken.
+
+## 103. Bass betonen
+```bash
+ffmpeg -i musik.mp3 -af "bass=g=8" bass_boost.mp3
+```
+*`bass`* (Tiefton-Verst\u00e4rker) hebt die tiefen Frequenzen um 8 Dezibel an.

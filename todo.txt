@@ -126,3 +126,6 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 100 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 101 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 102 ergaenzen
+- [x] Utilities in gemeinsames Modul verschieben
+- [x] Debug-Flag kapseln
+- [x] Weiterfuehrende Laientipps Teil 103 ergaenzen

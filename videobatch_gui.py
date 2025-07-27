@@ -23,6 +23,8 @@ from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
+from core.utils import build_out_name, human_time, probe_duration
+
 # ---------- Logging ----------
 LOG_DIR = Path.home()/".videobatchtool"/"logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -72,22 +74,6 @@ THEMES = {
 # ---------- Helpers ----------
 def which(p: str): return shutil.which(p)
 def check_ffmpeg(): return which("ffmpeg") and which("ffprobe")
-def human_time(sec: float) -> str:
-    sec = int(sec); m, s = divmod(sec, 60); h, m = divmod(m, 60)
-    return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
-
-def probe_duration(path: str) -> float:
-    try:
-        import ffmpeg
-        pr = ffmpeg.probe(path)
-        fmt = pr.get("format", {})
-        if "duration" in fmt: return float(fmt["duration"])
-        for st in pr.get("streams", []):
-            if st.get("codec_type") == "audio":
-                return float(st.get("duration", 0) or 0)
-    except Exception as e:
-        print("Fehler beim Prüfen der Dauer:", e, file=sys.stderr)
-    return 0.0
 
 def get_used_dir() -> Path:
     return Path.home() / "benutzte_dateien"
@@ -124,8 +110,6 @@ def make_thumb(path: str, size: Tuple[int,int]=(160,90)) -> QtGui.QPixmap:
     except Exception:
         pix = QtGui.QPixmap(size[0], size[1]); pix.fill(Qt.gray); return pix
 
-def build_out_name(audio_path: str, out_dir: Path) -> str:
-    return str(out_dir / f"{Path(audio_path).stem}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.mp4")
 
 # ---------- Datenmodell ----------
 COLUMNS = ["#", "Thumb", "Bild", "Audio", "Dauer", "Ausgabe", "Fortschritt", "Status"]
