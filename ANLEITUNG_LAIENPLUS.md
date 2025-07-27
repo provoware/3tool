@@ -713,3 +713,9 @@ ffmpeg -i quelle.mp4 -c:v libx265 -c:a copy film_hevc.mp4
 ```
 *`libx265`* ist der Encoder fuer den modernen **H.265/HEVC**-Standard (High Efficiency Video Coding) und erzeugt kleine Dateien bei guter Qualitaet. *`-c:a copy`* uebernimmt die Tonspur unveraendert.
 
+
+## 110. Lautstaerke messen
+```bash
+ffmpeg -i eingang.mp3 -af volumedetect -f null -
+```
+*`volumedetect`* (Lautstaerke-Erkennung) zeigt an, wie laut der Ton ist. *`-f null -`* schreibt keine Datei.
