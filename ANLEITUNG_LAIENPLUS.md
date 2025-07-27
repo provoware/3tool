@@ -605,3 +605,19 @@ ffmpeg -i eingang.mp3 -af highpass=f=200 klares_audio.mp3
 ffmpeg -i laut.mp3 -af "alimiter=limit=0.9" angenehmer.mp3
 ```
 *`alimiter`* (Begrenzer) schuetzt vor uebersteuerten Stellen. *`limit`* bestimmt die maximale Lautstaerke.
+
+
+## 93. Audiospur auf 48 kHz setzen
+```bash
+ffmpeg -i quelle.mp3 -ar 48000 neu.wav
+```
+*`-ar`* (Samplingrate) bestimmt die Zahl der Messpunkte pro Sekunde. 48000 sorgt fuer klaren Klang.
+
+
+
+## 94. Sanften Rand hinzufuegen
+```bash
+ffmpeg -i original.mp4 -vf vignette rand.mp4
+```
+*`vignette`* (Vignette) dunkelt die Bildraender leicht ab und lenkt den Blick zur Mitte.
+
