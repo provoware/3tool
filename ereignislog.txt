@@ -69,3 +69,4 @@
 [2025-07-27] Fensterflexibilitaet geprueft und Laientipps Teil 13 ergaenzt
 [2025-07-27] Barrierefreiheit erklaert, Laientipps Teil 14 ergänzt und Anleitung zusammengefasst
 [2025-07-27] F1-Kurzbefehl ergänzt und Laientipps Teil 15 hinzugefügt (Aufgaben erledigt)
+[2025-07-27] AccessibleName hinzugefuegt und Laientipps Teil 16 ergaenzt

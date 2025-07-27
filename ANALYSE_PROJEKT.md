@@ -393,3 +393,23 @@ und einfach.
    gzip -d datei.gz
    ```
    `gzip -d` (decompress) stellt die urspruengliche Datei wieder her.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 16
+
+1. **Speicherauslastung pruefen**
+   ```bash
+   free -h
+   ```
+   `free` zeigt den Arbeitsspeicher (RAM) an. Die Option `-h` (human readable) liefert leicht lesbare Werte.
+
+2. **Mehrere Dateien umbenennen**
+   ```bash
+   rename s/.txt/.bak/ *.txt
+   ```
+   `rename` aendert Dateiendungen in einem Schritt. Hier werden `.txt`-Dateien in `.bak` umbenannt.
+
+3. **Offene Netzwerkports anzeigen**
+   ```bash
+   ss -tulpn
+   ```
+   `ss` (socket statistics) listet aktive Verbindungen. `-tulpn` zeigt Protokoll, Ports und Programme an.

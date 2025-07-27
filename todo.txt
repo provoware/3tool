@@ -74,3 +74,6 @@ pip install -r requirements.txt
 - [x] Anleitungen zusammenfassen
 - [x] F1-Kurzbefehl implementieren
 - [x] Weiterfuehrende Laientipps Teil 15 ergaenzen
+
+- [x] Buttons mit AccessibleName versehen
+- [x] Weiterfuehrende Laientipps Teil 16 ergaenzen

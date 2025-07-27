@@ -819,7 +819,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _wrap_button(self, button: QtWidgets.QAbstractButton, help_text: str) -> QtWidgets.QWidget:
         """Return button with help label underneath."""
-        button.setToolTip(help_text); button.setStatusTip(help_text)
+        button.setToolTip(help_text)
+        button.setStatusTip(help_text)
+        button.setAccessibleName(button.text())
+        button.setAccessibleDescription(help_text)
         lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
         button.setMaximumHeight(28)
         box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)

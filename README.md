@@ -256,3 +256,21 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   Alle Bereiche passen sich automatisch an, damit nichts verdeckt wird.
 
 Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
+
+* **Speicherauslastung pruefen**
+  ```bash
+  free -h
+  ```
+  `free` zeigt den Arbeitsspeicher (RAM) an. Die Option `-h` liefert gut lesbare Werte.
+
+* **Mehrere Dateien umbenennen**
+  ```bash
+  rename s/.txt/.bak/ *.txt
+  ```
+  `rename` aendert Dateiendungen in einem Schritt.
+
+* **Offene Netzwerkports anzeigen**
+  ```bash
+  ss -tulpn
+  ```
+  `ss` (socket statistics) listet aktive Ports und Programme.
