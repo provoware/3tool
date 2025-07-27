@@ -73,3 +73,6 @@
 - [x] Weiterfuehrende Laienvorschlaege ergaenzen
 - [x] Fehlermeldungen ausfuehrlicher gestalten
 - [x] Backup-Befehl ergaenzen
+
+- [x] Sichtbarkeit der Oberflaechenelemente pruefen
+- [x] Weiterfuehrende Laientipps Teil 3 ergaenzen

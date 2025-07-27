@@ -91,3 +91,30 @@ erklaert.
    Mit `deactivate` verlaesst du die Umgebung. Anschliessend loescht `rm -r`
    (remove) den Ordner `.venv`. Beim naechsten Start richtet der Launcher sie
    automatisch neu ein.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 3
+
+Auch dieser Abschnitt nutzt einfache Sprache. Die Befehle lassen sich direkt
+kopieren und ausprobieren. Fachwörter stehen in Klammern und werden kurz
+beschrieben.
+
+1. **Dateien nach Datum sortieren**
+   ```bash
+   ls -lt
+   ```
+   `ls` listet Dateien. Die Option `-lt` zeigt sie nach Zeit geordnet an
+   (die jünsten zuerst).
+
+2. **Freien Speicher anzeigen**
+   ```bash
+   df -h
+   ```
+   `df` gibt eine Übersicht des Speicherplatzes aus. Mit `-h` (human readable)
+   werden die Werte in leicht lesbaren Einheiten wie MB oder GB angegeben.
+
+3. **Tool im Vollbild starten**
+   ```bash
+   python3 videobatch_launcher.py --fullscreen
+   ```
+   Einige Fenster wirken übersichtlicher im Vollbildmodus. Der Parameter
+   `--fullscreen` (ganzer Bildschirm) startet das Programm entsprechend.

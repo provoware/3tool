@@ -69,6 +69,7 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
 - Über "Ansicht → Log-Bereich" kann diese Anzeige ausgeblendet werden.
 - Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
+- Wenn etwas schlecht zu erkennen ist, nutze das Theme "Kontrast" oder vergrößere die Schrift über "Ansicht".
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 
 ## Hilfe-Fenster
