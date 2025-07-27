@@ -137,3 +137,5 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 109 ergaenzen
 
 - [x] Release-Analyse aktualisieren
+
+- [x] Weiterfuehrende Laientipps Teil 110 ergaenzen
