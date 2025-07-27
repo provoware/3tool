@@ -428,3 +428,15 @@ ffmpeg -i eingang.mp4 -vf "hue=h=60:s=0.8" farbig.mp4
 ffmpeg -i stimme.mp3 -filter:a "asetrate=44100*1.2,atempo=1/1.2" hoeher.mp3
 ```
 *`asetrate`* (Abtastrate) beschleunigt die Tonhöhe. *`atempo`* (Geschwindigkeit) gleicht die Abspielgeschwindigkeit wieder an.
+
+## 64. Bereich mit farbigem Rahmen hervorheben
+```bash
+ffmpeg -i eingang.mp4 -vf "drawbox=x=100:y=50:w=200:h=100:color=red@0.5:thickness=5" markiert.mp4
+```
+*`drawbox`* (Rechteck zeichnen) legt einen Rahmen aufs Bild. *`x`* und *`y`* sind die Position, *`w`* (Breite) und *`h`* (Höhe) bestimmen die Größe, *`color`* gibt die Farbe an und *`thickness`* die Strichstärke.
+
+## 65. Echoeffekt bei Ton anwenden
+```bash
+ffmpeg -i sprache.mp3 -af "aecho=0.8:0.88:60:0.4" echo.mp3
+```
+*`aecho`* (Echo) fügt einen Nachhall hinzu. Die Zahlen stehen für Eingangslautstärke, Echo-Lautstärke, Verzögerung in Millisekunden und Abklingen.
