@@ -644,3 +644,15 @@ ffmpeg -i eingang.mp4 -vf "transpose=2,transpose=2" kopfueber.mp4
 ffmpeg -i clip.mp4 -vf "drawtext=text=%{pts\:hms}:fontcolor=white:fontsize=24:x=10:y=10" mit_uhr.mp4
 ```
 *`drawtext`* (Text einblenden) zeigt die aktuelle Abspielzeit `pts` (Presentation Time Stamp) im Format Stunden:Minuten:Sekunden.
+
+## 99. Nur den Ton speichern
+```bash
+ffmpeg -i video.mp4 -vn -acodec copy ton.aac
+```
+*`-vn`* (Video None) schaltet das Bild aus. *`-acodec copy`* kopiert die Tonspur ohne Aenderung.
+
+## 100. Video als AVI speichern
+```bash
+ffmpeg -i quellvideo.mp4 -c:v libx264 -c:a aac ausgabe.avi
+```
+*`libx264`* (Videocodec) erzeugt gutes H.264-Bild. *`aac`* (Audio-Codec) ist weit verbreitet.
