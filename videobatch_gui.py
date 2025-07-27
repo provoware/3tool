@@ -559,17 +559,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.customContextMenuRequested.connect(self._table_menu)
         self.table.setToolTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
         self.table.setStatusTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
+        self.table.setAccessibleName("Paar-Tabelle")
+        self.table.setAccessibleDescription("Liste der Bild- und Audio-Paare")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
 
         self.help_pane = HelpPane()
+        self.help_pane.setAccessibleName("Hilfe-Bereich")
+        self.help_pane.setAccessibleDescription("Kurzanleitung zum Tool")
 
         # Einstellungen
         self.out_dir_edit  = QtWidgets.QLineEdit(str(self.settings.value("encode/out_dir", default_output_dir(), str)))
         self.out_dir_edit.setPlaceholderText("Zielordner für fertige Videos")
+        self.out_dir_edit.setAccessibleName("Zielordner")
+        self.out_dir_edit.setAccessibleDescription("Pfad für fertige Videos")
         self.btn_out_open  = QtWidgets.QToolButton(); self.btn_out_open.setText("Öffnen")
         self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
+        self.btn_out_open.setAccessibleName("Ordner öffnen")
+        self.btn_out_open.setAccessibleDescription("Ordner im Dateimanager anzeigen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
         self.preset_combo  = QtWidgets.QComboBox(); self.preset_combo.addItems(
             ["ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"])
@@ -618,7 +626,11 @@ class MainWindow(QtWidgets.QMainWindow):
         panel_grid = _create_panel_grid()
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
+        self.progress_total.setAccessibleName("Gesamtfortschritt")
+        self.progress_total.setAccessibleDescription("Fortschritt aller Aufgaben")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
+        self.log_edit.setAccessibleName("Protokoll")
+        self.log_edit.setAccessibleDescription("Fortlaufende Meldungen des Programms")
 
         self.log_box = QtWidgets.QGroupBox("Protokoll")
         bl = QtWidgets.QVBoxLayout(self.log_box)

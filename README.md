@@ -104,6 +104,8 @@ Diese Tipps erleichtern die Bedienung für alle Nutzenden:
 - Unter **Ansicht → Schrift +** lässt sich die Schriftgröße jederzeit erhöhen.
 - Das Theme **Kontrast** bietet besonders hohe Lesbarkeit bei wenig Licht.
 - Viele Funktionen sind auch per Tastatur erreichbar, zum Beispiel **F1** für die Hilfe.
+- Alle Bedienelemente besitzen einen klaren "AccessibleName",
+  damit Screenreader die Bezeichnungen vorlesen können.
 
 ## Zusaetzlich
 
@@ -274,3 +276,14 @@ Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
   ss -tulpn
   ```
   `ss` (socket statistics) listet aktive Ports und Programme.
+* **Laufende Prozesse ansehen**
+  ```bash
+  top -n 1
+  ```
+  `top` zeigt die aktiven Programme (Prozesse). Mit `-n 1` beendet sich die Anzeige nach einer Liste.
+
+* **Kernel-Version anzeigen**
+  ```bash
+  uname -r
+  ```
+  `uname` (unix name) gibt die Version des Betriebssystemkerns (Kernel) aus.

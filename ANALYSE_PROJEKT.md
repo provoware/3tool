@@ -413,3 +413,17 @@ und einfach.
    ss -tulpn
    ```
    `ss` (socket statistics) listet aktive Verbindungen. `-tulpn` zeigt Protokoll, Ports und Programme an.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 17
+
+1. **Laufende Prozesse anzeigen**
+   ```bash
+   top -n 1
+   ```
+   `top` zeigt die aktuell laufenden Programme (Prozesse). Mit `-n 1` endet die Anzeige nach einer Liste.
+
+2. **Kernel-Version anzeigen**
+   ```bash
+   uname -r
+   ```
+   `uname` (unix name) gibt Informationen zum Betriebssystemkern (Kernel) aus.

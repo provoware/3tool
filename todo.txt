@@ -77,3 +77,5 @@ pip install -r requirements.txt
 
 - [x] Buttons mit AccessibleName versehen
 - [x] Weiterfuehrende Laientipps Teil 16 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 17 ergaenzen
+- [x] Barrierefreiheit weiter verbessern
