@@ -92,3 +92,6 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 26 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 27 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 28 ergaenzen
+# Neue Aufgaben
+- [x] QShortcut-Fehler korrigieren
+- [x] Weiterfuehrende Laientipps Teil 29 ergaenzen

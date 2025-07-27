@@ -745,7 +745,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
-        QtWidgets.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
+        QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
             self._show_help_window
         )
 
