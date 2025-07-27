@@ -211,3 +211,10 @@ ffmpeg -i sprache.mp3 -i musik.mp3 -filter_complex "[1:a]volume=0.3[a2];[0:a][a2
 ```
 *`volume`* (Lautstärke) senkt hier die Musik auf 30 Prozent.
 *`amix`* (Audios mischen) verbindet beide Tonspuren.
+
+## 31. Video schneller abspielen
+```bash
+ffmpeg -i eingang.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.mp4
+```
+*`setpts`* (Zeitstempel) halbiert die Abspielzeit des Videos.
+*`atempo`* (Geschwindigkeit des Tons) passt die Tonspur an.
