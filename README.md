@@ -26,6 +26,17 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    Bist du bereits in einer eigenen Umgebung, erkennt der Launcher dies und nutzt dein aktuelles Python.
 3. Alternativ kann das Beispielskript `setup.sh` alles in einem Durchlauf erledigen. Ein Muster steht in `setup-sh.txt`.
 
+### Start mit Hilfefenster
+
+Beim ersten Start erscheint ein kleines Setup-Fenster. Es prüft, ob alle
+benötigten Pakete und `ffmpeg` vorhanden sind. Über die Schaltfläche
+**Installieren / Reparieren** lässt sich alles automatisch einrichten.
+Mit dem Parameter `--help` zeigt der Launcher alle verfügbaren Optionen an:
+
+```bash
+python3 videobatch_launcher.py --help
+```
+
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.
 Weitere einfache Beispiele bietet `ANLEITUNG_LAIENPLUS.md`.
 Im Abschnitt "Weiterführende Befehle" von `ANLEITUNG_GESAMT.md` finden sich
@@ -50,7 +61,6 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
 - **Hintergrund-Verarbeitung** – das Kodieren läuft jetzt in einem eigenen Thread (Hintergrundprozess), so bleibt die Oberfläche flüssig.
-- **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio
@@ -69,11 +79,33 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
 - Über "Ansicht → Log-Bereich" kann diese Anzeige ausgeblendet werden.
 - Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
+- Wenn etwas schlecht zu erkennen ist, nutze das Theme "Kontrast" oder vergrößere die Schrift über "Ansicht".
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
+- Wenn du das Fenster größer oder kleiner ziehst, ordnen sich alle Elemente
+  automatisch neu an. Auch die Trennleisten lassen sich flexibel verschieben.
 
 ## Hilfe-Fenster
 
+
 Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeigt dort die wichtigsten Schritte. Es lässt sich jederzeit öffnen.
+
+## Tipps für ältere Nutzer
+
+- Wähle unter "Theme" den Eintrag **Kontrast**, wenn Texte schwer zu lesen sind.
+- Über "Ansicht → Schriftgröße" lässt sich die Schrift schnell vergrößern.
+- Drücke **F11** für den Vollbildmodus. Alle Elemente werden größer dargestellt.
+- Die Hilfe erreichst du jederzeit über **Hilfe → Kurzanleitung** oder die Taste **F1**.
+- Mit **F1** öffnet sich das Hilfefenster sofort.
+
+## Barrierefreiheit
+
+Diese Tipps erleichtern die Bedienung für alle Nutzenden:
+
+- Unter **Ansicht → Schrift +** lässt sich die Schriftgröße jederzeit erhöhen.
+- Das Theme **Kontrast** bietet besonders hohe Lesbarkeit bei wenig Licht.
+- Viele Funktionen sind auch per Tastatur erreichbar, zum Beispiel **F1** für die Hilfe.
+- Alle Bedienelemente besitzen einen klaren "AccessibleName",
+  damit Screenreader die Bezeichnungen vorlesen können.
 
 ## Zusaetzlich
 
@@ -84,3 +116,186 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 * Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
 * Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.
+
+## Fehleranalyse und Optimierung
+
+Mit dem Programm `flake8` laesst sich der Quellcode (Text des Programms) auf Fehler und Stil-Regeln (PEP8) pruefen.
+```bash
+pip install flake8
+flake8 videobatch_extra.py videobatch_gui.py videobatch_launcher.py
+```
+Erscheinen Meldungen, sollte man die Zeilen pruefen.
+
+Als Zusatz hilft der Selbsttest:
+```bash
+python3 videobatch_extra.py --selftest
+```
+
+## Release-Vorbereitung
+
+Vor der Veröffentlichung ("Release") sollten alle Funktionen noch einmal getestet werden.
+Gehe die Datei `todo.txt` durch und prüfe, ob überall `[x]` steht.
+Für das finale Paket empfiehlt sich folgendes Vorgehen:
+
+1. **Abhängigkeiten ("Dependencies") prüfen**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Automatische Tests ausführen**:
+   ```bash
+   python3 videobatch_extra.py --selftest
+   ```
+3. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
+   ```bash
+   zip -r videobatchtool.zip .
+   ```
+4. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
+
+## Backup erstellen
+
+Vor größeren Änderungen lohnt sich eine Sicherungskopie:
+```bash
+zip -r backup.zip .
+```
+Der Befehl `zip` fasst alle Dateien zu einem Archiv zusammen. So lässt sich der
+aktuelle Stand leicht wiederherstellen.
+
+Damit ist das Tool bereit für den Upload oder die Weitergabe.
+
+## Weitere Optimierungen
+
+Auch nach den Tests laesst sich noch Feinschliff vornehmen:
+
+* **Pakete aktualisieren**
+  ```bash
+  pip list --outdated
+  pip install -U paketname
+  ```
+  Damit bleiben alle Bibliotheken auf dem neuesten Stand.
+
+* **Quellcode formatieren**
+  ```bash
+  black videobatch_extra.py
+  ```
+  `black` ordnet Einrueckungen und Zeilenumbrueche automatisch.
+
+* **Alte Logdateien entfernen**
+  ```bash
+  rm *.log
+  ```
+  `rm` (remove) loescht alle Dateien mit der Endung `.log`.
+
+* **Festplattenplatz pruefen**
+  ```bash
+  df -h
+  ```
+  `df` (disk free) zeigt den freien Speicherplatz an.
+
+* **FFmpeg-Pfad setzen**
+  ```bash
+  export PATH="$PATH:/opt/ffmpeg/bin"
+  ```
+  `export` erweitert eine Umgebungsvariable, damit das Terminal ffmpeg findet.
+
+* **Dateirechte setzen**
+  ```bash
+  chmod +x skript.sh
+  ```
+  `chmod` (change mode) macht eine Datei ausfuehrbar.
+
+* **Groesste Ordner finden**
+  ```bash
+  du -sh */ | sort -h
+  ```
+  `du` (disk usage) zeigt den Platzbedarf. `sort -h` sortiert nach Groesse.
+
+* **System aktualisieren**
+  ```bash
+  sudo apt update && sudo apt upgrade
+  ```
+  `apt` ist der Paketverwalter. `update` und `upgrade` halten das System aktuell.
+
+* **Versteckte Dateien anzeigen**
+  ```bash
+  ls -a
+  ```
+  `ls` (list) zeigt mit `-a` (all) auch verborgene Dateien.
+
+* **Nur Bilder auflisten**
+  ```bash
+  ls *.jpg
+  ```
+  Zeigt nur Dateien mit der Endung `.jpg` an.
+
+* **Archiv erstellen**
+  ```bash
+  tar -czf archiv.tar.gz *
+  ```
+  `tar` (tape archive) sammelt alle Dateien in einem gepackten Archiv.
+
+* **Text in Dateien suchen**
+  ```bash
+  grep -i "wort" datei.txt
+  ```
+  `grep` (search) findet das Wort unabhaengig von Gross- und Kleinschreibung.
+
+* **Dateien zaehlen**
+  ```bash
+  ls | wc -l
+  ```
+  `wc` (word count) ermittelt die Anzahl gelisteter Dateien.
+
+* **Neuen Ordner anlegen und entfernen**
+  ```bash
+  mkdir neuer_ordner
+  rmdir neuer_ordner
+  ```
+  `mkdir` (make directory) erstellt einen Ordner. `rmdir` (remove directory)
+  loescht ihn wieder, wenn er leer ist.
+
+* **Fenstergroesse testen**
+  Ziehe das Hauptfenster mit der Maus groesser oder kleiner.
+  Alle Bereiche passen sich automatisch an, damit nichts verdeckt wird.
+
+Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
+
+* **Speicherauslastung pruefen**
+  ```bash
+  free -h
+  ```
+  `free` zeigt den Arbeitsspeicher (RAM) an. Die Option `-h` liefert gut lesbare Werte.
+
+* **Mehrere Dateien umbenennen**
+  ```bash
+  rename s/.txt/.bak/ *.txt
+  ```
+  `rename` aendert Dateiendungen in einem Schritt.
+
+* **Offene Netzwerkports anzeigen**
+  ```bash
+  ss -tulpn
+  ```
+  `ss` (socket statistics) listet aktive Ports und Programme.
+* **Laufende Prozesse ansehen**
+  ```bash
+  top -n 1
+  ```
+  `top` zeigt die aktiven Programme (Prozesse). Mit `-n 1` beendet sich die Anzeige nach einer Liste.
+
+* **Kernel-Version anzeigen**
+  ```bash
+  uname -r
+  ```
+  `uname` (unix name) gibt die Version des Betriebssystemkerns (Kernel) aus.
+
+* **Datei herunterladen**
+  ```bash
+  wget https://beispiel.de/datei.zip
+  ```
+  `wget` (web get) speichert eine Datei aus dem Internet.
+
+* **Pruefsumme kontrollieren**
+  ```bash
+  sha256sum datei.zip
+  ```
+  `sha256sum` erstellt eine digitale Pruefsumme, um die Datei zu ueberpruefen.

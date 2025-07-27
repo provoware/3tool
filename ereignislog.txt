@@ -50,3 +50,25 @@
 2025-07-24 Noch mehr Beispiele und Weiterfuehrende Befehle gelesen
 [2025-07-24] Kontextmenü in Listen getestet und Öffnen-Knopf geprüft
 [2025-07-25] Sidebar schaltbar und 3x3 Raster optimiert; Aufgaben 'Modus Video + Audio ausprobieren' und 'Neue Kontextmenü-Funktionen ausprobieren' erledigt
+[2025-07-26] ANLEITUNG_EXTRA.md gelesen (Aufgabe 'Neues Dokument ANLEITUNG_EXTRA.md lesen' erledigt)
+[2025-07-26] Pfad kopieren getestet, Auto-Pair mit mehreren Slideshow-Ordnern ausprobiert und Beschriftungen unter den Buttons geprueft (Aufgaben erledigt)
+[2025-07-26] Codeanalyse mit flake8 durchgefuehrt (Aufgabe 'Codeanalyse mit flake8 durchfuehren' erledigt)
+[2025-07-27] Projektanalyse geschrieben und Importzeilen bereinigt (Aufgaben erledigt)
+[2025-07-27] Weiterfuehrende Laienvorschlaege ergaenzt und Fehlermeldungen ausfuehrlicher gestaltet
+[2025-07-27] Backup-Befehl dokumentiert und Tipps fuer Laien erweitert (Aufgabe 'Backup-Befehl ergaenzen' erledigt)
+[2025-07-27] Sichtbarkeit geprueft und Laientipps Teil 3 ergaenzt (Aufgaben erledigt)
+[2025-07-27] Start-Hilfe ergänzt und Laientipps Teil 4 hinzugefügt
+[2025-07-27] Weiterfuehrende Laientipps Teil 5 ergaenzt (Aufgabe erledigt)
+[2025-07-27] Hilfe fuer aeltere Nutzer beschrieben und Laientipps Teil 6 hinzugefuegt (Aufgaben erledigt)
+[2025-07-27] Laientipps Teil 7 und Aufraeumen im README ergaenzt (Aufgaben erledigt)
+[2025-07-27] Laientipps Teil 8 ergaenzt und README optimiert (Aufgabe 'Weiterfuehrende Laientipps Teil 8 ergaenzen' erledigt)
+[2025-07-27] Laientipps Teil 9 ergaenzt und Todo-Liste bereinigt
+[2025-07-27] Code auf Platzhalter geprueft und Laientipps Teil 10 ergaenzt
+[2025-07-27] README von doppelten Eintraegen befreit und Laientipps Teil 11 hinzugefuegt (Aufgaben erledigt)
+[2025-07-27] Laientipps Teil 12 ergaenzt und Code mit flake8 geprueft
+[2025-07-27] Fensterflexibilitaet geprueft und Laientipps Teil 13 ergaenzt
+[2025-07-27] Barrierefreiheit erklaert, Laientipps Teil 14 ergänzt und Anleitung zusammengefasst
+[2025-07-27] F1-Kurzbefehl ergänzt und Laientipps Teil 15 hinzugefügt (Aufgaben erledigt)
+[2025-07-27] AccessibleName hinzugefuegt und Laientipps Teil 16 ergaenzt
+[2025-07-27] Laientipps Teil 17 ergaenzt und Barrierefreiheit verbessert
+[2025-07-27] InfoDashboard zugaenglich gemacht und Laientipps Teil 18 ergaenzt

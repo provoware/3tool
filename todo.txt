@@ -2,18 +2,18 @@
 
 - [x] Projekt testen: `python3 videobatch_extra.py --selftest`
 - [x] Virtuelle Umgebung (isolierte Python-Umgebung) nutzen:
-      ```bash
-      python3 -m venv .venv
-      source .venv/bin/activate
-      ```
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 - [x] Pakete installieren:
-      ```bash
-      pip install -r requirements.txt
-      ```
+```bash
+pip install -r requirements.txt
+```
 - [x] Tool über den Launcher starten: `python3 videobatch_launcher.py`
 - [x] Dokumentation lesen: `README.md`, `ANLEITUNG_GESAMT.md`, `ANLEITUNG_LAIENPLUS.md`
 - [x] Modus "Slideshow" ausprobieren
- - [x] Modus "Video + Audio" ausprobieren
+- [x] Modus "Video + Audio" ausprobieren
 - [x] Modus "Mehrere Audios, ein Bild" ausprobieren
 - [x] Menüeintrag "README öffnen" testen
 - [x] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
@@ -39,31 +39,46 @@
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
 - [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
-- [x] Modus "Video + Audio" ausprobieren
-- [x] Modus "Mehrere Audios, ein Bild" ausprobieren
- - [x] Menüeintrag "README öffnen" testen
-- [x] Neue Kontextmenü-Funktionen ausprobieren (Rechtsklick auf Tabelle)
-- [ ] "Pfad kopieren" im Kontextmenü testen
- - [x] Tooltip über Tabelle testen (zeigt Hinweis bei Mauszeiger)
- - [x] Knopf "Ausgabeordner öffnen" testen
- - [x] Ereignislog aktualisieren: `ereignislog.txt`
-- [x] Abschnitt "Noch mehr Beispiele" in der Anleitung lesen
-- [x] Abschnitt "Weiterführende Befehle" lesen
-- [x] Neues Hilfefenster prüfen
-- [ ] Auto-Pair mit mehreren Slideshow-Ordnern ausprobieren
-- [ ] Neues Dokument `ANLEITUNG_EXTRA.md` lesen
- - [x] Kontextmenü in Bilder- und Audioliste testen
-- [x] Neue Tipps in `ANLEITUNG_WEITERE_TIPPS.md` lesen
-- [ ] Beschriftungen unter den Buttons prüfen
-
 # Neu
-- [x] Favoriten-Bereich testen
-- [x] Bilder zu Favoriten hinzufügen
-- [x] Favoriten per Drag&Drop nutzen
-- [x] Verschiedene Themes ausprobieren
-- [x] Logging-Bereich beobachten
-- [x] Schriftgröße ändern
-
-
 - [x] Dokumentation gelesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps gelesen: `ANLEITUNG_TIPPS.md`
+- [x] Codeanalyse mit flake8 durchfuehren
+- [x] Projektanalyse schreiben: `ANALYSE_PROJEKT.md` erstellen
+- [x] Importzeilen bereinigen in `videobatch_extra.py`
+- [x] Weiterfuehrende Laienvorschlaege ergaenzen
+- [x] Fehlermeldungen ausfuehrlicher gestalten
+- [x] Backup-Befehl ergaenzen
+- [x] Sichtbarkeit der Oberflaechenelemente pruefen
+- [x] Weiterfuehrende Laientipps Teil 3 ergaenzen
+- [x] Start-Hilfe ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 4 hinzufuegen
+- [x] Weiterfuehrende Laientipps Teil 5 ergaenzen
+- [x] Hilfe fuer aeltere Nutzer pruefen
+- [x] Weiterfuehrende Laientipps Teil 6 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 7 ergaenzen
+- [x] Aufraeumen vor Release dokumentieren
+- [x] Weiterfuehrende Laientipps Teil 8 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 9 ergaenzen
+- [x] Todo-Liste bereinigen
+- [x] Code auf Platzhalter pruefen
+- [x] Weiterfuehrende Laientipps Teil 10 ergaenzen
+- [x] README auf doppelte Eintraege pruefen
+- [x] Weiterfuehrende Laientipps Teil 11 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 12 ergaenzen
+- [x] Code mit flake8 pruefen
+
+- [x] Fensterflexibilitaet pruefen
+- [x] Weiterfuehrende Laientipps Teil 13 ergaenzen
+- [x] Barrierefreiheit erwaehnen
+- [x] Weiterfuehrende Laientipps Teil 14 ergaenzen
+- [x] Anleitungen zusammenfassen
+- [x] F1-Kurzbefehl implementieren
+- [x] Weiterfuehrende Laientipps Teil 15 ergaenzen
+
+- [x] Buttons mit AccessibleName versehen
+- [x] Weiterfuehrende Laientipps Teil 16 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 17 ergaenzen
+- [x] Barrierefreiheit weiter verbessern
+
+- [x] InfoDashboard zugaenglich machen
+- [x] Weiterfuehrende Laientipps Teil 18 ergaenzen

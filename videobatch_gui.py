@@ -6,11 +6,17 @@
 # =========================================
 
 from __future__ import annotations
-import sys, json, shutil, subprocess, logging, tempfile
-from pathlib import Path
+
+import json
+import logging
+import shutil
+import subprocess
+import sys
+import tempfile
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple, Dict, Any
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Signal
@@ -35,12 +41,32 @@ logger = logging.getLogger("VideoBatchTool")
 # ---------- Themes ----------
 THEMES = {
     "Standard": "",
-    "Dunkel": "QWidget{background-color:#2b2b2b;color:#ffffff;} QPushButton{background-color:#444;color:white;}",
-    "Blau": "QWidget{background-color:#1e1e2d;color:#c7d8f4;} QPushButton{background-color:#3d59ab;color:white;}",
-    "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
-    "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
-    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}",
-    "Modern": "QWidget{background-color:#f0f0f0;color:#202020;} QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
+    "Dunkel": (
+        "QWidget{background-color:#2b2b2b;color:#ffffff;} "
+        "QPushButton{background-color:#444;color:white;}"
+    ),
+    "Blau": (
+        "QWidget{background-color:#1e1e2d;color:#c7d8f4;} "
+        "QPushButton{background-color:#3d59ab;color:white;}"
+    ),
+    "Gruen": (
+        "QWidget{background-color:#28342b;color:#d4ffd4;} "
+        "QPushButton{background-color:#385b3c;color:white;}"
+    ),
+    "Retro": (
+        "QWidget{background-color:#f5deb3;color:#00008b;} "
+        "QPushButton{background-color:#cd853f;color:black;}"
+    ),
+    "Kontrast": (
+        "QWidget{background-color:#000;color:#ffff00;} "
+        "QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
+    ),
+    "Modern": (
+        "QWidget{background-color:#f0f0f0;color:#202020;} "
+        "QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} "
+        "QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} "
+        "QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
+    ),
 }
 
 # ---------- Helpers ----------
@@ -434,13 +460,24 @@ class HelpPane(QtWidgets.QTextBrowser):
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.total_label=QtWidgets.QLabel("0")
-        self.done_label =QtWidgets.QLabel("0")
-        self.err_label  =QtWidgets.QLabel("0")
-        self.ffmpeg_lbl =QtWidgets.QLabel("ffmpeg: ?")
-        self.env_lbl    =QtWidgets.QLabel("Env: OK")
-        self.progress   =QtWidgets.QProgressBar(); self.progress.setMaximumWidth(240)
-        self.mini_log   =QtWidgets.QPlainTextEdit(); self.mini_log.setReadOnly(True); self.mini_log.setMaximumBlockCount(300); self.mini_log.setFixedHeight(90)
+        self.total_label = QtWidgets.QLabel("0")
+        self.total_label.setAccessibleName("Gesamtzahl")
+        self.done_label = QtWidgets.QLabel("0")
+        self.done_label.setAccessibleName("Fertig")
+        self.err_label = QtWidgets.QLabel("0")
+        self.err_label.setAccessibleName("Fehler")
+        self.ffmpeg_lbl = QtWidgets.QLabel("ffmpeg: ?")
+        self.ffmpeg_lbl.setAccessibleName("FFmpeg Status")
+        self.env_lbl = QtWidgets.QLabel("Env: OK")
+        self.env_lbl.setAccessibleName("Umgebung")
+        self.progress = QtWidgets.QProgressBar()
+        self.progress.setMaximumWidth(240)
+        self.progress.setAccessibleName("Fortschritt gesamt")
+        self.mini_log = QtWidgets.QPlainTextEdit()
+        self.mini_log.setReadOnly(True)
+        self.mini_log.setMaximumBlockCount(300)
+        self.mini_log.setFixedHeight(90)
+        self.mini_log.setAccessibleName("Kurzprotokoll")
         row=QtWidgets.QHBoxLayout()
         for w in (QtWidgets.QLabel("Gesamt:"), self.total_label,
                   QtWidgets.QLabel("Fertig:"),  self.done_label,
@@ -533,17 +570,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.customContextMenuRequested.connect(self._table_menu)
         self.table.setToolTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
         self.table.setStatusTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
+        self.table.setAccessibleName("Paar-Tabelle")
+        self.table.setAccessibleDescription("Liste der Bild- und Audio-Paare")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
 
         self.help_pane = HelpPane()
+        self.help_pane.setAccessibleName("Hilfe-Bereich")
+        self.help_pane.setAccessibleDescription("Kurzanleitung zum Tool")
 
         # Einstellungen
         self.out_dir_edit  = QtWidgets.QLineEdit(str(self.settings.value("encode/out_dir", default_output_dir(), str)))
         self.out_dir_edit.setPlaceholderText("Zielordner für fertige Videos")
+        self.out_dir_edit.setAccessibleName("Zielordner")
+        self.out_dir_edit.setAccessibleDescription("Pfad für fertige Videos")
         self.btn_out_open  = QtWidgets.QToolButton(); self.btn_out_open.setText("Öffnen")
         self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
+        self.btn_out_open.setAccessibleName("Ordner öffnen")
+        self.btn_out_open.setAccessibleDescription("Ordner im Dateimanager anzeigen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
         self.preset_combo  = QtWidgets.QComboBox(); self.preset_combo.addItems(
             ["ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"])
@@ -592,7 +637,11 @@ class MainWindow(QtWidgets.QMainWindow):
         panel_grid = _create_panel_grid()
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
+        self.progress_total.setAccessibleName("Gesamtfortschritt")
+        self.progress_total.setAccessibleDescription("Fortschritt aller Aufgaben")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
+        self.log_edit.setAccessibleName("Protokoll")
+        self.log_edit.setAccessibleDescription("Fortlaufende Meldungen des Programms")
 
         self.log_box = QtWidgets.QGroupBox("Protokoll")
         bl = QtWidgets.QVBoxLayout(self.log_box)
@@ -687,6 +736,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
+        QtWidgets.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
+            self._show_help_window
+        )
 
     # ----- UI helpers -----
     def _build_menus(self):
@@ -790,7 +842,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _wrap_button(self, button: QtWidgets.QAbstractButton, help_text: str) -> QtWidgets.QWidget:
         """Return button with help label underneath."""
-        button.setToolTip(help_text); button.setStatusTip(help_text)
+        button.setToolTip(help_text)
+        button.setStatusTip(help_text)
+        button.setAccessibleName(button.text())
+        button.setAccessibleDescription(help_text)
         lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
         button.setMaximumHeight(28)
         box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)
