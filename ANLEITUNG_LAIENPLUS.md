@@ -593,3 +593,15 @@ ffmpeg -i stereo.mp3 -ac 1 mono.mp3
 ffmpeg -i eingang.mp4 -vf "fps=30" glatter.mp4
 ```
 *`fps`* (Bilder pro Sekunde) wandelt das Video auf 30 Bilder pro Sekunde. Dadurch läuft es flüssiger.
+
+## 91. Tiefe Geraeusche entfernen
+```bash
+ffmpeg -i eingang.mp3 -af highpass=f=200 klares_audio.mp3
+```
+*`highpass`* (Hochpassfilter) laesst nur Toene ueber 200 Hertz durch. So verschwinden tiefe Brummtoene.
+
+## 92. Lautstaerke-Spitzen abfangen
+```bash
+ffmpeg -i laut.mp3 -af "alimiter=limit=0.9" angenehmer.mp3
+```
+*`alimiter`* (Begrenzer) schuetzt vor uebersteuerten Stellen. *`limit`* bestimmt die maximale Lautstaerke.
