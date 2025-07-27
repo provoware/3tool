@@ -544,3 +544,15 @@ ffmpeg -i video.mp4 -vf "drawtext=text=Hallo\\ :fontcolor=white:fontsize=24:x=w/
 ```
 *`drawtext`* (Text einblenden) zeigt "Hallo" und lässt den Text nach oben wandern, weil `t` die Zeit ist.
 
+
+## 83. Nur einen Ausschnitt speichern
+```bash
+ffmpeg -ss 00:01:00 -i eingang.mp4 -t 30 -c copy ausschnitt.mp4
+```
+*`-ss`* (Startzeit) springt zu Minute 1. *`-t`* (Dauer) nimmt danach 30 Sekunden. *`-c copy`* kopiert Bild und Ton ohne Neukodierung.
+
+## 84. Video in Graustufen umwandeln
+```bash
+ffmpeg -i eingang.mp4 -vf format=gray graustufen.mp4
+```
+*`format=gray`* (Farbraum) verwandelt das Bild in Schwarzweiß.
