@@ -370,3 +370,26 @@ Auch dieser Abschnitt nutzt einfache Begriffe und erklaert Fachwoerter in Klamme
    top
    ```
    `top` zeigt laufende Prozesse und deren CPU-Auslastung in Echtzeit.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 15
+
+Dieser Abschnitt bringt weitere nuetzliche Befehle. Die Erklaerungen bleiben kurz
+und einfach.
+
+1. **Ordner synchronisieren**
+   ```bash
+   rsync -av quelle/ ziel/
+   ```
+   `rsync` gleicht zwei Ordner ab und kopiert nur neue Dateien.
+
+2. **Symbolischen Link erstellen**
+   ```bash
+   ln -s quelle.txt verweis.txt
+   ```
+   `ln -s` legt eine Verknuepfung (Symlink) zur Originaldatei an.
+
+3. **GZ-Archiv entpacken**
+   ```bash
+   gzip -d datei.gz
+   ```
+   `gzip -d` (decompress) stellt die urspruengliche Datei wieder her.

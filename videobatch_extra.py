@@ -210,7 +210,9 @@ def cli_slideshow(
         return 1
     dur = probe_duration(audio)
     per = dur / len(images) if dur else 2
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".txt") as f:
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".txt"
+    ) as f:
         for img in images:
             f.write(f"file '{img}'\n")
             f.write(f"duration {per}\n")
@@ -249,8 +251,12 @@ def cli_slideshow(
         str(crf),
         str(out_file),
     ]
-    res = subprocess.run(cmd, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, text=True)
+    res = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
     os.unlink(list_path)
     if res.returncode != 0:
         err = res.stderr.strip().splitlines()
@@ -259,7 +265,6 @@ def cli_slideshow(
         return 1
     print("Fertig: 1/1")
     return 0
-
 
 
 def run_selftests() -> int:

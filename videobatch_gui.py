@@ -41,12 +41,32 @@ logger = logging.getLogger("VideoBatchTool")
 # ---------- Themes ----------
 THEMES = {
     "Standard": "",
-    "Dunkel": "QWidget{background-color:#2b2b2b;color:#ffffff;} QPushButton{background-color:#444;color:white;}",
-    "Blau": "QWidget{background-color:#1e1e2d;color:#c7d8f4;} QPushButton{background-color:#3d59ab;color:white;}",
-    "Gruen": "QWidget{background-color:#28342b;color:#d4ffd4;} QPushButton{background-color:#385b3c;color:white;}",
-    "Retro": "QWidget{background-color:#f5deb3;color:#00008b;} QPushButton{background-color:#cd853f;color:black;}",
-    "Kontrast": "QWidget{background-color:#000;color:#ffff00;} QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}",
-    "Modern": "QWidget{background-color:#f0f0f0;color:#202020;} QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
+    "Dunkel": (
+        "QWidget{background-color:#2b2b2b;color:#ffffff;} "
+        "QPushButton{background-color:#444;color:white;}"
+    ),
+    "Blau": (
+        "QWidget{background-color:#1e1e2d;color:#c7d8f4;} "
+        "QPushButton{background-color:#3d59ab;color:white;}"
+    ),
+    "Gruen": (
+        "QWidget{background-color:#28342b;color:#d4ffd4;} "
+        "QPushButton{background-color:#385b3c;color:white;}"
+    ),
+    "Retro": (
+        "QWidget{background-color:#f5deb3;color:#00008b;} "
+        "QPushButton{background-color:#cd853f;color:black;}"
+    ),
+    "Kontrast": (
+        "QWidget{background-color:#000;color:#ffff00;} "
+        "QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
+    ),
+    "Modern": (
+        "QWidget{background-color:#f0f0f0;color:#202020;} "
+        "QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} "
+        "QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} "
+        "QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
+    ),
 }
 
 # ---------- Helpers ----------
@@ -693,6 +713,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
+        QtWidgets.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
+            self._show_help_window
+        )
 
     # ----- UI helpers -----
     def _build_menus(self):

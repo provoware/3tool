@@ -95,6 +95,7 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 - Über "Ansicht → Schriftgröße" lässt sich die Schrift schnell vergrößern.
 - Drücke **F11** für den Vollbildmodus. Alle Elemente werden größer dargestellt.
 - Die Hilfe erreichst du jederzeit über **Hilfe → Kurzanleitung** oder die Taste **F1**.
+- Mit **F1** öffnet sich das Hilfefenster sofort.
 
 ## Barrierefreiheit
 
