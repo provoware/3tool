@@ -689,3 +689,15 @@ ffmpeg -i eingang.wav -c:a libvorbis ausgabe.ogg
 ```
 *`libvorbis`* (Ogg-Vorbis-Codec) speichert das Audio platzsparend im freien **OGG**-Format.
 
+## 106. Video auf 60 Bilder pro Sekunde bringen
+```bash
+ffmpeg -i eingang.mp4 -vf "fps=60" -c:a copy fluesig.mp4
+```
+*`fps`* (frames per second = Bilder pro Sekunde) sorgt fuer ein sehr fluesiges Bild. *`-c:a copy`* uebernimmt den Ton unveraendert.
+
+## 107. Hohe Toene abschneiden
+```bash
+ffmpeg -i quelle.mp3 -af "lowpass=f=3000" weniger_hoehen.mp3
+```
+*`lowpass`* (Tiefpassfilter) laesst nur Frequenzen bis 3000 Hertz durch und daempft schrille Klaenge.
+
