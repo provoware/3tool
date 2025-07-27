@@ -252,3 +252,11 @@ ffmpeg -i input.mp4 -vcodec libx264 -crf 28 kleiner.mp4
 ```
 *`libx264`* (Videocodec) komprimiert effizient.
 *`crf`* (Qualitaetsfaktor) steuert die Dateigroesse.
+
+## 37. Ton am Ende ausblenden
+```bash
+ffmpeg -i video.mp4 -af "afade=t=out:st=25:d=5" leise_end.mp4
+```
+*`afade`* (Ton ein- oder ausblenden) senkt die Lautstaerke langsam.
+*`t=out`* bedeutet ausblenden. *`st`* (Startzeit) legt fest, wann es beginnt.
+*`d`* (Dauer) bestimmt, wie lange der Effekt laeuft.
