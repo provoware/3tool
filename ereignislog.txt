@@ -84,3 +84,5 @@
 [2025-07-27] CI eingerichtet und Debug-Option erlaeutert, Laientipp Teil 34 ergaenzt (Aufgaben 'GitHub-Action fuer Lint und Tests einrichten', 'Debug-Option dokumentieren', 'Weiterfuehrende Laientipps Teil 34 ergaenzen' erledigt)
 [2025-07-27] Laientipps Teil 35 ergaenzt (Aufgabe "Weiterfuehrende Laientipps Teil 35 ergaenzen" erledigt)
 [2025-07-27] Laientipps Teil 36 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 36 ergaenzen' erledigt)
+[2025-07-27] Fortschrittsdatei erstellt und Laientipp Teil 37 ergaenzt (Aufgabe 'Fortschrittsinfo pflegen' und 'Weiterfuehrende Laientipps Teil 37 ergaenzen' erledigt)
+[2025-07-27] Laientipp Teil 38 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 38 ergaenzen' erledigt)
