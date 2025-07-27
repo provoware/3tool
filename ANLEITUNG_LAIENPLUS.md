@@ -621,3 +621,14 @@ ffmpeg -i original.mp4 -vf vignette rand.mp4
 ```
 *`vignette`* (Vignette) dunkelt die Bildraender leicht ab und lenkt den Blick zur Mitte.
 
+## 95. Stille am Anfang entfernen
+```bash
+ffmpeg -i aufnahme.mp3 -af silenceremove=start_periods=1:start_silence=0.1:detect=peak ohne_stille.mp3
+```
+*`silenceremove`* (Stille entfernen) schneidet die Pause am Anfang ab. `start_periods=1` bedeutet, dass nur die erste ruhige Phase genommen wird. `start_silence=0.1` erkennt Stille ab 0,1 Sekunden. `detect=peak` orientiert sich an Lautstärkespitzen.
+
+## 96. Hohe Toene betonen
+```bash
+ffmpeg -i quelle.mp3 -af "equalizer=f=3000:t=q:w=2:g=5" klarer.mp3
+```
+*`equalizer`* (Klangfilter) hebt Frequenzen um 3000 Hertz an. `t=q` wählt einen schmalen Bereich, `w=2` legt die Breite fest und `g=5` verstärkt um 5 Dezibel.
