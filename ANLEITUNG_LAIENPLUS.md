@@ -320,3 +320,17 @@ Schreibe in eine Datei `liste.txt` je eine Zeile:
 ffmpeg -f concat -safe 0 -i liste.txt -c copy komplett.mp4
 ```
 *`concat`* (aneinander haengen) fuegt die Clips zusammen. *`-c copy`* uebernimmt Bild und Ton unveraendert.
+
+## 47. Video in Zeitlupe abspielen
+```bash
+ffmpeg -i clip.mp4 -filter:v "setpts=2.0*PTS" -filter:a "atempo=0.5" zeitlupe.mp4
+```
+*`setpts`* (Zeitstempel) verlaengert die Abspielzeit des Videos.
+*`atempo`* (Tempo des Tons) halbiert die Geschwindigkeit der Tonspur.
+
+## 48. Weiches Ein- und Ausblenden
+```bash
+ffmpeg -i clip.mp4 -vf "fade=t=in:st=0:d=2,fade=t=out:st=8:d=2" -af "afade=t=in:st=0:d=2,afade=t=out:st=8:d=2" weich.mp4
+```
+*`fade`* (Ein- oder Ausblenden) laesst das Bild langsam erscheinen oder verschwinden.
+*`afade`* macht dasselbe fuer den Ton.
