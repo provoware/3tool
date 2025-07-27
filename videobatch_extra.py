@@ -60,9 +60,14 @@ def cli_single(images:List[str], audios:List[str], out_dir:str,
              "-c:a","aac","-b:a",abitrate,
              "-shortest","-preset",preset,"-crf",str(crf),
              str(out_file)]
-        res=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-        if res.returncode==0: done+=1
-        else: print("FFmpeg-Fehler:", res.stderr.splitlines()[-1] if res.stderr else "unbekannt")
+        res = subprocess.run(cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE, text=True)
+        if res.returncode == 0:
+            done += 1
+        else:
+            err = res.stderr.strip().splitlines()
+            msg = err[-1] if err else "unbekannt"
+            print("FFmpeg-Fehler:", msg)
     print(f"Fertig: {done}/{total}")
     return 0
 
@@ -88,9 +93,12 @@ def cli_video(video:str, audio:str, out_dir:str,
     cmd += ["-c:a","aac","-b:a",abitrate,
             "-shortest","-preset",preset,"-crf",str(crf),
             str(out_file)]
-    res=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
-    if res.returncode!=0:
-        print("FFmpeg-Fehler:", res.stderr.splitlines()[-1] if res.stderr else "unbekannt")
+    res = subprocess.run(cmd, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, text=True)
+    if res.returncode != 0:
+        err = res.stderr.strip().splitlines()
+        msg = err[-1] if err else "unbekannt"
+        print("FFmpeg-Fehler:", msg)
         return 1
     print("Fertig: 1/1")
     return 0
@@ -122,10 +130,13 @@ def cli_slideshow(img_dir:str, audio:str, out_dir:str,
          "-c:a","aac","-b:a",abitrate,
          "-shortest","-preset",preset,"-crf",str(crf),
          str(out_file)]
-    res=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    res = subprocess.run(cmd, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, text=True)
     os.unlink(list_path)
-    if res.returncode!=0:
-        print("FFmpeg-Fehler:", res.stderr.splitlines()[-1] if res.stderr else "unbekannt")
+    if res.returncode != 0:
+        err = res.stderr.strip().splitlines()
+        msg = err[-1] if err else "unbekannt"
+        print("FFmpeg-Fehler:", msg)
         return 1
     print("Fertig: 1/1")
     return 0

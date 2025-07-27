@@ -70,3 +70,5 @@
 - [x] Codeanalyse mit flake8 durchfuehren
 - [x] Projektanalyse schreiben: `ANALYSE_PROJEKT.md` erstellen
 - [x] Importzeilen bereinigen in `videobatch_extra.py`
+- [x] Weiterfuehrende Laienvorschlaege ergaenzen
+- [x] Fehlermeldungen ausfuehrlicher gestalten
