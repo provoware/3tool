@@ -123,3 +123,4 @@
 [2025-07-27] Laientipps Teil 104 und 105 ergaenzt (Aufgaben 'Weiterfuehrende Laientipps Teil 104 ergaenzen', 'Weiterfuehrende Laientipps Teil 105 ergaenzen' erledigt)
 [2025-07-27] Laientipps Teil 106 und 107 ergaenzt (Aufgaben 'Weiterfuehrende Laientipps Teil 106 ergaenzen', 'Weiterfuehrende Laientipps Teil 107 ergaenzen' erledigt)
 [2025-07-27] Laientipps Teil 108 und 109 ergaenzt (Aufgaben 'Weiterfuehrende Laientipps Teil 108 ergaenzen', 'Weiterfuehrende Laientipps Teil 109 ergaenzen' erledigt)
+[2025-07-27] Release-Analyse aktualisiert (Aufgabe 'Release-Analyse aktualisieren' erledigt)
