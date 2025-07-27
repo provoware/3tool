@@ -68,3 +68,5 @@
 - [x] Dokumentation gelesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
 - [x] Zusätzliche Tipps gelesen: `ANLEITUNG_TIPPS.md`
 - [x] Codeanalyse mit flake8 durchfuehren
+- [x] Projektanalyse schreiben: `ANALYSE_PROJEKT.md` erstellen
+- [x] Importzeilen bereinigen in `videobatch_extra.py`

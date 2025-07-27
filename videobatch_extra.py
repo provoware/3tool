@@ -8,20 +8,29 @@
 
 # videobatch_extra.py
 from __future__ import annotations
-import sys, subprocess, re, tempfile, os
-from pathlib import Path
+
+import os
+import re
+import subprocess
+import sys
+import tempfile
 from datetime import datetime
+from pathlib import Path
 from typing import List
+
 import ffmpeg
 
-def human_time(s:int)->str:
-    s=int(s); m,s=divmod(s,60); h,m=divmod(m,60)
-    return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
+def human_time(seconds: int) -> str:
+    seconds = int(seconds)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}" if hours else f"{minutes:02d}:{seconds:02d}"
 
-def build_out_name(audio:str, out_dir:Path)->Path:
-    return out_dir / f"{Path(audio).stem}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.mp4"
+def build_out_name(audio: str, out_dir: Path) -> Path:
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return out_dir / f"{Path(audio).stem}_{stamp}.mp4"
 
-def probe_duration(path:str)->float:
+def probe_duration(path: str) -> float:
     try:
         pr = ffmpeg.probe(path)
         fmt = pr.get("format", {})
