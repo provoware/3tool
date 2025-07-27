@@ -440,3 +440,15 @@ ffmpeg -i eingang.mp4 -vf "drawbox=x=100:y=50:w=200:h=100:color=red@0.5:thicknes
 ffmpeg -i sprache.mp3 -af "aecho=0.8:0.88:60:0.4" echo.mp3
 ```
 *`aecho`* (Echo) fügt einen Nachhall hinzu. Die Zahlen stehen für Eingangslautstärke, Echo-Lautstärke, Verzögerung in Millisekunden und Abklingen.
+
+## 66. Gruenen Hintergrund ersetzen
+```bash
+ffmpeg -i greenscreen.mp4 -i hintergrund.jpg -filter_complex "[0:v]colorkey=0x00FF00:0.3:0.1[fg];[1:v][fg]overlay" neuer_hintergrund.mp4
+```
+*`colorkey`* (Farbe entfernen) macht Gruen durchsichtig. *`overlay`* (Ueberlagern) legt das Video auf das neue Bild.
+
+## 67. Video im Raster anzeigen
+```bash
+ffmpeg -i clip.mp4 -filter:v "tile=2x2" raster.mp4
+```
+*`tile`* (Kachelmodus) ordnet Kopien des Videos in 2 Spalten und 2 Reihen an.
