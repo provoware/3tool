@@ -347,3 +347,17 @@ ffmpeg -i film.mp4 -vf subtitles=untertitel.srt mit_text.mp4
 ```
 *`subtitles`* (Untertitel einblenden) fuegt die Texte dauerhaft ins Bild ein.
 
+
+## 51. Tonrauschen reduzieren
+```bash
+ffmpeg -i laut.mp4 -af afftdn geraeusche_weniger.mp4
+```
+*`afftdn`* (Rauschfilter) entfernt stoerende Geraeusche aus der Tonspur.
+
+
+## 52. Video stabilisieren
+```bash
+ffmpeg -i wacklig.mp4 -vf deshake ruhiger.mp4
+```
+*`deshake`* (Bildstabilisierung) gleicht Zittern aus.
+
