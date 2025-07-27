@@ -278,3 +278,17 @@ ffmpeg -i hintergrund.mp4 -i kleines.mp4 -filter_complex "overlay=W-w-10:H-h-10"
 ffmpeg -i input.mp4 -vf "colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131" sepia.mp4
 ```
 *`colorchannelmixer`* (Farbmischer) erzeugt einen warmen Sepia-Ton.
+
+## 41. Video spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf hflip gespiegelt.mp4
+```
+*`hflip`* (horizontal spiegeln) dreht das Bild so, als wuerde man es im
+Spiegel sehen.
+
+## 42. Bereich heranzoomen
+```bash
+ffmpeg -i eingang.mp4 -vf "crop=640:360:0:0,scale=1280:720" zoom.mp4
+```
+*`crop`* (Ausschnitt) waehlt einen kleineren Bereich aus. *`scale`*
+(skalieren) vergroessert diesen Teil wieder auf die volle Groesse.
