@@ -64,3 +64,4 @@
 [2025-07-27] Laientipps Teil 8 ergaenzt und README optimiert (Aufgabe 'Weiterfuehrende Laientipps Teil 8 ergaenzen' erledigt)
 [2025-07-27] Laientipps Teil 9 ergaenzt und Todo-Liste bereinigt
 [2025-07-27] Code auf Platzhalter geprueft und Laientipps Teil 10 ergaenzt
+[2025-07-27] README von doppelten Eintraegen befreit und Laientipps Teil 11 hinzugefuegt (Aufgaben erledigt)

@@ -278,3 +278,28 @@ Wie gewohnt stehen Fachwoerter in Klammern mit kurzer Erklaerung.
    ```
    `grep` (search) findet Zeilen, die das Wort enthalten. Die Option `-i`
    ignoriert die Schreibweise.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 11
+
+Auch dieser Abschnitt nutzt einfache Sprache. Die Befehle lassen sich direkt
+kopieren und ausprobieren.
+
+1. **Nur Bilder anzeigen**
+   ```bash
+   ls *.jpg
+   ```
+   `ls` (list) zeigt mit `*.jpg` nur Dateien, die auf `.jpg` enden.
+
+2. **Alle Dateien zu einem Archiv packen**
+   ```bash
+   tar -czf archiv.tar.gz *
+   ```
+   `tar` erstellt ein gepacktes Archiv. Die Optionen `-czf` bedeuten
+   "komprimieren" (c), "gzip nutzen" (z) und "Dateiname folgt" (f).
+
+3. **Laufende Python-Prozesse suchen**
+   ```bash
+   ps aux | grep python
+   ```
+   `ps aux` listet alle Prozesse. `grep` filtert hier nur Zeilen, in denen
+   "python" vorkommt.

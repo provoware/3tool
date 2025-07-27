@@ -61,7 +61,6 @@ Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 - **Launcher-Reparatur** – falls die Umgebung fehlt, legt der Launcher sie an und nutzt notfalls das aktuelle Python.
 - **Fehlermeldungen** – auftretende Fehler werden nun abgefangen und verständlich gemeldet. Details stehen im Logfile (Protokolldatei).
 - **Hintergrund-Verarbeitung** – das Kodieren läuft jetzt in einem eigenen Thread (Hintergrundprozess), so bleibt die Oberfläche flüssig.
-- **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 
 Unterstuetzte Modi:
 * **Standard** – ein Bild pro Audio
@@ -210,6 +209,18 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   ls -a
   ```
   `ls` (list) zeigt mit `-a` (all) auch verborgene Dateien.
+
+* **Nur Bilder auflisten**
+  ```bash
+  ls *.jpg
+  ```
+  Zeigt nur Dateien mit der Endung `.jpg` an.
+
+* **Archiv erstellen**
+  ```bash
+  tar -czf archiv.tar.gz *
+  ```
+  `tar` (tape archive) sammelt alle Dateien in einem gepackten Archiv.
 
 * **Text in Dateien suchen**
   ```bash
