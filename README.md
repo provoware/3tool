@@ -96,6 +96,14 @@ Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeig
 - Drücke **F11** für den Vollbildmodus. Alle Elemente werden größer dargestellt.
 - Die Hilfe erreichst du jederzeit über **Hilfe → Kurzanleitung** oder die Taste **F1**.
 
+## Barrierefreiheit
+
+Diese Tipps erleichtern die Bedienung für alle Nutzenden:
+
+- Unter **Ansicht → Schrift +** lässt sich die Schriftgröße jederzeit erhöhen.
+- Das Theme **Kontrast** bietet besonders hohe Lesbarkeit bei wenig Licht.
+- Viele Funktionen sind auch per Tastatur erreichbar, zum Beispiel **F1** für die Hilfe.
+
 ## Zusaetzlich
 
 * Die Datei `videobatch_extra.py` enthaelt eine Kommandozeilenversion. Mit `--selftest` lassen sich einfache Tests ausfuehren.
@@ -245,3 +253,5 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
 * **Fenstergroesse testen**
   Ziehe das Hauptfenster mit der Maus groesser oder kleiner.
   Alle Bereiche passen sich automatisch an, damit nichts verdeckt wird.
+
+Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.

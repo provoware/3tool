@@ -69,3 +69,6 @@ pip install -r requirements.txt
 
 - [x] Fensterflexibilitaet pruefen
 - [x] Weiterfuehrende Laientipps Teil 13 ergaenzen
+- [x] Barrierefreiheit erwaehnen
+- [x] Weiterfuehrende Laientipps Teil 14 ergaenzen
+- [x] Anleitungen zusammenfassen

@@ -347,4 +347,26 @@ Auch dieser Abschnitt verwendet einfache Sprache. Alle Befehle koennen direkt ko
    ```bash
    find . -type f -size +50M
    ```
-   `find` sucht Dateien. Die Angabe `+50M` bedeutet groesser als 50 Megabyte.
+  `find` sucht Dateien. Die Angabe `+50M` bedeutet groesser als 50 Megabyte.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 14
+
+Auch dieser Abschnitt nutzt einfache Begriffe und erklaert Fachwoerter in Klammern.
+
+1. **Archiv entpacken**
+   ```bash
+   unzip archiv.zip
+   ```
+   `unzip` (auspacken) entlaedt den Inhalt der ZIP-Datei in den aktuellen Ordner.
+
+2. **Dateigroessen uebersichtlich anzeigen**
+   ```bash
+   ls -lh
+   ```
+   `ls` (list) zeigt mit `-l` eine detaillierte Liste und mit `-h` (human readable) gut lesbare Groessen an.
+
+3. **Systemauslastung beobachten**
+   ```bash
+   top
+   ```
+   `top` zeigt laufende Prozesse und deren CPU-Auslastung in Echtzeit.
