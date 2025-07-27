@@ -70,6 +70,16 @@ def run_ffmpeg(cmd: list[str]) -> CompletedProcess[str]:
     return res
 
 
+def verify_files(*paths: str) -> bool:
+    """Prueft, ob Dateien existieren."""
+    ok = True
+    for p in paths:
+        if not Path(p).exists():
+            print(f"Fehlt: {p}")
+            ok = False
+    return ok
+
+
 def cli_single(
     images: List[str],
     audios: List[str],
@@ -88,7 +98,7 @@ def cli_single(
     total = len(images)
     done = 0
     for i, (img, aud) in enumerate(zip(images, audios), 1):
-        if not Path(img).exists() or not Path(aud).exists():
+        if not verify_files(img, aud):
             print(f"[{i}/{total}] FEHLT: {img} / {aud}")
             continue
         out_file = build_out_name(aud, out_dir_p)
@@ -165,8 +175,7 @@ def cli_video(
 ) -> int:
     out_dir_p = Path(out_dir)
     out_dir_p.mkdir(parents=True, exist_ok=True)
-    if not Path(video).exists() or not Path(audio).exists():
-        print("Datei fehlt")
+    if not verify_files(video, audio):
         return 1
     out_file = build_out_name(audio, out_dir_p)
     vdur = probe_duration(video)
@@ -215,8 +224,8 @@ def cli_slideshow(
     abitrate: str = "192k",
 ) -> int:
     d = Path(img_dir)
-    if not d.exists():
-        print("Ordner fehlt")
+    if not d.exists() or not verify_files(audio):
+        print("Ordner fehlt" if not d.exists() else "Datei fehlt")
         return 1
     images = []
     for ext in ("*.jpg", "*.jpeg", "*.png", "*.bmp", "*.webp"):

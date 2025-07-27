@@ -237,3 +237,11 @@ ffmpeg -i eingang.mp4 -vf "format=gray" grau.mp4
 ffmpeg -i wackelig.mp4 -vf deshake stabil.mp4
 ```
 *`deshake`* (Bildstabilisierung) gleicht ruckelige Bewegungen aus.
+
+## 35. Tonspur aus Video speichern
+```bash
+ffmpeg -i video.mp4 -vn -acodec copy ton.aac
+```
+*`-vn`* (Video nicht) entfernt das Bild.
+*`-acodec copy`* speichert die Tonspur unveraendert.
+

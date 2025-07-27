@@ -100,3 +100,4 @@ pip install -r requirements.txt
 - [x] GitHub-Action fuer Lint und Tests einrichten
 - [x] Weiterfuehrende Laientipps Teil 34 ergaenzen
 - [x] Debug-Option dokumentieren
+- [x] Weiterfuehrende Laientipps Teil 35 ergaenzen
