@@ -404,3 +404,15 @@ ffmpeg -i quelle.mp3 ziel.wav
 ffmpeg -i film.mp4 -ss 00:00:05 -vframes 1 vorschaubild.png
 ```
 *`-ss`* setzt die Startzeit. *`-vframes 1`* speichert genau ein Bild.
+
+## 60. Video drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=1" gedreht.mp4
+```
+*`transpose`* (drehen) bewegt das Bild um 90 Grad im Uhrzeigersinn.
+
+## 61. Farben kräftiger machen
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=saturation=1.5" bunter.mp4
+```
+*`eq`* (Equalizer) passt Werte wie *`saturation`* (Farbintensität) an.
