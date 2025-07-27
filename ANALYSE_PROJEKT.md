@@ -251,4 +251,30 @@ Diese Tipps helfen beim Aufraeumen und Halten des Systems auf dem neuesten Stand
    ```bash
    sudo apt update && sudo apt upgrade
    ```
-   `apt` ist der Paketverwalter. `update` holt neue Listen, `upgrade` installiert die Aktualisierungen.
+  `apt` ist der Paketverwalter. `update` holt neue Listen, `upgrade` installiert die Aktualisierungen.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 10
+
+Dieser Abschnitt zeigt weitere nuetzliche Befehle in einfacher Sprache.
+Wie gewohnt stehen Fachwoerter in Klammern mit kurzer Erklaerung.
+
+1. **Versteckte Dateien anzeigen**
+   ```bash
+   ls -a
+   ```
+   `ls` (list) zeigt die Dateien im aktuellen Ordner. Mit `-a` (all) werden auch
+   verborgene Dateien angezeigt.
+
+2. **Datei verschieben oder umbenennen**
+   ```bash
+   mv quelle.txt ziel.txt
+   ```
+   `mv` (move) verschiebt eine Datei. Wenn der Zielname anders ist, wird sie
+   zugleich umbenannt.
+
+3. **Text ohne Beachtung von Gross/Kleinschreibung suchen**
+   ```bash
+   grep -i "wort" datei.txt
+   ```
+   `grep` (search) findet Zeilen, die das Wort enthalten. Die Option `-i`
+   ignoriert die Schreibweise.

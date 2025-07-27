@@ -204,3 +204,15 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   sudo apt update && sudo apt upgrade
   ```
   `apt` ist der Paketverwalter. `update` und `upgrade` halten das System aktuell.
+
+* **Versteckte Dateien anzeigen**
+  ```bash
+  ls -a
+  ```
+  `ls` (list) zeigt mit `-a` (all) auch verborgene Dateien.
+
+* **Text in Dateien suchen**
+  ```bash
+  grep -i "wort" datei.txt
+  ```
+  `grep` (search) findet das Wort unabhaengig von Gross- und Kleinschreibung.

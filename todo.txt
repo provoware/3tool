@@ -60,3 +60,5 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 8 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 9 ergaenzen
 - [x] Todo-Liste bereinigen
+- [x] Code auf Platzhalter pruefen
+- [x] Weiterfuehrende Laientipps Teil 10 ergaenzen
