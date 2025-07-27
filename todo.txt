@@ -82,3 +82,4 @@ pip install -r requirements.txt
 
 - [x] InfoDashboard zugaenglich machen
 - [x] Weiterfuehrende Laientipps Teil 18 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 19 ergaenzen

@@ -167,3 +167,12 @@ ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
 
 - Öffne das Menü **Ansicht**.
 - Setze oder entferne den Haken bei **Sidebar**.
+
+## 26. Video ohne Ton speichern
+
+Manchmal reicht das Bild allein. So erzeugst du ein stummes Video:
+
+```bash
+ffmpeg -i eingang.mp4 -an ohne_ton.mp4
+```
+*`-an`* (Audio None, also ohne Ton) entfernt die Tonspur, das Video bleibt erhalten.
