@@ -656,3 +656,17 @@ ffmpeg -i video.mp4 -vn -acodec copy ton.aac
 ffmpeg -i quellvideo.mp4 -c:v libx264 -c:a aac ausgabe.avi
 ```
 *`libx264`* (Videocodec) erzeugt gutes H.264-Bild. *`aac`* (Audio-Codec) ist weit verbreitet.
+
+## 101. Lautstaerke angleichen (Kompressor)
+```bash
+ffmpeg -i laut_leise.mp3 -af "acompressor=threshold=-20dB:ratio=3" ausgeglichen.mp3
+```
+*`acompressor`* (Audio-Kompressor) drueckt laute Stellen zusammen. *`threshold`* (Schwelle) legt den Pegel fest, *`ratio`* (Verhaeltnis) bestimmt, wie stark reduziert wird.
+
+## 102. Schwarze Raender automatisch entfernen
+```bash
+ffmpeg -i eingang.mp4 -vf cropdetect -f null -
+# Werte aus der Ausgabe einsetzen
+ffmpeg -i eingang.mp4 -vf "crop=1280:720:0:0" ohne_rand.mp4
+```
+*`cropdetect`* (Rand-Erkennung) zeigt passende Werte an. *`crop`* (beschneiden) entfernt damit die schwarzen Balken.
