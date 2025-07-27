@@ -292,3 +292,17 @@ ffmpeg -i eingang.mp4 -vf "crop=640:360:0:0,scale=1280:720" zoom.mp4
 ```
 *`crop`* (Ausschnitt) waehlt einen kleineren Bereich aus. *`scale`*
 (skalieren) vergroessert diesen Teil wieder auf die volle Groesse.
+
+## 43. Video als GIF speichern
+```bash
+ffmpeg -i kurz.mp4 -vf "fps=12,scale=320:-1:flags=lanczos" kurz.gif
+```
+*`fps`* (Bilder pro Sekunde) bestimmt die Bildanzahl des GIF.
+*`scale`* (skalieren) passt die Groesse an. *`-1`* behaelt das Seitenverhaeltnis.
+*`lanczos`* ist ein Filter fuer eine schaerfere Darstellung.
+
+## 44. Farben invertieren
+```bash
+ffmpeg -i normal.mp4 -vf negate negativ.mp4
+```
+*`negate`* (Farben umkehren) erzeugt ein Negativbild.
