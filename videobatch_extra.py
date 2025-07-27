@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+from subprocess import CompletedProcess, PIPE
 import sys
 import tempfile
 from datetime import datetime
@@ -50,6 +51,15 @@ def probe_duration(path: str) -> float:
     except Exception as e:
         print("Fehler beim Prüfen der Dauer:", e, file=sys.stderr)
     return 0.0
+
+
+def run_ffmpeg(cmd: list[str]) -> CompletedProcess[str]:
+    """FFmpeg aufrufen und Fehlermeldung ausgeben, wenn das Programm fehlt."""
+    try:
+        return subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+    except FileNotFoundError:
+        print("FFmpeg nicht gefunden. Bitte installieren.", file=sys.stderr)
+        return CompletedProcess(cmd, 1, "", "ffmpeg fehlt")
 
 
 def cli_single(
@@ -104,8 +114,7 @@ def cli_single(
             str(crf),
             str(out_file),
         ]
-        res = subprocess.run(cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, text=True)
+        res = run_ffmpeg(cmd)
         if res.returncode == 0:
             done += 1
         else:
@@ -177,8 +186,7 @@ def cli_video(
         str(crf),
         str(out_file),
     ]
-    res = subprocess.run(cmd, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, text=True)
+    res = run_ffmpeg(cmd)
     if res.returncode != 0:
         err = res.stderr.strip().splitlines()
         msg = err[-1] if err else "unbekannt"
@@ -251,12 +259,7 @@ def cli_slideshow(
         str(crf),
         str(out_file),
     ]
-    res = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+    res = run_ffmpeg(cmd)
     os.unlink(list_path)
     if res.returncode != 0:
         err = res.stderr.strip().splitlines()

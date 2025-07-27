@@ -37,11 +37,6 @@ pip install -r requirements.txt
 - [x] Logging-Bereich beobachten
 - [x] Schriftgröße ändern
 - [x] Abschnitt "Schrift und Farben im Tool" in `ANLEITUNG_LAIENPLUS.md` lesen
-- [x] Dokumentation lesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
-- [x] Zusätzliche Tipps lesen: `ANLEITUNG_TIPPS.md`
-# Neu
-- [x] Dokumentation gelesen: `README.md` und `ANLEITUNG_EINSTEIGER.md`
-- [x] Zusätzliche Tipps gelesen: `ANLEITUNG_TIPPS.md`
 - [x] Codeanalyse mit flake8 durchfuehren
 - [x] Projektanalyse schreiben: `ANALYSE_PROJEKT.md` erstellen
 - [x] Importzeilen bereinigen in `videobatch_extra.py`
@@ -100,3 +95,5 @@ pip install -r requirements.txt
 
 - [x] Offene Punkte analysieren und dokumentieren
 - [x] Weiterfuehrende Laientipps Teil 32 ergaenzen
+- [x] Todo-Liste aufraeumen
+- [x] Weiterfuehrende Laientipps Teil 33 ergaenzen

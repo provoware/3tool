@@ -67,7 +67,7 @@ Unterstuetzte Modi:
 * **Slideshow** – ganzer Bilder-Ordner fuer jedes Audio
 * **Video + Audio** – vorhandenes Video mit neuer Tonspur
 * **Mehrere Audios, ein Bild** – gleiches Bild fuer viele Audiodateien
-* **Slideshow mit mehreren Ordnern** – mehrere Bildordner lassen sich der Reihe nach mit den passenden Audios koppeln.  
+* **Slideshow mit mehreren Ordnern** – mehrere Bildordner lassen sich der Reihe nach mit den passenden Audios koppeln.
   Ordner im Tab **Bilder** hinzufügen, Audios auswählen und **Auto-Paaren** klicken.
 Weitere Erklaerungen fuer Einsteiger finden sich in `ANLEITUNG_EINSTEIGER.md`.
 Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
@@ -299,3 +299,4 @@ Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
   sha256sum datei.zip
   ```
   `sha256sum` erstellt eine digitale Pruefsumme, um die Datei zu ueberpruefen.
+

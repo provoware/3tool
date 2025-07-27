@@ -35,6 +35,7 @@ Dieses Dokument sammelt Hinweise zur Verbesserung des Quellcodes.
 ## Unvollstaendige Stellen
 
 - `videobatch_extra.py` meldet FFmpeg-Fehler nur knapp. Eine ausfuehrlichere Meldung waere hilfreich.
+- Neu: Die Funktion `run_ffmpeg` prueft nun, ob FFmpeg installiert ist und gibt eine verstaendliche Meldung aus.
 - Im GUI-Teil fehlt teils eine Pruefung, ob Dateien existieren. Das sollte ergaenzt werden.
 
 ## Offene Punkte

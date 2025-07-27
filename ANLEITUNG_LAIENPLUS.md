@@ -225,3 +225,9 @@ ffmpeg -i eingang.mp4 -vf reverse -af areverse rueckwaerts.mp4
 ```
 *`reverse`* (Ruecklauf) dreht das Bild um.
 *`areverse`* spiegelt den Ton.
+
+## 33. Video in Graustufen umwandeln
+```bash
+ffmpeg -i eingang.mp4 -vf "format=gray" grau.mp4
+```
+*`format=gray`* (Bildformat) entfernt die Farben.
