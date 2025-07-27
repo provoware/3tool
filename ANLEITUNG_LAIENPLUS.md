@@ -266,3 +266,225 @@ ffmpeg -i video.mp4 -af "afade=t=out:st=25:d=5" leise_end.mp4
 ffmpeg -i weich.mp4 -vf "unsharp" schaerfer.mp4
 ```
 *`unsharp`* (Nachschaerfen) macht das Bild klarer.
+
+## 39. Bild-in-Bild einsetzen
+```bash
+ffmpeg -i hintergrund.mp4 -i kleines.mp4 -filter_complex "overlay=W-w-10:H-h-10" pip.mp4
+```
+*`overlay`* (Ueberlagerung) legt das zweite Video oben rechts ab. *`W`* (Breite) und *`H`* (Hoehe) sind die Groesse des Hintergrunds. *`w`* und *`h`* beziehen sich auf das kleine Video.
+
+## 40. Sepia-Faerbung anwenden
+```bash
+ffmpeg -i input.mp4 -vf "colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131" sepia.mp4
+```
+*`colorchannelmixer`* (Farbmischer) erzeugt einen warmen Sepia-Ton.
+
+## 41. Video spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf hflip gespiegelt.mp4
+```
+*`hflip`* (horizontal spiegeln) dreht das Bild so, als wuerde man es im
+Spiegel sehen.
+
+## 42. Bereich heranzoomen
+```bash
+ffmpeg -i eingang.mp4 -vf "crop=640:360:0:0,scale=1280:720" zoom.mp4
+```
+*`crop`* (Ausschnitt) waehlt einen kleineren Bereich aus. *`scale`*
+(skalieren) vergroessert diesen Teil wieder auf die volle Groesse.
+
+## 43. Video als GIF speichern
+```bash
+ffmpeg -i kurz.mp4 -vf "fps=12,scale=320:-1:flags=lanczos" kurz.gif
+```
+*`fps`* (Bilder pro Sekunde) bestimmt die Bildanzahl des GIF.
+*`scale`* (skalieren) passt die Groesse an. *`-1`* behaelt das Seitenverhaeltnis.
+*`lanczos`* ist ein Filter fuer eine schaerfere Darstellung.
+
+## 44. Farben invertieren
+```bash
+ffmpeg -i normal.mp4 -vf negate negativ.mp4
+```
+*`negate`* (Farben umkehren) erzeugt ein Negativbild.
+
+## 45. Text einblenden
+```bash
+ffmpeg -i video.mp4 -vf "drawtext=text='Hallo':fontcolor=white:fontsize=24:x=10:y=10" text.mp4
+```
+*`drawtext`* (Text einblenden) schreibt "Hallo" in das Bild. *`x`* und *`y`* bestimmen die Position.
+
+## 46. Videos zusammenfuegen
+Schreibe in eine Datei `liste.txt` je eine Zeile:
+`file 'erstes.mp4'` und `file 'zweites.mp4'`.
+```bash
+ffmpeg -f concat -safe 0 -i liste.txt -c copy komplett.mp4
+```
+*`concat`* (aneinander haengen) fuegt die Clips zusammen. *`-c copy`* uebernimmt Bild und Ton unveraendert.
+
+## 47. Video in Zeitlupe abspielen
+```bash
+ffmpeg -i clip.mp4 -filter:v "setpts=2.0*PTS" -filter:a "atempo=0.5" zeitlupe.mp4
+```
+*`setpts`* (Zeitstempel) verlaengert die Abspielzeit des Videos.
+*`atempo`* (Tempo des Tons) halbiert die Geschwindigkeit der Tonspur.
+
+## 48. Weiches Ein- und Ausblenden
+```bash
+ffmpeg -i clip.mp4 -vf "fade=t=in:st=0:d=2,fade=t=out:st=8:d=2" -af "afade=t=in:st=0:d=2,afade=t=out:st=8:d=2" weich.mp4
+```
+*`fade`* (Ein- oder Ausblenden) laesst das Bild langsam erscheinen oder verschwinden.
+*`afade`* macht dasselbe fuer den Ton.
+
+## 49. Videos nebeneinander zeigen
+```bash
+ffmpeg -i links.mp4 -i rechts.mp4 -filter_complex hstack nebeneinander.mp4
+```
+*`hstack`* (horizontal stapeln) platziert die Videos Seite an Seite.
+
+## 50. Untertitel einbrennen
+```bash
+ffmpeg -i film.mp4 -vf subtitles=untertitel.srt mit_text.mp4
+```
+*`subtitles`* (Untertitel einblenden) fuegt die Texte dauerhaft ins Bild ein.
+
+
+## 51. Tonrauschen reduzieren
+```bash
+ffmpeg -i laut.mp4 -af afftdn geraeusche_weniger.mp4
+```
+*`afftdn`* (Rauschfilter) entfernt stoerende Geraeusche aus der Tonspur.
+
+
+## 52. Video stabilisieren
+```bash
+ffmpeg -i wacklig.mp4 -vf deshake ruhiger.mp4
+```
+*`deshake`* (Bildstabilisierung) gleicht Zittern aus.
+
+## 53. Tonspur verschieben
+```bash
+ffmpeg -i video.mp4 -af "adelay=1000|1000" verschoben.mp4
+```
+*`adelay`* (Audio-Verzögerung) startet den Ton erst nach einer Sekunde.
+
+
+## 54. Wasserzeichen hinzufuegen
+```bash
+ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
+```
+*`overlay`* (Ueberlagerung) legt das Logo an der Position 10:10 ins Bild.
+
+## 55. Einzelbilder exportieren
+```bash
+ffmpeg -i video.mp4 bild_%03d.png
+```
+*`%03d`* zaehlt die Bilder mit drei Ziffern.
+
+## 56. Video schneller abspielen
+```bash
+ffmpeg -i clip.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.mp4
+```
+*`setpts`* (Zeitstempel) verkuerzt die Videodauer.
+*`atempo`* (Tempo des Tons) verdoppelt die Geschwindigkeit.
+
+## 57. Ton normalisieren
+```bash
+ffmpeg -i leise.mp4 -af loudnorm normaler.mp4
+```
+*`loudnorm`* (Lautheitsnormalisierung) gleicht die Lautstaerke an.
+
+## 58. Ton als WAV speichern
+```bash
+ffmpeg -i quelle.mp3 ziel.wav
+```
+*`wav`* ist ein unkomprimiertes Tonformat. Die Eingabe bleibt sonst unveraendert.
+
+## 59. Vorschau-Bild erstellen
+```bash
+ffmpeg -i film.mp4 -ss 00:00:05 -vframes 1 vorschaubild.png
+```
+*`-ss`* setzt die Startzeit. *`-vframes 1`* speichert genau ein Bild.
+
+## 60. Video drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=1" gedreht.mp4
+```
+*`transpose`* (drehen) bewegt das Bild um 90 Grad im Uhrzeigersinn.
+
+## 61. Farben kräftiger machen
+```bash
+ffmpeg -i eingang.mp4 -vf "eq=saturation=1.5" bunter.mp4
+```
+*`eq`* (Equalizer) passt Werte wie *`saturation`* (Farbintensität) an.
+
+## 62. Farbton verändern
+```bash
+ffmpeg -i eingang.mp4 -vf "hue=h=60:s=0.8" farbig.mp4
+```
+*`hue`* (Farbton) verschiebt die Farben. *`h`* bestimmt die Richtung in Grad, *`s`* (Sättigung) senkt oder erhöht die Farbstärke.
+
+## 63. Tonhöhe erhöhen
+```bash
+ffmpeg -i stimme.mp3 -filter:a "asetrate=44100*1.2,atempo=1/1.2" hoeher.mp3
+```
+*`asetrate`* (Abtastrate) beschleunigt die Tonhöhe. *`atempo`* (Geschwindigkeit) gleicht die Abspielgeschwindigkeit wieder an.
+
+## 64. Bereich mit farbigem Rahmen hervorheben
+```bash
+ffmpeg -i eingang.mp4 -vf "drawbox=x=100:y=50:w=200:h=100:color=red@0.5:thickness=5" markiert.mp4
+```
+*`drawbox`* (Rechteck zeichnen) legt einen Rahmen aufs Bild. *`x`* und *`y`* sind die Position, *`w`* (Breite) und *`h`* (Höhe) bestimmen die Größe, *`color`* gibt die Farbe an und *`thickness`* die Strichstärke.
+
+## 65. Echoeffekt bei Ton anwenden
+```bash
+ffmpeg -i sprache.mp3 -af "aecho=0.8:0.88:60:0.4" echo.mp3
+```
+*`aecho`* (Echo) fügt einen Nachhall hinzu. Die Zahlen stehen für Eingangslautstärke, Echo-Lautstärke, Verzögerung in Millisekunden und Abklingen.
+
+## 66. Gruenen Hintergrund ersetzen
+```bash
+ffmpeg -i greenscreen.mp4 -i hintergrund.jpg -filter_complex "[0:v]colorkey=0x00FF00:0.3:0.1[fg];[1:v][fg]overlay" neuer_hintergrund.mp4
+```
+*`colorkey`* (Farbe entfernen) macht Gruen durchsichtig. *`overlay`* (Ueberlagern) legt das Video auf das neue Bild.
+
+## 67. Video im Raster anzeigen
+```bash
+ffmpeg -i clip.mp4 -filter:v "tile=2x2" raster.mp4
+```
+*`tile`* (Kachelmodus) ordnet Kopien des Videos in 2 Spalten und 2 Reihen an.
+
+## 68. Video mehrmals hintereinander abspielen
+```bash
+ffmpeg -stream_loop 2 -i clip.mp4 -c copy schleife.mp4
+```
+*`-stream_loop`* (Wiederholen) laesst das Video hier insgesamt dreimal laufen, ohne es neu zu kodieren.
+
+## 69. Zwei Clips weich ueberblenden
+```bash
+ffmpeg -i anfang.mp4 -i ende.mp4 -filter_complex "xfade=transition=fade:duration=1:offset=5" uebergang.mp4
+```
+*`xfade`* (Ueberblenden) erzeugt einen weichen Uebergang. *`transition`* legt die Art fest, *`duration`* dauert eine Sekunde und *`offset`* gibt an, wann die Ueberblendung beginnt.
+
+## 70. Video vertikal spiegeln
+```bash
+ffmpeg -i eingang.mp4 -vf vflip kopfueber.mp4
+```
+*`vflip`* (vertikal spiegeln) dreht das Bild auf den Kopf.
+
+## 71. Schwarze Balken abschneiden
+```bash
+ffmpeg -i film.mp4 -vf "crop=iw:ih-80:0:40" ohne_balken.mp4
+```
+*`crop`* (Bild zuschneiden) behaelt die volle Breite *`iw`*. *`ih-80`* nimmt 80 Pixel von der Hoehe weg, *`0:40`* verschiebt den Ausschnitt um 40 Pixel nach unten.
+
+## 72. Video weichzeichnen
+```bash
+ffmpeg -i eingang.mp4 -vf "gblur=sigma=5" weich.mp4
+```
+*`gblur`* (Gauss-Weichzeichner) macht das Bild unscharf. *`sigma`* (Staerke) legt fest, wie stark der Effekt ist.
+
+## 73. Schwarze Raender hinzufuegen
+```bash
+ffmpeg -i eingang.mp4 -vf "pad=iw+100:ih+100:50:50:color=black" mit_rand.mp4
+```
+*`pad`* (auffuellen) vergroessert die Flaeche. *`iw+100`* und *`ih+100`* fuegen je 100 Pixel hinzu, *`50:50`* positioniert das Original mittig.
