@@ -556,3 +556,16 @@ ffmpeg -ss 00:01:00 -i eingang.mp4 -t 30 -c copy ausschnitt.mp4
 ffmpeg -i eingang.mp4 -vf format=gray graustufen.mp4
 ```
 *`format=gray`* (Farbraum) verwandelt das Bild in Schwarzweiß.
+
+## 85. Video in MKV umwandeln
+```bash
+ffmpeg -i eingang.mp4 -c copy ausgabe.mkv
+```
+*`-c copy`* (Stream-Kopie) überträgt Bild und Ton unverändert in die neue **MKV**-Datei (Matroska-Container).
+
+## 86. Datum ins Bild schreiben
+```bash
+ffmpeg -i eingang.mp4 -vf "drawtext=text='%{localtime}':fontcolor=white:x=10:y=10" datumsanzeige.mp4
+```
+*`drawtext`* (Textfilter) zeigt das aktuelle Datum an. *`%{localtime}`* steht für die Tageszeit.
+
