@@ -144,3 +144,25 @@ so uebernommen werden.
    ```
    `grep` sucht nach dem Wort "Fehler" in allen Dateien. `-R` bedeutet
    rekursiv (auch Unterordner werden durchsucht).
+
+## Weiterfuehrende Tipps fuer Laien – Teil 5
+
+Auch dieser Abschnitt verwendet einfache Sprache. Fachbegriffe werden kurz in Klammern erlaeutert.
+
+1. **Dateien nach Groesse sortieren**
+   ```bash
+   ls -lS
+   ```
+   `ls` zeigt Dateien im aktuellen Ordner. Mit `-lS` werden sie nach der Dateigroesse sortiert.
+
+2. **Temporäre Dateien finden**
+   ```bash
+   find . -name "*.tmp"
+   ```
+   `find` sucht in Ordnern. `*.tmp` steht fuer Dateien mit der Endung `.tmp`.
+
+3. **Speicherbedarf pro Ordner anzeigen**
+   ```bash
+   du -sh ./*
+   ```
+   `du` (disk usage) zeigt den belegten Speicher. `-h` sorgt fuer leicht lesbare Werte (MB oder GB).

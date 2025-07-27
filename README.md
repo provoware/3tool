@@ -143,3 +143,20 @@ Der Befehl `zip` fasst alle Dateien zu einem Archiv zusammen. So lässt sich der
 aktuelle Stand leicht wiederherstellen.
 
 Damit ist das Tool bereit für den Upload oder die Weitergabe.
+
+## Weitere Optimierungen
+
+Auch nach den Tests laesst sich noch Feinschliff vornehmen:
+
+* **Pakete aktualisieren**
+  ```bash
+  pip list --outdated
+  pip install -U paketname
+  ```
+  Damit bleiben alle Bibliotheken auf dem neuesten Stand.
+
+* **Quellcode formatieren**
+  ```bash
+  black videobatch_extra.py
+  ```
+  `black` ordnet Einrueckungen und Zeilenumbrueche automatisch.
