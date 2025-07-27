@@ -60,3 +60,4 @@
 [2025-07-27] Start-Hilfe ergänzt und Laientipps Teil 4 hinzugefügt
 [2025-07-27] Weiterfuehrende Laientipps Teil 5 ergaenzt (Aufgabe erledigt)
 [2025-07-27] Hilfe fuer aeltere Nutzer beschrieben und Laientipps Teil 6 hinzugefuegt (Aufgaben erledigt)
+[2025-07-27] Laientipps Teil 7 und Aufraeumen im README ergaenzt (Aufgaben erledigt)

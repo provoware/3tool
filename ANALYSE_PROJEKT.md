@@ -188,3 +188,25 @@ Auch dieser Teil nutzt einfache Sprache und zeigt nuetzliche Befehle.
    history | tail
    ```
    `history` zeigt die Befehlsgeschichte. `tail` beschränkt die Ausgabe auf die letzten Zeilen.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 7
+
+Auch dieser Teil nutzt einfache Erklaerungen.
+
+1. **Alte Logdateien loeschen**
+   ```bash
+   rm *.log
+   ```
+   `rm` (remove) entfernt Dateien. `*.log` steht fuer alle Protokolldateien.
+
+2. **Zeilen in einer Datei zaehlen**
+   ```bash
+   wc -l datei.txt
+   ```
+   `wc` (word count) zaehlt mit `-l` die Zeilen einer Datei.
+
+3. **Audio in MP3 umwandeln**
+   ```bash
+   ffmpeg -i ton.ogg ton.mp3
+   ```
+   `ffmpeg` (Video-und Audio-Tool) liest `ton.ogg` und erstellt `ton.mp3`.

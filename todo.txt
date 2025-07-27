@@ -81,3 +81,5 @@
 - [x] Weiterfuehrende Laientipps Teil 5 ergaenzen
 - [x] Hilfe fuer aeltere Nutzer pruefen
 - [x] Weiterfuehrende Laientipps Teil 6 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 7 ergaenzen
+- [x] Aufraeumen vor Release dokumentieren

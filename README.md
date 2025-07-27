@@ -168,3 +168,9 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   black videobatch_extra.py
   ```
   `black` ordnet Einrueckungen und Zeilenumbrueche automatisch.
+
+* **Alte Logdateien entfernen**
+  ```bash
+  rm *.log
+  ```
+  `rm` (remove) loescht alle Dateien mit der Endung `.log`.
