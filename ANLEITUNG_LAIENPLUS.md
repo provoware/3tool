@@ -632,3 +632,15 @@ ffmpeg -i aufnahme.mp3 -af silenceremove=start_periods=1:start_silence=0.1:detec
 ffmpeg -i quelle.mp3 -af "equalizer=f=3000:t=q:w=2:g=5" klarer.mp3
 ```
 *`equalizer`* (Klangfilter) hebt Frequenzen um 3000 Hertz an. `t=q` wählt einen schmalen Bereich, `w=2` legt die Breite fest und `g=5` verstärkt um 5 Dezibel.
+
+## 97. Video um 180 Grad drehen
+```bash
+ffmpeg -i eingang.mp4 -vf "transpose=2,transpose=2" kopfueber.mp4
+```
+*`transpose`* (Bild drehen) rotiert das Video je 90 Grad. Zwei Filter hintereinander ergeben eine Drehung um 180 Grad.
+
+## 98. Laufende Zeit einblenden
+```bash
+ffmpeg -i clip.mp4 -vf "drawtext=text=%{pts\:hms}:fontcolor=white:fontsize=24:x=10:y=10" mit_uhr.mp4
+```
+*`drawtext`* (Text einblenden) zeigt die aktuelle Abspielzeit `pts` (Presentation Time Stamp) im Format Stunden:Minuten:Sekunden.
