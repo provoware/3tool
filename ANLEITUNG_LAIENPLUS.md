@@ -266,3 +266,15 @@ ffmpeg -i video.mp4 -af "afade=t=out:st=25:d=5" leise_end.mp4
 ffmpeg -i weich.mp4 -vf "unsharp" schaerfer.mp4
 ```
 *`unsharp`* (Nachschaerfen) macht das Bild klarer.
+
+## 39. Bild-in-Bild einsetzen
+```bash
+ffmpeg -i hintergrund.mp4 -i kleines.mp4 -filter_complex "overlay=W-w-10:H-h-10" pip.mp4
+```
+*`overlay`* (Ueberlagerung) legt das zweite Video oben rechts ab. *`W`* (Breite) und *`H`* (Hoehe) sind die Groesse des Hintergrunds. *`w`* und *`h`* beziehen sich auf das kleine Video.
+
+## 40. Sepia-Faerbung anwenden
+```bash
+ffmpeg -i input.mp4 -vf "colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131" sepia.mp4
+```
+*`colorchannelmixer`* (Farbmischer) erzeugt einen warmen Sepia-Ton.
