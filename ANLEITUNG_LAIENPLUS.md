@@ -379,3 +379,16 @@ ffmpeg -i video.mp4 -i logo.png -filter_complex "overlay=10:10" mit_logo.mp4
 ffmpeg -i video.mp4 bild_%03d.png
 ```
 *`%03d`* zaehlt die Bilder mit drei Ziffern.
+
+## 56. Video schneller abspielen
+```bash
+ffmpeg -i clip.mp4 -filter:v "setpts=0.5*PTS" -filter:a "atempo=2.0" schnell.mp4
+```
+*`setpts`* (Zeitstempel) verkuerzt die Videodauer.
+*`atempo`* (Tempo des Tons) verdoppelt die Geschwindigkeit.
+
+## 57. Ton normalisieren
+```bash
+ffmpeg -i leise.mp4 -af loudnorm normaler.mp4
+```
+*`loudnorm`* (Lautheitsnormalisierung) gleicht die Lautstaerke an.

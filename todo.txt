@@ -72,3 +72,6 @@ pip install -r requirements.txt
 
 
 - [x] Laientipp-Aufgaben entfernen
+
+- [x] Weiterfuehrende Laientipps Teil 56 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 57 ergaenzen
