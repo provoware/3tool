@@ -204,3 +204,10 @@ nano ~/.videobatchtool/logs/$(ls -t ~/.videobatchtool/logs | head -n 1)
 ```
 
 `nano` ist ein einfacher Texteditor. Die Log-Datei verrät oft die Ursache des Problems.
+
+## 30. Zwei Tonspuren mischen
+```bash
+ffmpeg -i sprache.mp3 -i musik.mp3 -filter_complex "[1:a]volume=0.3[a2];[0:a][a2]amix=inputs=2" mischung.mp3
+```
+*`volume`* (Lautstärke) senkt hier die Musik auf 30 Prozent.
+*`amix`* (Audios mischen) verbindet beide Tonspuren.

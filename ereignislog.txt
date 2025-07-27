@@ -76,3 +76,4 @@
 [2025-07-27] pool_box Fehler behoben und Laientipps Teil 20 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 20 ergaenzen' erledigt)
 [2025-07-27] Wasserzeichen-Tipp ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 28 ergaenzen' erledigt)
 [2025-07-27] QShortcut-Bug behoben und Laientipp Teil 29 ergaenzt (Aufgaben erledigt)
+[2025-07-27] Laientipps Teil 30 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 30 ergaenzen' erledigt)
