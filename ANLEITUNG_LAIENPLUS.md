@@ -185,3 +185,12 @@ Wenn du eine Untertiteldatei hast, kannst du sie so in das Video schreiben:
 ffmpeg -i video.mp4 -i text.srt -c:v copy -c:a copy -c:s mov_text video_mit_untertitel.mp4
 ```
 *`mov_text`* (MP4-Untertitel) speichert die Texte direkt in der Datei.
+
+## 28. Wasserzeichen einblenden
+
+Ein kleines Logo oder ein Schriftzug kann dein Video schützen. So fügst du ihn ein:
+
+```bash
+ffmpeg -i video.mp4 -i wasserzeichen.png -filter_complex "overlay=W-w-10:H-h-10" video_mit_wz.mp4
+```
+*`overlay`* (Überlagerung) setzt das Wasserzeichen zehn Pixel vom unteren und rechten Rand.
