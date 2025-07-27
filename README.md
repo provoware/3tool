@@ -192,3 +192,15 @@ Auch nach den Tests laesst sich noch Feinschliff vornehmen:
   chmod +x skript.sh
   ```
   `chmod` (change mode) macht eine Datei ausfuehrbar.
+
+* **Groesste Ordner finden**
+  ```bash
+  du -sh */ | sort -h
+  ```
+  `du` (disk usage) zeigt den Platzbedarf. `sort -h` sortiert nach Groesse.
+
+* **System aktualisieren**
+  ```bash
+  sudo apt update && sudo apt upgrade
+  ```
+  `apt` ist der Paketverwalter. `update` und `upgrade` halten das System aktuell.

@@ -230,3 +230,25 @@ Auch dieser Teil nutzt einfache Erklaerungen.
    chmod +x skript.sh
    ```
    `chmod` (change mode) macht eine Datei ausfuehrbar.
+
+## Weiterfuehrende Tipps fuer Laien – Teil 9
+
+Diese Tipps helfen beim Aufraeumen und Halten des Systems auf dem neuesten Stand. Die Befehle lassen sich direkt kopieren.
+
+1. **Groesste Ordner finden**
+   ```bash
+   du -sh */ | sort -h
+   ```
+   `du` (disk usage) misst den Platzverbrauch. Mit `sort -h` werden die Ergebnisse nach Groesse sortiert.
+
+2. **Laufende Prozesse bequem ansehen**
+   ```bash
+   ps aux | less
+   ```
+   `ps` zeigt alle Programme. `less` (DurchblÃ¤tterer) erlaubt bequemes Scrollen.
+
+3. **System aktuell halten**
+   ```bash
+   sudo apt update && sudo apt upgrade
+   ```
+   `apt` ist der Paketverwalter. `update` holt neue Listen, `upgrade` installiert die Aktualisierungen.
