@@ -260,3 +260,9 @@ ffmpeg -i video.mp4 -af "afade=t=out:st=25:d=5" leise_end.mp4
 *`afade`* (Ton ein- oder ausblenden) senkt die Lautstaerke langsam.
 *`t=out`* bedeutet ausblenden. *`st`* (Startzeit) legt fest, wann es beginnt.
 *`d`* (Dauer) bestimmt, wie lange der Effekt laeuft.
+
+## 38. Video schaerfer machen
+```bash
+ffmpeg -i weich.mp4 -vf "unsharp" schaerfer.mp4
+```
+*`unsharp`* (Nachschaerfen) macht das Bild klarer.
