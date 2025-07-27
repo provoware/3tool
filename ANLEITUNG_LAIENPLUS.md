@@ -476,3 +476,108 @@ ffmpeg -i eingang.mp4 -vf vflip kopfueber.mp4
 ffmpeg -i film.mp4 -vf "crop=iw:ih-80:0:40" ohne_balken.mp4
 ```
 *`crop`* (Bild zuschneiden) behaelt die volle Breite *`iw`*. *`ih-80`* nimmt 80 Pixel von der Hoehe weg, *`0:40`* verschiebt den Ausschnitt um 40 Pixel nach unten.
+
+## 72. Video weichzeichnen
+```bash
+ffmpeg -i eingang.mp4 -vf "gblur=sigma=5" weich.mp4
+```
+*`gblur`* (Gauss-Weichzeichner) macht das Bild unscharf. *`sigma`* (Staerke) legt fest, wie stark der Effekt ist.
+
+## 73. Schwarze Raender hinzufuegen
+```bash
+ffmpeg -i eingang.mp4 -vf "pad=iw+100:ih+100:50:50:color=black" mit_rand.mp4
+```
+*`pad`* (auffuellen) vergroessert die Flaeche. *`iw+100`* und *`ih+100`* fuegen je 100 Pixel hinzu, *`50:50`* positioniert das Original mittig.
+
+## 74. Tonhöhe verringern
+```bash
+ffmpeg -i stimme.mp3 -filter:a "asetrate=44100*0.8,atempo=1/0.8" tiefer.mp3
+```
+*`asetrate`* (Abtastrate) senkt die Tonhöhe. *`atempo`* (Geschwindigkeit) passt die Abspielgeschwindigkeit wieder an.
+
+## 75. Bildrauschen reduzieren
+```bash
+ffmpeg -i video.mp4 -vf "hqdn3d" sauber.mp4
+```
+*`hqdn3d`* (High Quality 3D Denoise) glättet das Bild und mindert Rauschen.
+
+## 76. Zeilensprungartefakte entfernen
+```bash
+ffmpeg -i eingang.mp4 -vf yadif sauber.mp4
+```
+*`yadif`* (Yet Another Deinterlacing Filter) beseitigt das Zeilenflimmern bei alten Aufnahmen.
+
+## 77. Gamma korrigieren
+```bash
+ffmpeg -i video.mp4 -vf "eq=gamma=1.3" klarer.mp4
+```
+*`gamma`* (Helligkeitsverteilung) hellt mittlere Bildbereiche auf. Der Wert `1.3` sorgt für mehr Leuchtkraft.
+
+## 78. Bitrate begrenzen
+```bash
+ffmpeg -i video.mp4 -b:v 1000k -b:a 128k kleiner.mp4
+```
+*`b:v`* (Video-Bitrate) legt die Datenrate des Bildes fest. Mit `1000k` wird es kleiner.
+*`b:a`* (Audio-Bitrate) stellt die Datenrate des Tons ein.
+
+## 79. Video halb so groß speichern
+```bash
+ffmpeg -i eingang.mp4 -vf "scale=iw/2:ih/2" halb.mp4
+```
+`scale` (skalieren) teilt Breite und Höhe durch zwei.
+
+## 80. Seitenverhältnis anpassen
+```bash
+ffmpeg -i clip.mp4 -vf "setdar=16/9" breitbild.mp4
+```
+`setdar` (Display Aspect Ratio) gibt das Verhältnis von Breite zu Höhe an. Mit 16/9 erscheint das Bild richtig.
+
+## 81. Video in WebM speichern
+```bash
+ffmpeg -i eingang.mp4 -c:v libvpx-vp9 -c:a libopus ausgabe.webm
+```
+*`libvpx-vp9`* (Videocodec) komprimiert modern, *`libopus`* (Audiocodec) liefert guten Klang.
+
+## 82. Lauftext einblenden
+```bash
+ffmpeg -i video.mp4 -vf "drawtext=text=Hallo\\ :fontcolor=white:fontsize=24:x=w/2-text_w/2:y=h-40*t" abspann.mp4
+```
+*`drawtext`* (Text einblenden) zeigt "Hallo" und lässt den Text nach oben wandern, weil `t` die Zeit ist.
+
+
+## 83. Nur einen Ausschnitt speichern
+```bash
+ffmpeg -ss 00:01:00 -i eingang.mp4 -t 30 -c copy ausschnitt.mp4
+```
+*`-ss`* (Startzeit) springt zu Minute 1. *`-t`* (Dauer) nimmt danach 30 Sekunden. *`-c copy`* kopiert Bild und Ton ohne Neukodierung.
+
+## 84. Video in Graustufen umwandeln
+```bash
+ffmpeg -i eingang.mp4 -vf format=gray graustufen.mp4
+```
+*`format=gray`* (Farbraum) verwandelt das Bild in Schwarzweiß.
+
+## 85. Video in MKV umwandeln
+```bash
+ffmpeg -i eingang.mp4 -c copy ausgabe.mkv
+```
+*`-c copy`* (Stream-Kopie) überträgt Bild und Ton unverändert in die neue **MKV**-Datei (Matroska-Container).
+
+## 86. Datum ins Bild schreiben
+```bash
+ffmpeg -i eingang.mp4 -vf "drawtext=text='%{localtime}':fontcolor=white:x=10:y=10" datumsanzeige.mp4
+```
+*`drawtext`* (Textfilter) zeigt das aktuelle Datum an. *`%{localtime}`* steht für die Tageszeit.
+
+
+## 87. Videos untereinander zeigen
+```bash
+ffmpeg -i oben.mp4 -i unten.mp4 -filter_complex vstack untereinander.mp4
+```
+*`vstack`* (vertikal stapeln) legt ein Video ueber dem anderen ab.
+
+## 88. Standbild verlaengern
+```bash
+ffmpeg -i eingang.mp4 -vf "tpad=stop_mode=clone:stop_duration=3" -af "apad=pad_dur=3" laenger.mp4
+```
+*`tpad`* (Zeitpolster) haelt das letzte Bild fuer drei Sekunden fest. *`apad`* (Audiopolster) fuellt den Ton entsprechend auf.

@@ -91,3 +91,23 @@ pip install -r requirements.txt
 - [x] Weiterfuehrende Laientipps Teil 69 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 70 ergaenzen
 - [x] Weiterfuehrende Laientipps Teil 71 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 72 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 73 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 74 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 75 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 76 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 77 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 78 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 79 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 80 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 81 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 82 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 83 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 84 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 85 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 86 ergaenzen
+
+- [x] Weiterfuehrende Laientipps Teil 87 ergaenzen
+- [x] Weiterfuehrende Laientipps Teil 88 ergaenzen
