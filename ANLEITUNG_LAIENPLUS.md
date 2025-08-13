@@ -767,3 +767,18 @@ mypy .
 python3 videobatch_gui.py
 ```
 Startet die grafische Oberfläche (*GUI*), das Fenster lässt sich mit der Maus an den Rändern ziehen (Größe ändern).
+
+## 119. Dunkles Theme aktivieren
+```bash
+python3 videobatch_gui.py
+```
+- Öffne das Menü **Theme**.
+- Klicke auf **Dunkel**.
+- *Theme* (Darstellungsstil) bestimmt Farben; dunkle Töne schonen die Augen abends.
+
+## 120. Sepia-Theme nutzen
+```bash
+python3 videobatch_gui.py
+```
+- Öffne das Menü **Theme**.
+- Wähle **Sepia** für warme Brauntöne (*Sepia* = altes Foto-Farbschema), angenehm bei langer Arbeit.

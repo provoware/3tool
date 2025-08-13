@@ -41,33 +41,19 @@ logging.basicConfig(
 logger = logging.getLogger("VideoBatchTool")
 
 # ---------- Themes ----------
+# Drei augenschonende Darstellungsstile
 THEMES = {
-    "Standard": "",
+    "Hell": (
+        "QWidget{background-color:#ffffff;color:#202020;} "
+        "QPushButton{background-color:#e0e0e0;color:#202020;}"
+    ),
     "Dunkel": (
-        "QWidget{background-color:#2b2b2b;color:#ffffff;} "
-        "QPushButton{background-color:#444;color:white;}"
+        "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
+        "QPushButton{background-color:#444;color:#e0e0e0;}"
     ),
-    "Blau": (
-        "QWidget{background-color:#1e1e2d;color:#c7d8f4;} "
-        "QPushButton{background-color:#3d59ab;color:white;}"
-    ),
-    "Gruen": (
-        "QWidget{background-color:#28342b;color:#d4ffd4;} "
-        "QPushButton{background-color:#385b3c;color:white;}"
-    ),
-    "Retro": (
-        "QWidget{background-color:#f5deb3;color:#00008b;} "
-        "QPushButton{background-color:#cd853f;color:black;}"
-    ),
-    "Kontrast": (
-        "QWidget{background-color:#000;color:#ffff00;} "
-        "QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
-    ),
-    "Modern": (
-        "QWidget{background-color:#f0f0f0;color:#202020;} "
-        "QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} "
-        "QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} "
-        "QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
+    "Sepia": (
+        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;}"
     ),
 }
 
@@ -434,6 +420,8 @@ class HelpPane(QtWidgets.QTextBrowser):
     def __init__(self):
         super().__init__()
         self.setOpenExternalLinks(True)
+        self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHtml(self._html())
     def _html(self)->str:
         return (
@@ -568,6 +556,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setAccessibleDescription("Liste der Bild- und Audio-Paare")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table.setWordWrap(True)
 
         self.help_pane = HelpPane()
         self.help_pane.setAccessibleName("Hilfe-Bereich")
@@ -637,6 +627,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.progress_total.setAccessibleName("Gesamtfortschritt")
         self.progress_total.setAccessibleDescription("Fortschritt aller Aufgaben")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
+        self.log_edit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
+        self.log_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.log_edit.setAccessibleName("Protokoll")
         self.log_edit.setAccessibleDescription("Fortlaufende Meldungen des Programms")
 
@@ -1142,7 +1134,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _resize_columns(self):
         header = self.table.horizontalHeader()
-        header.resizeSections(QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QHeaderView.Stretch)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
