@@ -755,3 +755,15 @@ git pull
 python3 videobatch_extra.py --selftest
 ```
 *--selftest* (Selbsttest) prüft automatisch, ob das Programm fehlerfrei läuft.
+
+## 117. Code auf Typfehler prüfen
+```bash
+mypy .
+```
+*mypy* (Typprüfer) sucht nach falschen Datentypen (z. B. Zahl statt Text) im Code.
+
+## 118. GUI starten
+```bash
+python3 videobatch_gui.py
+```
+Startet die grafische Oberfläche (*GUI*), das Fenster lässt sich mit der Maus an den Rändern ziehen (Größe ändern).
