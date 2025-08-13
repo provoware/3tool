@@ -743,3 +743,15 @@ git switch -c neuer-zweig
 git push origin neuer-zweig
 ```
 *git push* (hochladen) sendet den aktuellen Branch zum entfernten Repository (Speicherort) namens *origin*.
+
+## 115. Änderungen holen
+```bash
+git pull
+```
+*git pull* (holen) lädt neue Dateien vom Server und mischt sie in deine aktuelle Arbeit.
+
+## 116. Selbsttest starten
+```bash
+python3 videobatch_extra.py --selftest
+```
+*--selftest* (Selbsttest) prüft automatisch, ob das Programm fehlerfrei läuft.
