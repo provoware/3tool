@@ -125,3 +125,9 @@
 [2025-07-27] Laientipps Teil 108 und 109 ergaenzt (Aufgaben 'Weiterfuehrende Laientipps Teil 108 ergaenzen', 'Weiterfuehrende Laientipps Teil 109 ergaenzen' erledigt)
 [2025-07-27] Release-Analyse aktualisiert (Aufgabe 'Release-Analyse aktualisieren' erledigt)
 [2025-07-27] Laientipp Teil 110 ergaenzt (Aufgabe 'Weiterfuehrende Laientipps Teil 110 ergaenzen' erledigt)
+[2025-07-27] FERTIG-PUNKTE.md angelegt und todo aktualisiert
+[2025-07-27] Mypy integriert und Anleitung erweitert
+[2025-07-27] Laien-Tipps 113 und 114 ergaenzt (Aufgabe 'Dokumentation pruefen und aktualisieren' erledigt)
+[2025-08-13] CI-Pipeline fuer automatisches Testen angelegt und Laien-Tipps 115-116 ergaenzt
+[2025-08-13] GUI fuer kleine Bildschirme optimiert und Laien-Tipps 117-118 ergaenzt (Aufgabe 'GUI fuer kleine Bildschirme anpassen' erledigt)
+[2025-08-13] Farbthemes fuer Bildschirmarbeiter verbessert, Scrollen ueberfluessig gemacht und Laien-Tipps 119-120 ergaenzt (Aufgabe 'Farbthemes fuer Bildschirmarbeiter verbessern' erledigt)

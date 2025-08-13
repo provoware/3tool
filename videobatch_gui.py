@@ -41,33 +41,19 @@ logging.basicConfig(
 logger = logging.getLogger("VideoBatchTool")
 
 # ---------- Themes ----------
+# Drei augenschonende Darstellungsstile
 THEMES = {
-    "Standard": "",
+    "Hell": (
+        "QWidget{background-color:#ffffff;color:#202020;} "
+        "QPushButton{background-color:#e0e0e0;color:#202020;}"
+    ),
     "Dunkel": (
-        "QWidget{background-color:#2b2b2b;color:#ffffff;} "
-        "QPushButton{background-color:#444;color:white;}"
+        "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
+        "QPushButton{background-color:#444;color:#e0e0e0;}"
     ),
-    "Blau": (
-        "QWidget{background-color:#1e1e2d;color:#c7d8f4;} "
-        "QPushButton{background-color:#3d59ab;color:white;}"
-    ),
-    "Gruen": (
-        "QWidget{background-color:#28342b;color:#d4ffd4;} "
-        "QPushButton{background-color:#385b3c;color:white;}"
-    ),
-    "Retro": (
-        "QWidget{background-color:#f5deb3;color:#00008b;} "
-        "QPushButton{background-color:#cd853f;color:black;}"
-    ),
-    "Kontrast": (
-        "QWidget{background-color:#000;color:#ffff00;} "
-        "QPushButton{background-color:#000;color:#ffff00;border:1px solid #ffff00;}"
-    ),
-    "Modern": (
-        "QWidget{background-color:#f0f0f0;color:#202020;} "
-        "QPushButton{background-color:#2074d4;color:white;border-radius:4px;padding:4px 10px;} "
-        "QGroupBox{border:1px solid #a0a0a0;margin-top:6px;} "
-        "QGroupBox::title{left:8px;subcontrol-origin:margin;font-weight:bold;color:#202020;}"
+    "Sepia": (
+        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;}"
     ),
 }
 
@@ -434,6 +420,8 @@ class HelpPane(QtWidgets.QTextBrowser):
     def __init__(self):
         super().__init__()
         self.setOpenExternalLinks(True)
+        self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHtml(self._html())
     def _html(self)->str:
         return (
@@ -494,23 +482,6 @@ class InfoDashboard(QtWidgets.QWidget):
         self.env_lbl.setText(f"Env: {'OK' if imp_ok else 'FEHLT'}")
     def log(self,msg): self.mini_log.appendPlainText(msg)
 
-def _create_panel_grid(rows: int = 3, cols: int = 3) -> QtWidgets.QWidget:
-    """Erzeugt ein flexibles Raster mit gleich großen Feldern."""
-    grid_widget = QtWidgets.QWidget()
-    grid = QtWidgets.QGridLayout(grid_widget)
-    grid.setSpacing(5)
-    for r in range(rows):
-        grid.setRowStretch(r, 1)
-        for c in range(cols):
-            grid.setColumnStretch(c, 1)
-            panel = QtWidgets.QGroupBox(f"Panel {r*cols + c + 1}")
-            lay = QtWidgets.QVBoxLayout(panel)
-            lbl = QtWidgets.QLabel(f"Inhalt {r*cols + c + 1}")
-            lbl.setAlignment(Qt.AlignCenter)
-            lay.addWidget(lbl)
-            grid.addWidget(panel, r, c)
-    return grid_widget
-
 # ---------- MainWindow ----------
 class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
@@ -525,7 +496,9 @@ class MainWindow(QtWidgets.QMainWindow):
         geo = self.frameGeometry()
         geo.moveCenter(screen.center())
         self.move(geo.topLeft())
-        self.setMinimumSize(800, 600)
+        min_w = min(800, int(screen.width() * 0.5))
+        min_h = min(600, int(screen.height() * 0.5))
+        self.setMinimumSize(min_w, min_h)
 
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
         self._font_size = self.settings.value("ui/font_size", 11, int)
@@ -582,8 +555,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setAccessibleName("Paar-Tabelle")
         self.table.setAccessibleDescription("Liste der Bild- und Audio-Paare")
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        header.setStretchLastSection(True)
+        header.setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table.setWordWrap(True)
 
         self.help_pane = HelpPane()
         self.help_pane.setAccessibleName("Hilfe-Bereich")
@@ -643,12 +617,18 @@ class MainWindow(QtWidgets.QMainWindow):
         left_tabs.addTab(self.settings_widget, "Einstellungen")
         self.sidebar.setWidget(left_tabs)
 
-        panel_grid = _create_panel_grid()
+        panel_splitter = QtWidgets.QSplitter(Qt.Horizontal)
+        panel_splitter.addWidget(table_box)
+        panel_splitter.addWidget(help_box)
+        panel_splitter.setStretchFactor(0, 3)
+        panel_splitter.setStretchFactor(1, 1)
 
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.progress_total.setAccessibleName("Gesamtfortschritt")
         self.progress_total.setAccessibleDescription("Fortschritt aller Aufgaben")
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
+        self.log_edit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
+        self.log_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.log_edit.setAccessibleName("Protokoll")
         self.log_edit.setAccessibleDescription("Fortlaufende Meldungen des Programms")
 
@@ -659,7 +639,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Log-Bereich flexibel einteilbar
         main_splitter = QtWidgets.QSplitter(Qt.Vertical)
-        main_splitter.addWidget(panel_grid)
+        main_splitter.addWidget(panel_splitter)
         main_splitter.addWidget(self.log_box)
         main_splitter.setStretchFactor(0, 4)
         main_splitter.setStretchFactor(1, 1)
@@ -702,9 +682,9 @@ class MainWindow(QtWidgets.QMainWindow):
             (self.btn_stop, "Laufenden Vorgang abbrechen"),
         ]
         for i, (btn, tip) in enumerate(btn_defs):
-            row, col = divmod(i, 4)
+            row, col = divmod(i, 3)
             top_buttons.addWidget(self._wrap_button(btn, tip), row, col)
-        for i in range(4):
+        for i in range(3):
             top_buttons.setColumnStretch(i, 1)
         btn_box = QtWidgets.QGroupBox("Aktionen")
         btn_box.setLayout(top_buttons)
@@ -1154,7 +1134,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _resize_columns(self):
         header = self.table.horizontalHeader()
-        header.resizeSections(QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QHeaderView.Stretch)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)

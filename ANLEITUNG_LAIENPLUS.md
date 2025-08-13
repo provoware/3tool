@@ -719,3 +719,66 @@ ffmpeg -i quelle.mp4 -c:v libx265 -c:a copy film_hevc.mp4
 ffmpeg -i eingang.mp3 -af volumedetect -f null -
 ```
 *`volumedetect`* (Lautstaerke-Erkennung) zeigt an, wie laut der Ton ist. *`-f null -`* schreibt keine Datei.
+
+## 111. Code pruefen
+```bash
+mypy .
+```
+*mypy* (statischer Typpruefer) kontrolliert den Code auf Tippfehler bei den Typangaben. Er meldet Zeilen mit Unstimmigkeiten.
+
+## 112. Git-Status anzeigen
+```bash
+git status
+```
+*git* (Versionskontrolle) zeigt so alle geaenderten Dateien an. Das hilft, den Ueberblick zu behalten.
+
+## 113. Neuen Branch erstellen
+```bash
+git switch -c neuer-zweig
+```
+*git switch* (Zweig wechseln) legt mit *-c* (create) einen neuen Branch (Entwicklungszweig) an und aktiviert ihn sofort.
+
+## 114. Änderungen hochladen
+```bash
+git push origin neuer-zweig
+```
+*git push* (hochladen) sendet den aktuellen Branch zum entfernten Repository (Speicherort) namens *origin*.
+
+## 115. Änderungen holen
+```bash
+git pull
+```
+*git pull* (holen) lädt neue Dateien vom Server und mischt sie in deine aktuelle Arbeit.
+
+## 116. Selbsttest starten
+```bash
+python3 videobatch_extra.py --selftest
+```
+*--selftest* (Selbsttest) prüft automatisch, ob das Programm fehlerfrei läuft.
+
+## 117. Code auf Typfehler prüfen
+```bash
+mypy .
+```
+*mypy* (Typprüfer) sucht nach falschen Datentypen (z. B. Zahl statt Text) im Code.
+
+## 118. GUI starten
+```bash
+python3 videobatch_gui.py
+```
+Startet die grafische Oberfläche (*GUI*), das Fenster lässt sich mit der Maus an den Rändern ziehen (Größe ändern).
+
+## 119. Dunkles Theme aktivieren
+```bash
+python3 videobatch_gui.py
+```
+- Öffne das Menü **Theme**.
+- Klicke auf **Dunkel**.
+- *Theme* (Darstellungsstil) bestimmt Farben; dunkle Töne schonen die Augen abends.
+
+## 120. Sepia-Theme nutzen
+```bash
+python3 videobatch_gui.py
+```
+- Öffne das Menü **Theme**.
+- Wähle **Sepia** für warme Brauntöne (*Sepia* = altes Foto-Farbschema), angenehm bei langer Arbeit.

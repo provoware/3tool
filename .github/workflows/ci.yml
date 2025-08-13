@@ -14,5 +14,7 @@ jobs:
           pip install -r requirements.txt flake8
       - name: Lint
         run: flake8 videobatch_extra.py videobatch_gui.py videobatch_launcher.py
+      - name: Typpruefung
+        run: mypy .
       - name: Selftest
         run: python3 videobatch_extra.py --selftest
