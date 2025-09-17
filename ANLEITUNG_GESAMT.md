@@ -62,19 +62,32 @@ Zusätzliche Einstellungen für feinere Kontrolle:
 * `--shuffle` mischt die Bilder durch ("Shuffle" = zufällig).
 * `--image-fit cover` füllt den Bildschirm vollständig ("Cover" = anpassen mit Zuschnitt). Standard `contain` belässt alles sichtbar mit Rändern.
 * `--image-extensions "*.jpg,*.png"` grenzt die Bildtypen ein ("Extensions" = Dateiendungen). So lassen sich nur passende Dateien wählen.
+* `--video-codec libx265` wählt den Videocodec ("Codec" = Kodierverfahren). Standard ist `libx264` für breite Abspielbarkeit.
+* `--audio-codec copy` übernimmt die Tonspur unverändert ("copy" = unverändert). `aac` kodiert neu und ist Voreinstellung.
+* `--pix-fmt yuv420p` setzt das Pixel-Format ("Pixel Format" = Farbauflösung) für maximale Kompatibilität. Mit `--pix-fmt none` wird kein Wert erzwungen.
+* `--movflags +faststart` aktiviert optimiertes Streaming ("movflags" = Container-Option). `--movflags none` schaltet es ab.
+* `--video-bitrate 4M` erzwingt eine feste Videobitrate ("Bitrate" = Datenmenge pro Sekunde). Zusammen mit `--crf` warnt das Tool vor möglichen FFmpeg-Hinweisen.
+* `--video-tune film` passt Feineinstellungen ("Tune" = Feintuning) an, z. B. für Film- oder Zeichentrickmaterial. `--video-tune none` lässt FFmpeg standardmäßig entscheiden.
 
 Beispiel mit mehreren Optionen:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder --aud kommentar.mp3 --out output \
   --image-duration 4 --framerate 60 --background "#222222" --audio-fade 1.5 \
-  --video-filter "eq=contrast=1.1" --order natural --image-fit contain
+  --video-filter "eq=contrast=1.1" --order natural --image-fit contain --video-codec libx264 --pix-fmt yuv420p
+```
 
 Beispiel für eine aufmerksamkeitsstarke Mischung mit zufälliger Abfolge und Beschnitt:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder --aud musik.mp3 --out output \
-  --shuffle --image-fit cover --background "#101010" --audio-fade 2
+  --shuffle --image-fit cover --background "#101010" --audio-fade 2 --movflags +faststart
 ```
-```
+
+Hinweis: Vor dem Start erscheint nun ein "Slideshow-Check" (Prüfliste). Er zeigt an,
+* wie viele Bilder verarbeitet werden,
+* ob doppelte Treffer ignoriert wurden,
+* welche Bilddauer, Auflösung, Filter und Fade-Zeiten gelten und
+* ob Zufall oder Rückwärtslauf aktiv sind.
+Fehlerhafte Eingaben (fehlende Dateien, ungültige Zahlen, leere Codec-Angaben) werden sofort mit klarer Meldung abgebrochen.
 
 
 ## 4. Video laenger machen (Video + Audio)

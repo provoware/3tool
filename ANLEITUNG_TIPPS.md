@@ -60,19 +60,27 @@ Noch mehr Kontrolle über die Präsentation:
 * `--shuffle` mischt alle Bilder ("Shuffle" = zufällig).
 * `--image-fit cover` füllt den Bildschirm vollständig aus ("Cover" = zuschneiden). Für vollständige Sichtbarkeit wähle `contain`.
 * `--image-extensions "*.jpg,*.png"` grenzt die Dateitypen ein ("Extensions" = Endungen).
+* `--video-codec libx265` nutzt moderne Videokompression ("Codec" = Kodierverfahren). Standard ist `libx264`.
+* `--audio-codec copy` übernimmt den Ton unverändert. Ideal, wenn das Audio bereits passt.
+* `--pix-fmt yuv420p` stellt ein kompatibles Farbprofil sicher ("Pixel Format" = Farbauflösung). `--pix-fmt none` lässt FFmpeg entscheiden.
+* `--movflags +faststart` sorgt für schnelles Starten im Webplayer ("movflags" = Container-Flag). Mit `--movflags none` lässt sich das deaktivieren.
+* `--video-bitrate 5M` erzwingt eine feste Datenrate. Bei gleichzeitiger `--crf`-Angabe weist das Tool auf mögliche FFmpeg-Warnungen hin.
+* `--video-tune animation` optimiert die Kodierung für Trickfilme ("Tune" = Feineinstellung). `--video-tune none` schaltet es aus.
 
 Tipp: Mehrere Optionen lassen sich einfach kombinieren. Beispiel:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out output \
   --image-duration 5 --background "#101010" --audio-fade 2 \
-  --order natural --image-fit contain --video-filter "eq=saturation=1.2"
+  --order natural --image-fit contain --video-filter "eq=saturation=1.2" --video-codec libx264 --pix-fmt yuv420p
+```
 
 Mit zufälliger Mischung und Beschnitt für Vollbild:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out output \
-  --shuffle --image-fit cover --background "#111111" --audio-fade 2.5
+  --shuffle --image-fit cover --background "#111111" --audio-fade 2.5 --movflags +faststart --video-tune film
 ```
-```
+
+Neu: Vor jedem Rendern erscheint im Terminal ein kurzer "Slideshow-Check". Er nennt Anzahl der Bilder, verwendete Filter, Fade-Zeiten und ggf. entfernte Duplikate. Tritt ein Fehler auf (zum Beispiel fehlende Dateien, negative Werte oder leere Codec-Namen), stoppt der Befehl sofort mit einer gut lesbaren Erklärung.
 
 ## Vorhandenes Video mit neuem Ton
 ```bash

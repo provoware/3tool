@@ -133,3 +133,4 @@
 [2025-08-13] Farbthemes fuer Bildschirmarbeiter verbessert, Scrollen ueberfluessig gemacht und Laien-Tipps 119-120 ergaenzt (Aufgabe 'Farbthemes fuer Bildschirmarbeiter verbessern' erledigt)
 [2025-09-17] Slideshow-Optionen ausgebaut und Version 1.0.0 vergeben (Aufgabe "Version vergeben und Release taggen" erledigt)
 [2025-09-17] Slideshow-Bildreihenfolge verbessert, Shuffle/Cover ergänzt und Dokumentation erweitert (Aufgaben "Slideshow-Bildreihenfolge verbessern und Optionen erweitern" und "Slideshow-Dokumentation um neue Komfortfunktionen ergaenzen" erledigt)
+[2025-09-17] Slideshow-Validierungen ausgebaut, Nutzerfeedback ergänzt und neue Codec-Optionen dokumentiert (Aufgaben "Slideshow-Validierungen erweitern und Nutzerfeedback verbessern" und "Zusätzliche FFmpeg-Optionen für Slideshows dokumentieren" erledigt)
