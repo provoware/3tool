@@ -7,3 +7,5 @@
 - [x] FERTIG-PUNKTE.md Datei erstellen
 - [x] GUI fuer kleine Bildschirme anpassen
 - [x] Farbthemes fuer Bildschirmarbeiter verbessern
+- [x] Slideshow-Bildreihenfolge verbessern und Optionen erweitern
+- [x] Slideshow-Dokumentation um neue Komfortfunktionen ergaenzen

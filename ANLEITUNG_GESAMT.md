@@ -53,15 +53,27 @@ Zusätzliche Einstellungen für feinere Kontrolle:
 
 * `--image-duration 4` legt eine feste Anzeigedauer von 4 Sekunden pro Bild fest ("Image Duration" = Bilddauer).
 * `--framerate 60` setzt die Bildrate ("Framerate" = Bilder pro Sekunde) für die fertige Slideshow.
-* `--background "#222222"` färbt die Ränder mit einem eigenen Farbwert (Hex-Farbe = Farbangabe mit #RRGGBB).
+* `--background "#222222"` färbt die Ränder mit einem eigenen Farbwert (Hex-Farbe = Farbangabe mit #RRGGBB). Für hohe Lesbarkeit empfiehlt sich ein starker Kontrast ("Kontrast" = Helligkeits-Unterschied) zu Text oder Logos.
 * `--audio-fade 1.5` sorgt für ein sanftes Ein- und Ausblenden des Tons über 1,5 Sekunden ("Fade" = Überblendung).
 * `--video-filter "eq=brightness=0.05"` hängt beliebige FFmpeg-Filter ("Filter" = Effekt) an die Bildkette an.
 * `--audio-filter "volume=1.2"` erlaubt zusätzliche Audiobearbeitung, z. B. Lautstärke ("Volume" = Lautstärke) erhöhen.
+* `--order natural` wählt die Sortierung der Bilder ("Order" = Reihenfolge). Möglich sind `natural` (Zahlen wie 2 < 10), `name` (alphabetisch) und `mtime` (nach Änderungszeit).
+* `--reverse` kehrt die Reihenfolge um ("Reverse" = rückwärts).
+* `--shuffle` mischt die Bilder durch ("Shuffle" = zufällig).
+* `--image-fit cover` füllt den Bildschirm vollständig ("Cover" = anpassen mit Zuschnitt). Standard `contain` belässt alles sichtbar mit Rändern.
+* `--image-extensions "*.jpg,*.png"` grenzt die Bildtypen ein ("Extensions" = Dateiendungen). So lassen sich nur passende Dateien wählen.
 
 Beispiel mit mehreren Optionen:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder --aud kommentar.mp3 --out output \
-  --image-duration 4 --framerate 60 --background "#222222" --audio-fade 1.5 --video-filter "eq=contrast=1.1"
+  --image-duration 4 --framerate 60 --background "#222222" --audio-fade 1.5 \
+  --video-filter "eq=contrast=1.1" --order natural --image-fit contain
+
+Beispiel für eine aufmerksamkeitsstarke Mischung mit zufälliger Abfolge und Beschnitt:
+```bash
+python3 videobatch_extra.py --mode slideshow --img bilder --aud musik.mp3 --out output \
+  --shuffle --image-fit cover --background "#101010" --audio-fade 2
+```
 ```
 
 

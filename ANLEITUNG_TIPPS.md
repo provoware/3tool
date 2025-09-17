@@ -55,11 +55,23 @@ Noch mehr Kontrolle über die Präsentation:
 * `--audio-fade 2` sorgt für sanfte Übergänge am Anfang und Ende des Tons ("Fade" = Überblendung).
 * `--background "#101010"` setzt die Randfarbe (Hex-Farbe = Farbcode mit #RRGGBB).
 * `--video-filter "zoompan=z='min(zoom+0.001,1.3)':d=150"` erzeugt eine leichte Bewegung ("zoompan" = Zoom/Schwenk-Effekt).
+* `--order mtime` sortiert nach Änderungszeit ("mtime" = "modified time"). Alternativen: `natural` (Standard, versteht Zahlen), `name` (alphabetisch).
+* `--reverse` kehrt die Reihenfolge um ("Reverse" = rückwärts).
+* `--shuffle` mischt alle Bilder ("Shuffle" = zufällig).
+* `--image-fit cover` füllt den Bildschirm vollständig aus ("Cover" = zuschneiden). Für vollständige Sichtbarkeit wähle `contain`.
+* `--image-extensions "*.jpg,*.png"` grenzt die Dateitypen ein ("Extensions" = Endungen).
 
 Tipp: Mehrere Optionen lassen sich einfach kombinieren. Beispiel:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out output \
-  --image-duration 5 --background "#101010" --audio-fade 2 --video-filter "eq=saturation=1.2"
+  --image-duration 5 --background "#101010" --audio-fade 2 \
+  --order natural --image-fit contain --video-filter "eq=saturation=1.2"
+
+Mit zufälliger Mischung und Beschnitt für Vollbild:
+```bash
+python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out output \
+  --shuffle --image-fit cover --background "#111111" --audio-fade 2.5
+```
 ```
 
 ## Vorhandenes Video mit neuem Ton
