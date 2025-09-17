@@ -11,3 +11,5 @@
 - [x] Slideshow-Dokumentation um neue Komfortfunktionen ergaenzen
 - [x] Slideshow-Validierungen erweitern und Nutzerfeedback verbessern
 - [x] Zusätzliche FFmpeg-Optionen für Slideshows dokumentieren
+- [x] Slideshow um Seed, Profil- und Normalisierungsoptionen erweitern
+- [x] Dokumentation zu Slideshow-Profilen und Streaming-Datenraten aktualisieren

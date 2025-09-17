@@ -57,9 +57,11 @@ Zusätzliche Einstellungen für feinere Kontrolle:
 * `--audio-fade 1.5` sorgt für ein sanftes Ein- und Ausblenden des Tons über 1,5 Sekunden ("Fade" = Überblendung).
 * `--video-filter "eq=brightness=0.05"` hängt beliebige FFmpeg-Filter ("Filter" = Effekt) an die Bildkette an.
 * `--audio-filter "volume=1.2"` erlaubt zusätzliche Audiobearbeitung, z. B. Lautstärke ("Volume" = Lautstärke) erhöhen.
+* `--audio-bitrate 160k` ist ein zweiter Name für `--abitrate` und legt die Ton-Datenrate fest ("Bitrate" = Datenmenge pro Sekunde).
 * `--order natural` wählt die Sortierung der Bilder ("Order" = Reihenfolge). Möglich sind `natural` (Zahlen wie 2 < 10), `name` (alphabetisch) und `mtime` (nach Änderungszeit).
 * `--reverse` kehrt die Reihenfolge um ("Reverse" = rückwärts).
 * `--shuffle` mischt die Bilder durch ("Shuffle" = zufällig).
+* `--shuffle-seed 42` sorgt für eine reproduzierbare Zufallsreihenfolge ("Seed" = Startwert für die Mischung).
 * `--image-fit cover` füllt den Bildschirm vollständig ("Cover" = anpassen mit Zuschnitt). Standard `contain` belässt alles sichtbar mit Rändern.
 * `--image-extensions "*.jpg,*.png"` grenzt die Bildtypen ein ("Extensions" = Dateiendungen). So lassen sich nur passende Dateien wählen.
 * `--video-codec libx265` wählt den Videocodec ("Codec" = Kodierverfahren). Standard ist `libx264` für breite Abspielbarkeit.
@@ -68,25 +70,42 @@ Zusätzliche Einstellungen für feinere Kontrolle:
 * `--movflags +faststart` aktiviert optimiertes Streaming ("movflags" = Container-Option). `--movflags none` schaltet es ab.
 * `--video-bitrate 4M` erzwingt eine feste Videobitrate ("Bitrate" = Datenmenge pro Sekunde). Zusammen mit `--crf` warnt das Tool vor möglichen FFmpeg-Hinweisen.
 * `--video-tune film` passt Feineinstellungen ("Tune" = Feintuning) an, z. B. für Film- oder Zeichentrickmaterial. `--video-tune none` lässt FFmpeg standardmäßig entscheiden.
+* `--video-profile high` setzt das Profil ("Profile" = Qualitätsstufe im Codec) für Player, die bestimmte Stufen erwarten.
+* `--video-level 4.1` stellt das Level ("Level" = Leistungsstufe, z. B. für Blu-ray) ein.
+* `--gop-size 60` steuert den Abstand zwischen Schlüsselbildern ("GOP" = Gruppe von Bildern). Größere Werte sparen Daten, kleinere beschleunigen das Spulen.
+* `--video-maxrate 8M` begrenzt die Spitzenbitrate ("Maxrate" = maximale Datenrate) und `--video-bufsize 16M` legt den Puffer fest ("Bufsize" = Zwischenspeicher).
+* `--audio-sample-rate 48000` legt die Abtastrate fest ("Sample Rate" = Tonmesspunkte pro Sekunde).
+* `--audio-channels 2` bestimmt die Kanalzahl ("Channels" = Tonspuren, z. B. 2 für Stereo).
+* `--audio-normalize` aktiviert eine automatische Lautheitsanpassung ("Loudness" = wahrgenommene Lautstärke) mit dem Filter `loudnorm`.
 
 Beispiel mit mehreren Optionen:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder --aud kommentar.mp3 --out output \
   --image-duration 4 --framerate 60 --background "#222222" --audio-fade 1.5 \
-  --video-filter "eq=contrast=1.1" --order natural --image-fit contain --video-codec libx264 --pix-fmt yuv420p
+  --video-filter "eq=contrast=1.1" --order natural --image-fit contain \
+  --video-codec libx264 --pix-fmt yuv420p --audio-normalize
 ```
 
 Beispiel für eine aufmerksamkeitsstarke Mischung mit zufälliger Abfolge und Beschnitt:
 ```bash
 python3 videobatch_extra.py --mode slideshow --img bilder --aud musik.mp3 --out output \
-  --shuffle --image-fit cover --background "#101010" --audio-fade 2 --movflags +faststart
+  --shuffle --shuffle-seed 7 --image-fit cover --background "#101010" --audio-fade 2 \
+  --movflags +faststart --video-profile high --video-level 4.1
+```
+
+Gezielte Kontrolle über Datenraten und Schlüsselbilder für Streaming:
+```bash
+python3 videobatch_extra.py --mode slideshow --img messe --aud vortrag.mp3 --out export \
+  --video-bitrate 4M --video-maxrate 6M --video-bufsize 12M --gop-size 60 \
+  --audio-sample-rate 48000 --audio-channels 2 --audio-bitrate 160k
 ```
 
 Hinweis: Vor dem Start erscheint nun ein "Slideshow-Check" (Prüfliste). Er zeigt an,
 * wie viele Bilder verarbeitet werden,
 * ob doppelte Treffer ignoriert wurden,
-* welche Bilddauer, Auflösung, Filter und Fade-Zeiten gelten und
-* ob Zufall oder Rückwärtslauf aktiv sind.
+* welche Bilddauer, Auflösung, Filter, Profile, Fades, Normalisierung und Datenraten gelten und
+* ob Zufall, Seed oder Rückwärtslauf aktiv sind.
+* Direkt danach steht die erzeugte Ausgabedatei, damit sie sofort auffindbar ist.
 Fehlerhafte Eingaben (fehlende Dateien, ungültige Zahlen, leere Codec-Angaben) werden sofort mit klarer Meldung abgebrochen.
 
 
@@ -158,7 +177,7 @@ python3 videobatch_extra.py --img bild.jpg --aud ton.mp3 --width 1280 --height 7
 ```bash
 python3 videobatch_extra.py --img bild.jpg --aud ton.mp3 --abitrate 128k
 ```
-`abitrate` steht fuer "Audio Bitrate" (Tonqualitaet pro Sekunde).
+`abitrate` steht fuer "Audio Bitrate" (Tonqualitaet pro Sekunde). Die Schreibweise `--audio-bitrate 128k` funktioniert genauso und ist leichter zu merken.
 
 *Videos zuschneiden*:
 ```bash
