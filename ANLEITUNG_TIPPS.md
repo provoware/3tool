@@ -49,6 +49,19 @@ python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out
 ```
 Dabei wird ein ganzer Ordner voller Bilder nacheinander gezeigt.
 
+Noch mehr Kontrolle über die Präsentation:
+
+* `--image-duration 5` hält jedes Bild exakt 5 Sekunden lang ("Image Duration" = Bilddauer).
+* `--audio-fade 2` sorgt für sanfte Übergänge am Anfang und Ende des Tons ("Fade" = Überblendung).
+* `--background "#101010"` setzt die Randfarbe (Hex-Farbe = Farbcode mit #RRGGBB).
+* `--video-filter "zoompan=z='min(zoom+0.001,1.3)':d=150"` erzeugt eine leichte Bewegung ("zoompan" = Zoom/Schwenk-Effekt).
+
+Tipp: Mehrere Optionen lassen sich einfach kombinieren. Beispiel:
+```bash
+python3 videobatch_extra.py --mode slideshow --img bilder/ --aud musik.mp3 --out output \
+  --image-duration 5 --background "#101010" --audio-fade 2 --video-filter "eq=saturation=1.2"
+```
+
 ## Vorhandenes Video mit neuem Ton
 ```bash
 python3 videobatch_extra.py --mode video --img film.mp4 --aud kommentar.mp3 --out output

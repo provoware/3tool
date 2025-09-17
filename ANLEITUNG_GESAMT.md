@@ -27,6 +27,11 @@ Diese Anleitung fasst alle bisherigen Hilfen zusammen. Die Sprache ist bewusst e
    python3 videobatch_extra.py --selftest
    ```
    Bei Erfolg erscheint "Selftests OK".
+6. Version abfragen ("Version" = Ausgabe der aktuellen Programmnummer):
+   ```bash
+   python3 videobatch_extra.py --version
+   ```
+   So lässt sich nachvollziehen, welche Ausgabe installiert ist.
 
 ## 2. Grundsaetzliche Nutzung
 
@@ -43,6 +48,22 @@ Alle Bilder eines Ordners nacheinander zeigen und eine Tonspur abspielen. Jedes 
 python3 videobatch_extra.py --mode slideshow --img bilder --aud kommentar.mp3 --out output
 ```
 `--mode slideshow` nutzt den gesamten Ordner `bilder/`.
+
+Zusätzliche Einstellungen für feinere Kontrolle:
+
+* `--image-duration 4` legt eine feste Anzeigedauer von 4 Sekunden pro Bild fest ("Image Duration" = Bilddauer).
+* `--framerate 60` setzt die Bildrate ("Framerate" = Bilder pro Sekunde) für die fertige Slideshow.
+* `--background "#222222"` färbt die Ränder mit einem eigenen Farbwert (Hex-Farbe = Farbangabe mit #RRGGBB).
+* `--audio-fade 1.5` sorgt für ein sanftes Ein- und Ausblenden des Tons über 1,5 Sekunden ("Fade" = Überblendung).
+* `--video-filter "eq=brightness=0.05"` hängt beliebige FFmpeg-Filter ("Filter" = Effekt) an die Bildkette an.
+* `--audio-filter "volume=1.2"` erlaubt zusätzliche Audiobearbeitung, z. B. Lautstärke ("Volume" = Lautstärke) erhöhen.
+
+Beispiel mit mehreren Optionen:
+```bash
+python3 videobatch_extra.py --mode slideshow --img bilder --aud kommentar.mp3 --out output \
+  --image-duration 4 --framerate 60 --background "#222222" --audio-fade 1.5 --video-filter "eq=contrast=1.1"
+```
+
 
 ## 4. Video laenger machen (Video + Audio)
 

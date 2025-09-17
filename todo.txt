@@ -3,7 +3,7 @@
 - [x] CI-Pipeline fuer automatisches Testen anlegen
 - [x] Dokumentation pruefen und aktualisieren
   - [x] Laientipps Teil 113 und 114 ergaenzen
-- [ ] Version vergeben und Release taggen
+- [x] Version vergeben und Release taggen
 - [x] FERTIG-PUNKTE.md Datei erstellen
 - [x] GUI fuer kleine Bildschirme anpassen
 - [x] Farbthemes fuer Bildschirmarbeiter verbessern
