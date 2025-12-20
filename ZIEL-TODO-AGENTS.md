@@ -91,3 +91,9 @@ Release taggen, Doku finalisieren.
 
 Backlog offener Verbesserungen erfassen.
 
+lsiten für auswahl von dateien mit sortierbaren listen und vorschau oder thumbnails
+
+kontraste optimal, auch bei eingabebereichen oder hintergrundfarben und markierungen
+
+Laioptimierung
+
