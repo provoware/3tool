@@ -44,6 +44,19 @@ zusätzliche Kommandos für neugierige Einsteiger.
 Weitere Beispiele stehen in `ANLEITUNG_EXTRA.md`.
 Noch mehr Befehle zeigt `ANLEITUNG_WEITERE_TIPPS.md`.
 
+## Wo liegen meine Einstellungen?
+
+Die Einstellungen (Konfiguration) liegen in einem festen Ordner:
+
+* **Konfigurationsordner (Ordner fuer Einstellungen):** `~/.videobatchtool/config/`
+* **Einstellungsdatei (INI-Datei):** `~/.videobatchtool/config/settings.ini`
+
+Die Logdateien (Protokolle) bleiben wie gehabt hier:
+
+* **Log-Ordner (Protokolle):** `~/.videobatchtool/logs/`
+
+In der Oberflaeche siehst du den Log-Pfad direkt im Protokollbereich unten.
+
 ## Neues in der Oberfläche
 
 - **Favoriten** – Bilder lassen sich per Rechtsklick zu einer Favoritenliste hinzufügen. Im Tab "Favoriten" können sie per Drag&Drop in den Arbeitsbereich gezogen werden.
@@ -301,4 +314,3 @@ Eine komplette Anleitung mit allen Befehlen findest du in `ANLEITUNG_GESAMT.md`.
   sha256sum datei.zip
   ```
   `sha256sum` erstellt eine digitale Pruefsumme, um die Datei zu ueberpruefen.
-
