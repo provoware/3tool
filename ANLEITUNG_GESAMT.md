@@ -108,6 +108,25 @@ Hinweis: Vor dem Start erscheint nun ein "Slideshow-Check" (Prüfliste). Er zeig
 * Direkt danach steht die erzeugte Ausgabedatei, damit sie sofort auffindbar ist.
 Fehlerhafte Eingaben (fehlende Dateien, ungültige Zahlen, leere Codec-Angaben) werden sofort mit klarer Meldung abgebrochen.
 
+## 3a. Einheitliche Eingabe-Validierung und Fehlermeldungen
+
+Das Tool prueft alle Eingaben vor dem Start. Die Pruefungen sind in CLI und GUI gleich aufgebaut:
+
+* **Pfad-Pruefung** ("Path Check" = Pfadkontrolle): Bild- und Audio-Pfade muessen existieren.
+* **Datei- und Format-Pruefung** ("Format Check" = Formatkontrolle): Bild, Video und Audio muessen ein gueltiges Format haben und lesbar sein.
+* **Zahlen-Pruefung** ("Numeric Check" = Zahlenkontrolle): Werte wie Breite, Hoehe, Bilddauer, Framerate, GOP und Samplerate muessen groesser als 0 sein.
+* **Kein Leerfeld bei Codecs** ("Codec Check" = Codec-Kontrolle): Video- und Audio-Codecs duerfen nicht leer sein.
+* **Keine negativen Werte** ("Range Check" = Bereichskontrolle): Audio-Fade und Shuffle-Seed duerfen nicht negativ sein.
+* **Profile/Level/Maxrate/Puffer** ("Profile/Level/Maxrate/Bufsize" = Formatstufen und Datenrate): Diese Felder duerfen nicht leer sein, wenn sie gesetzt werden.
+
+Wenn etwas nicht stimmt, erscheint eine klare Fehlermeldung:
+
+* In der GUI sieht man die Meldung sofort und die betroffene Zeile wird markiert.
+* In der CLI steht die Meldung im Terminal.
+* Details stehen immer in der Logdatei (Protokolldatei).
+
+So ist schnell klar, welcher Wert fehlt oder falsch ist.
+
 
 ## 4. Video laenger machen (Video + Audio)
 
@@ -245,4 +264,3 @@ ffmpeg -i dunkel.mp4 -vf "eq=brightness=0.1" heller.mp4
 ffmpeg -i input.mp4 -filter:v "setpts=2.0*PTS" langsamer.mp4
 ```
 `setpts` steuert die Abspielgeschwindigkeit.
-
