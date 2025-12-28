@@ -122,7 +122,8 @@ Diese Tipps erleichtern die Bedienung für alle Nutzenden:
 ## Zusaetzlich
 
 * Die Datei `videobatch_extra.py` enthaelt eine Kommandozeilenversion. Mit `--selftest` lassen sich einfache Tests ausfuehren.
-* In `0000-testall` liegt ein Beispielskript, um Prueftools wie `flake8` oder `black` einzurichten.
+* In `0000-testall` liegt ein Bash-Skript, das Prueftools installiert und Lint,
+  Tests sowie Formatierung startet. Mit `./0000-testall --help` siehst du die Optionen.
 * Ereignisse und Aenderungen werden in `ereignislog.txt` festgehalten.
 
 * Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
