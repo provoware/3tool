@@ -126,6 +126,7 @@ THEMES = {
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov")
 AUDIO_EXTENSIONS = (".mp3", ".wav", ".flac", ".m4a", ".aac")
 SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+OUTPUT_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov")
 
 
 def which(p: str):
@@ -400,6 +401,10 @@ class DropListWidget(QtWidgets.QListWidget):
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setToolTip(title); self.setStatusTip(title)
         self.itemDoubleClicked.connect(self._open_item)
+    def _notify_structure_update(self) -> None:
+        wnd = self.window()
+        if hasattr(wnd, "_refresh_structure_view"):
+            wnd._refresh_structure_view()
     def _sort_value(self, path: str, mode: str):
         file_path = Path(path)
         if mode == "name":
@@ -482,6 +487,7 @@ class DropListWidget(QtWidgets.QListWidget):
         elif act==act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
+            self._notify_structure_update()
         elif act in sort_actions:
             mode, reverse = sort_actions[act]
             self._sort_items(mode, reverse=reverse)
@@ -520,6 +526,7 @@ class ImageListWidget(DropListWidget):
         elif act==act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
+            self._notify_structure_update()
         elif act==act_fav:
             self.add_to_fav.emit(path)
             self.window()._log(f"Zu Favoriten: {path}")
@@ -557,6 +564,7 @@ class AudioListWidget(DropListWidget):
         elif act == act_remove:
             self.takeItem(self.row(item))
             wnd._log(f"Eintrag entfernt: {path}")
+            self._notify_structure_update()
         elif act in sort_actions:
             mode, reverse = sort_actions[act]
             self._sort_items(mode, reverse=reverse)
@@ -998,11 +1006,44 @@ class MainWindow(QtWidgets.QMainWindow):
         hb_lay = QtWidgets.QVBoxLayout(help_box); hb_lay.addWidget(self.help_pane)
         self.help_box = help_box
 
+        self.structure_tree = QtWidgets.QTreeWidget()
+        self.structure_tree.setHeaderLabels(["Pfad"])
+        self.structure_tree.setAlternatingRowColors(True)
+        self.structure_tree.setAccessibleName("Projektstruktur")
+        self.structure_tree.setAccessibleDescription("Baumansicht für Bilder, Audios und Output")
+        self.structure_filter = QtWidgets.QComboBox()
+        self.structure_filter.addItems(["Alles", "Bilder", "Audios", "Output"])
+        self.structure_filter.setAccessibleName("Struktur-Filter")
+        self.structure_filter.setAccessibleDescription("Filtert die Projektstruktur nach Bereich")
+        self.structure_search = QtWidgets.QLineEdit()
+        self.structure_search.setPlaceholderText("Pfad-Filter, z. B. /Projekt oder Ferien")
+        self.structure_search.setAccessibleName("Pfad-Filter")
+        self.structure_search.setAccessibleDescription("Filtert die Projektstruktur nach Text im Pfad")
+        self.structure_clear_btn = QtWidgets.QToolButton()
+        self.structure_clear_btn.setText("X")
+        self.structure_clear_btn.setToolTip("Pfad-Filter löschen")
+        self.structure_clear_btn.setAccessibleName("Pfad-Filter löschen")
+        self.structure_clear_btn.clicked.connect(lambda: self.structure_search.setText(""))
+
+        structure_filter_row = QtWidgets.QHBoxLayout()
+        structure_filter_row.setContentsMargins(0, 0, 0, 0)
+        structure_filter_row.addWidget(QtWidgets.QLabel("Filter"))
+        structure_filter_row.addWidget(self.structure_filter)
+        structure_filter_row.addWidget(QtWidgets.QLabel("Suche"))
+        structure_filter_row.addWidget(self.structure_search, 1)
+        structure_filter_row.addWidget(self.structure_clear_btn)
+
+        structure_box = QtWidgets.QGroupBox("Projektstruktur")
+        structure_layout = QtWidgets.QVBoxLayout(structure_box)
+        structure_layout.addLayout(structure_filter_row)
+        structure_layout.addWidget(self.structure_tree)
+
         left_tabs = QtWidgets.QTabWidget()
         left_tabs.setAccessibleName("Seitenleiste-Register")
         left_tabs.setAccessibleDescription("Register für Dateilisten und Einstellungen")
         left_tabs.addTab(pool_box, "Dateien")
         left_tabs.addTab(self.settings_widget, "Einstellungen")
+        left_tabs.addTab(structure_box, "Struktur")
         self.sidebar.setWidget(left_tabs)
 
         panel_splitter = QtWidgets.QSplitter(Qt.Horizontal)
@@ -1130,6 +1171,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.auto_open_output.toggled.connect(self._toggle_auto_open_output)
         self.auto_save_project.toggled.connect(self._toggle_auto_save_project)
         self.mode_combo.currentTextChanged.connect(self._update_default_mode)
+        self.structure_filter.currentTextChanged.connect(self._apply_structure_filter)
+        self.structure_search.textChanged.connect(self._apply_structure_filter)
+        self.out_dir_edit.editingFinished.connect(self._refresh_structure_view)
 
         self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
@@ -1144,6 +1188,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("F5"), self).activated.connect(
             self._start_encode
         )
+        self._refresh_structure_view()
 
     # ----- UI helpers -----
     def _build_menus(self):
@@ -1451,6 +1496,108 @@ class MainWindow(QtWidgets.QMainWindow):
         self.count_label.setText(f"{img_count} Bilder | {aud_count} Audios | {pair_count} Paare")
         self.dashboard.set_counts(pair_count, fin_count, err_count)
 
+    def _refresh_structure_view(self) -> None:
+        if not hasattr(self, "structure_tree"):
+            return
+        self.structure_tree.clear()
+
+        image_paths = [
+            self.image_list.item(i).data(Qt.UserRole)
+            for i in range(self.image_list.count())
+        ]
+        audio_paths = [
+            self.audio_list.item(i).data(Qt.UserRole)
+            for i in range(self.audio_list.count())
+        ]
+        image_seen = {path for path in image_paths if path}
+        audio_seen = {path for path in audio_paths if path}
+        for pair in self.pairs:
+            if pair.image_path and pair.image_path not in image_seen:
+                image_paths.append(pair.image_path)
+                image_seen.add(pair.image_path)
+            if pair.audio_path and pair.audio_path not in audio_seen:
+                audio_paths.append(pair.audio_path)
+                audio_seen.add(pair.audio_path)
+
+        def add_root(title: str, count: int) -> QtWidgets.QTreeWidgetItem:
+            root = QtWidgets.QTreeWidgetItem([f"{title} ({count})"])
+            root.setData(0, Qt.UserRole, title)
+            self.structure_tree.addTopLevelItem(root)
+            return root
+
+        def add_path_items(root: QtWidgets.QTreeWidgetItem, paths: List[str]) -> None:
+            for path in paths:
+                if not path:
+                    continue
+                item = QtWidgets.QTreeWidgetItem([path])
+                item.setData(0, Qt.UserRole, path)
+                root.addChild(item)
+
+        img_root = add_root("Bilder", len(image_paths))
+        add_path_items(img_root, image_paths)
+
+        aud_root = add_root("Audios", len(audio_paths))
+        add_path_items(aud_root, audio_paths)
+
+        output_root = add_root("Output", 0)
+        output_dir = self.out_dir_edit.text().strip()
+        output_files: List[str] = []
+        if output_dir:
+            out_path = Path(output_dir).expanduser()
+            output_dir_item = QtWidgets.QTreeWidgetItem([f"Ordner: {out_path}"])
+            output_dir_item.setData(0, Qt.UserRole, str(out_path))
+            output_root.addChild(output_dir_item)
+            if out_path.exists() and out_path.is_dir():
+                try:
+                    output_files = [
+                        str(p)
+                        for p in sorted(out_path.iterdir())
+                        if p.is_file() and p.suffix.lower() in OUTPUT_EXTENSIONS
+                    ]
+                except Exception as exc:
+                    error_item = QtWidgets.QTreeWidgetItem([f"Fehler beim Lesen: {exc}"])
+                    output_root.addChild(error_item)
+            else:
+                hint_item = QtWidgets.QTreeWidgetItem(["Ordner existiert noch nicht."])
+                output_root.addChild(hint_item)
+        else:
+            hint_item = QtWidgets.QTreeWidgetItem(["Kein Ausgabeordner gesetzt."])
+            output_root.addChild(hint_item)
+
+        max_outputs = 200
+        for path in output_files[:max_outputs]:
+            item = QtWidgets.QTreeWidgetItem([path])
+            item.setData(0, Qt.UserRole, path)
+            output_root.addChild(item)
+        if len(output_files) > max_outputs:
+            output_root.addChild(
+                QtWidgets.QTreeWidgetItem([f"… weitere {len(output_files) - max_outputs} Dateien"])
+            )
+        output_root.setText(0, f"Output ({len(output_files)})")
+
+        self.structure_tree.expandAll()
+        self._apply_structure_filter()
+
+    def _apply_structure_filter(self) -> None:
+        if not hasattr(self, "structure_tree"):
+            return
+        filter_text = self.structure_filter.currentText()
+        search_text = self.structure_search.text().strip().lower()
+        for i in range(self.structure_tree.topLevelItemCount()):
+            root = self.structure_tree.topLevelItem(i)
+            category = root.data(0, Qt.UserRole) or ""
+            allow_category = filter_text in ("Alles", category)
+            visible_children = 0
+            for j in range(root.childCount()):
+                child = root.child(j)
+                path_text = (child.data(0, Qt.UserRole) or child.text(0)).lower()
+                matches = (not search_text) or (search_text in path_text)
+                child_visible = allow_category and matches
+                child.setHidden(not child_visible)
+                if child_visible:
+                    visible_children += 1
+            root.setHidden(not allow_category or visible_children == 0)
+
     # ----- file actions -----
     def _select_files(self, title: str, start_dir: str, filters: List[str]) -> List[str]:
         dialog = QtWidgets.QFileDialog(self, title, start_dir)
@@ -1531,6 +1678,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._debug(f"Bild hinzugefügt: {f}")
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log(f"{len(files)} Bild(er) hinzugefügt")
 
     def _on_audios_added(self, files: List[str]):
@@ -1546,6 +1694,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.layoutChanged.emit()
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log(f"{len(files)} Audio(s) hinzugefügt")
 
     def _add_to_favorites(self, path: str):
@@ -1596,6 +1745,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.clear(); self.image_list.clear(); self.audio_list.clear()
         self.log_edit.clear(); self.dashboard.mini_log.clear()
         self._update_counts()
+        self._refresh_structure_view()
         self._log("Listen geleert")
 
     def _undo_last(self):
@@ -1604,6 +1754,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model.clear(); self.model.add_pairs(last)
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log("Rückgängig ausgeführt")
 
     # ----- save / load -----
@@ -1622,6 +1773,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log(f"Fehler beim Speichern: {e}")
             return
         self._set_last_project_path(path)
+        self._refresh_structure_view()
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):
@@ -1653,6 +1805,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mode_combo.setCurrentText(s.get("mode", self.mode_combo.currentText()))
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log(f"Projekt geladen: {path}")
 
     # ----- encode -----

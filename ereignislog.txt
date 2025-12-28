@@ -147,3 +147,4 @@
 [2025-12-28] Eingabevalidierungen in GUI und PairItem erweitert (Aufgabe "Eingabevalidierungen in GUI und PairItem erweitern" erledigt)
 [2025-12-28] Gefuehrter Start, Hochkontrast-Themes, grosse Bedienelemente und bessere Fehlervorschlaege umgesetzt (Aufgaben "Gefuehrten Start (Wizard) und Bild-Hilfe im GUI ergaenzen", "Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen", "Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern" erledigt)
 [2025-12-28] Audio-Vorschau, Sortieroptionen in Dateilisten und optimierte Dateidialoge umgesetzt (Aufgabe "Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt" erledigt)
+[2025-12-28] Projektstruktur-Ansicht mit Filter/Suche und Aktualisierung bei Laden/Speichern ergänzt (Aufgabe "Projektstruktur-Ansicht mit Filter/Suche sowie Update bei Laden/Speichern ergänzt" erledigt)
