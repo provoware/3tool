@@ -57,19 +57,25 @@ def ensure_venv() -> None:
 
 
 def pip_ok(py: str) -> bool:
-    return subprocess.run(
-        [py, "-m", "pip", "--version"],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    ).returncode == 0
+    return (
+        subprocess.run(
+            [py, "-m", "pip", "--version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
 
 
 def pip_show(py: str, pkg: str) -> bool:
-    return subprocess.run(
-        [py, "-m", "pip", "show", pkg],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    ).returncode == 0
+    return (
+        subprocess.run(
+            [py, "-m", "pip", "show", pkg],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
 
 
 def ensure_pip(py: str) -> bool:
@@ -88,7 +94,8 @@ def pip_install(py: str, pkgs: Iterable[str]) -> None:
     if not packages:
         return
     subprocess.check_call(
-        [py, "-m", "pip", "install", "--upgrade", "pip"], stdout=subprocess.DEVNULL
+        [py, "-m", "pip", "install", "--upgrade", "pip"],
+        stdout=subprocess.DEVNULL,
     )
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade"] + packages)
 
@@ -128,7 +135,9 @@ def check_python_version() -> CheckResult:
 
 def check_venv() -> CheckResult:
     ok = ENV_DIR.exists()
-    detail = "Virtuelle Umgebung vorhanden." if ok else "Virtuelle Umgebung fehlt."
+    detail = (
+        "Virtuelle Umgebung vorhanden." if ok else "Virtuelle Umgebung fehlt."
+    )
     hint = "Befehl: python3 -m venv .videotool_env"
     return CheckResult(
         key="venv",
@@ -160,7 +169,11 @@ def check_packages(py: str) -> CheckResult:
         if ok
         else f"Fehlend: {', '.join(missing)}"
     )
-    hint = f"Befehl: {py} -m pip install --upgrade " + " ".join(missing) if missing else None
+    hint = (
+        f"Befehl: {py} -m pip install --upgrade " + " ".join(missing)
+        if missing
+        else None
+    )
     return CheckResult(
         key="packages",
         title="Python-Pakete (PySide6, Pillow, ffmpeg-python)",
@@ -202,7 +215,9 @@ def check_write_permissions(target_dir: Path) -> CheckResult:
 
 def check_internet() -> CheckResult:
     ok = has_internet()
-    detail = "Internetverbindung vorhanden." if ok else "Kein Internet erreichbar."
+    detail = (
+        "Internetverbindung vorhanden." if ok else "Kein Internet erreichbar."
+    )
     return CheckResult(
         key="internet",
         title="Internet (für Downloads)",
@@ -231,7 +246,9 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
     try:
         ensure_venv()
         results.append(
-            RepairResult("venv", "Virtuelle Umgebung (venv)", True, "Venv ist bereit.")
+            RepairResult(
+                "venv", "Virtuelle Umgebung (venv)", True, "Venv ist bereit."
+            )
         )
     except subprocess.SubprocessError as exc:
         results.append(
@@ -249,7 +266,11 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
             "pip",
             "pip (Paket-Manager)",
             pip_ready,
-            "pip ist bereit." if pip_ready else "pip konnte nicht aktiviert werden.",
+            (
+                "pip ist bereit."
+                if pip_ready
+                else "pip konnte nicht aktiviert werden."
+            ),
         )
     )
 
@@ -325,7 +346,11 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
                     "ffmpeg",
                     "ffmpeg/ffprobe",
                     ffmpeg_ok,
-                    "ffmpeg installiert." if ffmpeg_ok else "ffmpeg Installation fehlte.",
+                    (
+                        "ffmpeg installiert."
+                        if ffmpeg_ok
+                        else "ffmpeg Installation fehlte."
+                    ),
                 )
             )
         except subprocess.SubprocessError as exc:
@@ -353,7 +378,11 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
             "write_permissions",
             "Schreibrechte (Projektordner)",
             writable,
-            "Schreibrechte vorhanden." if writable else "Bitte Schreibrechte prüfen.",
+            (
+                "Schreibrechte vorhanden."
+                if writable
+                else "Bitte Schreibrechte prüfen."
+            ),
         )
     )
 

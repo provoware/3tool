@@ -80,6 +80,7 @@ def _collect_images(
     images = list(unique.values())
 
     if order == "mtime":
+
         def mtime_key(p: Path) -> tuple[float, str]:
             try:
                 return (p.stat().st_mtime, p.name.lower())
@@ -110,13 +111,11 @@ def _build_video_filters(
 ) -> List[str]:
     if fit_mode == "cover":
         return [
-            "scale="
-            f"{width}:{height}:force_original_aspect_ratio=increase",
+            f"scale={width}:{height}:force_original_aspect_ratio=increase",
             f"crop={width}:{height}",
         ]
     return [
-        "scale="
-        f"{width}:{height}:force_original_aspect_ratio=decrease",
+        f"scale={width}:{height}:force_original_aspect_ratio=decrease",
         "pad="
         f"{width}:{height}:(ow-iw)/2:(oh-ih)/2:color={_normalize_color(background)}",
     ]
@@ -129,13 +128,13 @@ def cli_single(
     width: int = 1920,
     height: int = 1080,
     crf: int = 23,
-    preset: str = 'ultrafast',
-    abitrate: str = '192k',
+    preset: str = "ultrafast",
+    abitrate: str = "192k",
 ) -> int:
     out_dir_p = Path(out_dir)
     out_dir_p.mkdir(parents=True, exist_ok=True)
     if len(images) != len(audios):
-        print('Fehler: Anzahl Bilder != Anzahl Audios')
+        print("Fehler: Anzahl Bilder != Anzahl Audios")
         return 1
     total = len(images)
     done = 0
@@ -412,7 +411,9 @@ def cli_slideshow(
         print(" - Reihenfolge wird umgedreht")
     if video_bitrate:
         print(f" - Videobitrate gesetzt: {video_bitrate}")
-        print("   Hinweis: Kombination aus Bitrate und CRF kann zu FFmpeg-Warnungen führen")
+        print(
+            "   Hinweis: Kombination aus Bitrate und CRF kann zu FFmpeg-Warnungen führen"
+        )
     if maxrate:
         print(f" - Videomaxrate: {maxrate}")
     if bufsize:
@@ -533,8 +534,12 @@ def cli_slideshow(
 def run_selftests() -> int:
     assert human_time(65) == "01:05"
     assert _natural_key("bild12.png") > _natural_key("bild3.png")
-    assert _build_video_filters(1920, 1080, "#000000", "contain")[1].startswith("pad=")
-    assert _build_video_filters(1920, 1080, "#000000", "cover")[1].startswith("crop=")
+    assert _build_video_filters(1920, 1080, "#000000", "contain")[1].startswith(
+        "pad="
+    )
+    assert _build_video_filters(1920, 1080, "#000000", "cover")[1].startswith(
+        "crop="
+    )
     with tempfile.TemporaryDirectory() as td:
         out = build_out_name(str(Path(td) / "a.mp3"), Path(td))
         assert out.name.endswith(".mp4")
@@ -546,7 +551,11 @@ def run_selftests() -> int:
         images, duplicates = _collect_images(
             folder, ("*.jpg", "*.jpg"), "natural", False, False
         )
-        assert [img.name for img in images] == ["bild1.jpg", "bild2.jpg", "bild10.jpg"]
+        assert [img.name for img in images] == [
+            "bild1.jpg",
+            "bild2.jpg",
+            "bild10.jpg",
+        ]
         assert duplicates == 3
         shuffled, _ = _collect_images(
             folder, ("*.jpg",), "natural", False, True, 123
@@ -554,7 +563,9 @@ def run_selftests() -> int:
         shuffled_again, _ = _collect_images(
             folder, ("*.jpg",), "natural", False, True, 123
         )
-        assert [img.name for img in shuffled] == [img.name for img in shuffled_again]
+        assert [img.name for img in shuffled] == [
+            img.name for img in shuffled_again
+        ]
     print("Selftests OK")
     return 0
 
@@ -563,7 +574,9 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="VideoBatchTool CLI / Tests")
-    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {__version__}"
+    )
     parser.add_argument("--selftest", action="store_true")
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--img", nargs="+")
@@ -579,7 +592,9 @@ def main() -> None:
     parser.add_argument("--crf", type=int, default=23)
     parser.add_argument("--preset", default="ultrafast")
     parser.add_argument("--abitrate", default="192k")
-    parser.add_argument("--audio-bitrate", dest="abitrate", default=argparse.SUPPRESS)
+    parser.add_argument(
+        "--audio-bitrate", dest="abitrate", default=argparse.SUPPRESS
+    )
     parser.add_argument("--image-duration", type=float)
     parser.add_argument("--min-image-duration", type=float, default=0.3)
     parser.add_argument("--framerate", type=int, default=30)
@@ -663,7 +678,9 @@ def main() -> None:
             )
         )
     if args.mode == "slideshow" and args.img and args.aud:
-        patterns = [p.strip() for p in args.image_extensions.split(",") if p.strip()]
+        patterns = [
+            p.strip() for p in args.image_extensions.split(",") if p.strip()
+        ]
         if not patterns:
             patterns = None
         sys.exit(
