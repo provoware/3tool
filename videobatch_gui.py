@@ -830,6 +830,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mode_combo.setAccessibleDescription("Auswahl des Verarbeitungsmodus")
         self.clear_after   = QtWidgets.QCheckBox("Nach Fertigstellung Listen leeren")
         self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
+        self.auto_open_output = QtWidgets.QCheckBox("Ausgabeordner nach Fertigstellung öffnen")
+        self.auto_open_output.setChecked(self.settings.value("ui/auto_open_output", True, bool))
+        self.auto_open_output.setAccessibleName("Ausgabeordner automatisch öffnen")
+        self.auto_open_output.setAccessibleDescription(
+            "Öffnet den Ausgabeordner nach Abschluss der Erstellung"
+        )
+        self.auto_save_project = QtWidgets.QCheckBox(
+            "Projekt beim Start/Schließen automatisch sichern"
+        )
+        self.auto_save_project.setChecked(
+            self.settings.value("ui/auto_save_project", False, bool)
+        )
+        self.auto_save_project.setAccessibleName("Projekt automatisch sichern")
+        self.auto_save_project.setAccessibleDescription(
+            "Sichert den aktuellen Stand automatisch beim Start und Schließen"
+        )
         self.clear_after.setAccessibleName("Listen automatisch leeren")
         self.clear_after.setAccessibleDescription("Nach dem Abschluss alle Listen leeren")
 
@@ -864,6 +880,8 @@ class MainWindow(QtWidgets.QMainWindow):
         font_wrap = QtWidgets.QWidget(); font_wrap.setLayout(font_row)
         self._add_form(form, "Schriftgröße", font_wrap, "Schriftgröße der Oberfläche anpassen")
         form.addRow("", self.clear_after)
+        form.addRow("", self.auto_open_output)
+        form.addRow("", self.auto_save_project)
         form.addRow("", self.large_controls_toggle)
 
         settings_box = QtWidgets.QGroupBox("Einstellungen")
@@ -1007,6 +1025,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_wizard.clicked.connect(self._show_guided_wizard)
         self.table.doubleClicked.connect(self._show_statusbar_path)
         self.btn_out_open.clicked.connect(self._open_out_dir)
+        self.auto_open_output.toggled.connect(self._toggle_auto_open_output)
+        self.auto_save_project.toggled.connect(self._toggle_auto_save_project)
+        self.mode_combo.currentTextChanged.connect(self._update_default_mode)
 
         self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
@@ -1016,6 +1037,8 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
             self._show_help_window
         )
+        if self.auto_save_project.isChecked():
+            self._auto_save_project("Start")
         QtGui.QShortcut(QtGui.QKeySequence("F5"), self).activated.connect(
             self._start_encode
         )
@@ -1111,9 +1134,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Theme gewechselt: {name}")
 
     def _open_out_dir(self):
-        path = self.out_dir_edit.text()
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
-        self._log(f"Ausgabeordner geöffnet: {path}")
+        path = self.out_dir_edit.text().strip()
+        if not path:
+            self._log("Ausgabeordner fehlt.", logging.WARNING)
+            QtWidgets.QMessageBox.information(
+                self, "Ausgabeordner fehlt", "Bitte zuerst einen Ausgabeordner festlegen."
+            )
+            return
+        out_path = Path(path).expanduser()
+        try:
+            out_path.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:
+            self._log(f"Ausgabeordner konnte nicht erstellt werden: {exc}", logging.ERROR)
+            QtWidgets.QMessageBox.critical(
+                self, "Ausgabeordner fehlerhaft", f"Ordner konnte nicht erstellt werden:\n{exc}"
+            )
+            return
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(out_path)))
+        self._log(f"Ausgabeordner geöffnet: {out_path}")
 
     def _open_readme(self):
         path = str(Path('README.md').resolve())
@@ -1205,6 +1243,55 @@ class MainWindow(QtWidgets.QMainWindow):
     def _debug(self, msg:str):
         self._log(f"DEBUG: {msg}", logging.DEBUG)
 
+    def _get_last_dir(self, key: str, fallback: Path) -> str:
+        value = self.settings.value(key, "", str)
+        if value:
+            stored = Path(value)
+            if stored.exists():
+                return str(stored)
+        return str(fallback)
+
+    def _set_last_dir(self, key: str, path: Path | str) -> None:
+        if not path:
+            return
+        stored = Path(path).expanduser()
+        if stored.is_file():
+            stored = stored.parent
+        self.settings.setValue(key, str(stored))
+
+    def _set_last_project_path(self, path: str) -> None:
+        if not path:
+            return
+        project_path = Path(path).expanduser()
+        self.settings.setValue("ui/last_project_path", str(project_path))
+        self.settings.setValue("ui/last_project_dir", str(project_path.parent))
+
+    def _project_payload(self) -> Dict[str, Any]:
+        return {
+            "pairs": [
+                {"image": p.image_path, "audio": p.audio_path, "output": p.output}
+                for p in self.pairs
+            ],
+            "settings": self._gather_settings(),
+        }
+
+    def _auto_save_project(self, reason: str) -> None:
+        if not self.auto_save_project.isChecked():
+            return
+        auto_path = self.settings.value("ui/auto_save_path", "", str)
+        if not auto_path:
+            auto_path = str(Path.home() / "videobatch_autosave.json")
+            self.settings.setValue("ui/auto_save_path", auto_path)
+        try:
+            Path(auto_path).write_text(
+                json.dumps(self._project_payload(), indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+        except Exception as exc:
+            self._log(f"Auto-Speichern fehlgeschlagen ({reason}): {exc}", logging.ERROR)
+            return
+        self._log(f"Auto-Speichern ok ({reason}): {auto_path}")
+
     def _push_history(self):
         snap=[]
         for p in self.pairs:
@@ -1227,16 +1314,25 @@ class MainWindow(QtWidgets.QMainWindow):
     # ----- file actions -----
     def _pick_images(self):
         mode=self.mode_combo.currentText()
+        start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
         if mode=="Slideshow":
-            d=QtWidgets.QFileDialog.getExistingDirectory(self,"Ordner mit Bildern wählen",str(Path.cwd()))
-            if d: self._on_images_added([d])
+            d=QtWidgets.QFileDialog.getExistingDirectory(self,"Ordner mit Bildern wählen",start_dir)
+            if d:
+                self._set_last_dir("ui/last_image_dir", d)
+                self._on_images_added([d])
         else:
-            files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",str(Path.cwd()),
+            files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",start_dir,
                                                           "Bilder (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mkv *.avi *.mov)")
-            if files: self._on_images_added(files)
+            if files:
+                self._set_last_dir("ui/last_image_dir", Path(files[0]).parent)
+                self._on_images_added(files)
     def _pick_audios(self):
-        files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Audios wählen",str(Path.cwd()),
+        start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
+        files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Audios wählen",start_dir,
                                                        "Audio (*.mp3 *.wav *.flac *.m4a *.aac)")
+        if files:
+            self._set_last_dir("ui/last_audio_dir", Path(files[0]).parent)
+            self._on_audios_added(files)
         if files: self._on_audios_added(files)
     def _pick_image_folder(self):
         d = QtWidgets.QFileDialog.getExistingDirectory(self, "Bildordner wählen", str(Path.cwd()))
@@ -1349,8 +1445,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ----- save / load -----
     def _save_project(self):
-        path,_=QtWidgets.QFileDialog.getSaveFileName(self,"Projekt speichern",str(Path.cwd()/ "projekt.json"),"JSON (*.json)")
+        start_dir = self._get_last_dir("ui/last_project_dir", Path.cwd())
+        start_path = str(Path(start_dir) / "projekt.json")
+        path,_=QtWidgets.QFileDialog.getSaveFileName(self,"Projekt speichern",start_path,"JSON (*.json)")
         if not path: return
+        data = self._project_payload()
         data={"pairs":[{"image":p.image_path,"audio":p.audio_path,"output":p.output} for p in self.pairs],
               "settings":self._gather_settings(require_valid=False)}
         try:
@@ -1359,10 +1458,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self._show_error_dialog("Fehler beim Speichern", str(e))
             self._log(f"Fehler beim Speichern: {e}")
             return
+        self._set_last_project_path(path)
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):
-        path,_ = QtWidgets.QFileDialog.getOpenFileName(self, "Projekt laden", str(Path.cwd()), "JSON (*.json)")
+        start_dir = self._get_last_dir("ui/last_project_dir", Path.cwd())
+        path,_ = QtWidgets.QFileDialog.getOpenFileName(self, "Projekt laden", start_dir, "JSON (*.json)")
         if not path:
             return
         try:
@@ -1371,6 +1472,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._show_error_dialog("Fehler beim Laden", str(e))
             self._log(f"Fehler beim Laden: {e}")
             return
+        self._set_last_project_path(path)
         self._push_history()
         self.model.clear()
         new=[]
@@ -1592,6 +1694,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.thread.quit(); self.thread.wait()
         self.thread=None; self.worker=None
         self._update_counts()
+        if self.auto_open_output.isChecked():
+            self._open_out_dir()
         if self.clear_after.isChecked():
             self._clear_all()
 
@@ -1618,6 +1722,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/debug", checked)
         self._log(f"Debug-Log {'aktiviert' if checked else 'deaktiviert'}")
 
+    def _toggle_auto_open_output(self, checked: bool):
+        self.settings.setValue("ui/auto_open_output", checked)
+        self._log(
+            "Ausgabeordner wird nach Fertigstellung geöffnet."
+            if checked
+            else "Ausgabeordner wird nach Fertigstellung nicht geöffnet."
+        )
+
+    def _toggle_auto_save_project(self, checked: bool):
+        self.settings.setValue("ui/auto_save_project", checked)
+        self._log(
+            "Auto-Speichern für Start/Schließen aktiviert."
+            if checked
+            else "Auto-Speichern für Start/Schließen deaktiviert."
+        )
+
+    def _update_default_mode(self, mode: str) -> None:
+        self.settings.setValue("encode/mode", mode)
+        self._log(f"Standard-Modus gesetzt: {mode}")
     def _toggle_large_controls(self, checked: bool):
         self.large_controls = checked
         self.settings.setValue("ui/large_controls", checked)
@@ -1692,6 +1815,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/geometry", self.saveGeometry())
         self.settings.setValue("ui/window_state", self.saveState())
         self.settings.setValue("ui/clear_after", self.clear_after.isChecked())
+        self.settings.setValue("ui/auto_open_output", self.auto_open_output.isChecked())
+        self.settings.setValue("ui/auto_save_project", self.auto_save_project.isChecked())
         s = self._gather_settings(require_valid=False)
         self.settings.setValue("ui/large_controls", self.large_controls)
         s = self._gather_settings()
@@ -1702,6 +1827,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("encode/height", s["height"])
         self.settings.setValue("encode/abitrate", s["abitrate"])
         self.settings.setValue("encode/mode", s["mode"])
+        if self.auto_save_project.isChecked():
+            self._auto_save_project("Schließen")
         super().closeEvent(event)
 
 # ---- Public
