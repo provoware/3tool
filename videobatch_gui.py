@@ -25,9 +25,15 @@ from PySide6.QtWidgets import QHeaderView
 
 from core.utils import build_out_name, human_time, probe_duration
 
-# ---------- Logging ----------
-LOG_DIR = Path.home()/".videobatchtool"/"logs"
+# ---------- Paths ----------
+APP_DIR = Path.home() / ".videobatchtool"
+CONFIG_DIR = APP_DIR / "config"
+LOG_DIR = APP_DIR / "logs"
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+SETTINGS_FILE = CONFIG_DIR / "settings.ini"
+
+# ---------- Logging ----------
 LOG_FILE = LOG_DIR / f"{datetime.now().strftime('%Y%m%d-%H%M%S')}.log"
 
 logging.basicConfig(
@@ -442,6 +448,7 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Menü 'Optionen' hat einen Debug-Schalter für mehr Meldungen</li>"
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
             "<li>Unter 'Ansicht' kann der Log-Bereich ein- oder ausgeblendet werden</li>"
+            "<li>Der Log-Pfad steht im Protokollbereich unten</li>"
             "</ul>"
         )
 
@@ -500,7 +507,7 @@ class MainWindow(QtWidgets.QMainWindow):
         min_h = min(600, int(screen.height() * 0.5))
         self.setMinimumSize(min_w, min_h)
 
-        self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
+        self.settings = QtCore.QSettings(str(SETTINGS_FILE), QtCore.QSettings.IniFormat)
         self._font_size = self.settings.value("ui/font_size", 11, int)
         self.debug_mode = self.settings.value("ui/debug", False, bool)
         logger.setLevel(logging.DEBUG if self.debug_mode else logging.INFO)
@@ -626,6 +633,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
         self.progress_total.setAccessibleName("Gesamtfortschritt")
         self.progress_total.setAccessibleDescription("Fortschritt aller Aufgaben")
+        self.log_path_label = QtWidgets.QLabel("Log-Pfad:")
+        self.log_path_label.setAccessibleName("Log-Pfad Label")
+        self.log_path_edit = QtWidgets.QLineEdit(str(LOG_DIR))
+        self.log_path_edit.setReadOnly(True)
+        self.log_path_edit.setAccessibleName("Log-Pfad")
+        self.log_path_edit.setAccessibleDescription("Speicherort der Logdateien")
+        self.log_path_edit.setToolTip("Speicherort der Protokolldateien")
+        self.log_path_btn = QtWidgets.QPushButton("Pfad kopieren")
+        self.log_path_btn.setToolTip("Log-Ordner in die Zwischenablage kopieren")
+        self.log_path_btn.clicked.connect(self._copy_log_path)
+        log_path_row = QtWidgets.QHBoxLayout()
+        log_path_row.addWidget(self.log_path_label)
+        log_path_row.addWidget(self.log_path_edit, 1)
+        log_path_row.addWidget(self.log_path_btn)
         self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
         self.log_edit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
         self.log_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -635,6 +656,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.log_box = QtWidgets.QGroupBox("Protokoll")
         bl = QtWidgets.QVBoxLayout(self.log_box)
         bl.addWidget(self.progress_total)
+        bl.addLayout(log_path_row)
         bl.addWidget(self.log_edit)
 
         # Log-Bereich flexibel einteilbar
@@ -812,6 +834,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _open_logfile(self):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE)))
         self._log("Logdatei geöffnet")
+
+    def _copy_log_path(self):
+        QtWidgets.QApplication.clipboard().setText(str(LOG_DIR))
+        self._log(f"Log-Pfad kopiert: {LOG_DIR}")
 
     def _show_help_window(self):
         dlg = QtWidgets.QDialog(self)
