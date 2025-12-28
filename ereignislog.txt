@@ -158,3 +158,4 @@
 
 [2025-12-28] Autostart-Checkliste um laienfreundliche Abhaengigkeits-Erklaerung erweitert (Aufgabe "Autostart-Checkliste um laienfreundliche Abhaengigkeits-Erklaerung erweitern" erledigt)
 [2025-12-28] Konfigurations- und Nutzerdaten in zentralem Datenordner gebuendelt (Aufgabe "Konfigurations- und Nutzerdaten konsequent in separaten Datenordner auslagern" erledigt)
+[2025-12-28] Einheitliche Validierung und Fehlermeldungen dokumentiert und geprueft (Aufgabe "Einheitliche Validierung/Fehlermeldungen für alle Eingaben dokumentieren und prüfen" erledigt)
