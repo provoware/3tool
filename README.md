@@ -122,7 +122,8 @@ Diese Tipps erleichtern die Bedienung für alle Nutzenden:
 ## Zusaetzlich
 
 * Die Datei `videobatch_extra.py` enthaelt eine Kommandozeilenversion. Mit `--selftest` lassen sich einfache Tests ausfuehren.
-* In `0000-testall` liegt ein Beispielskript, um Prueftools wie `flake8` oder `black` einzurichten.
+* In `0000-testall` liegt ein Bash-Skript, das Prueftools installiert und Lint,
+  Tests sowie Formatierung startet. Mit `./0000-testall --help` siehst du die Optionen.
 * Ereignisse und Aenderungen werden in `ereignislog.txt` festgehalten.
 
 * Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
@@ -153,9 +154,21 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
 
 1. **Abhängigkeiten ("Dependencies") prüfen**:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt -r requirements-dev.txt
    ```
-2. **Automatische Tests ausführen**:
+2. **Syntax-Check ("Syntax check")**:
+   ```bash
+   python -m compileall -q .
+   ```
+3. **Linting ("Stil- und Regelprüfung")**:
+   ```bash
+   python -m ruff check .
+   ```
+4. **Typprüfung ("Type check")**:
+   ```bash
+   mypy .
+   ```
+5. **Automatische Tests ausführen**:
    ```bash
    python3 -m pytest
    ```
@@ -163,11 +176,11 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
    ```bash
    python3 videobatch_extra.py --selftest
    ```
-3. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
+6. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
    ```bash
    zip -r videobatchtool.zip .
    ```
-4. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
+7. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
 
 ## Backup erstellen
 
