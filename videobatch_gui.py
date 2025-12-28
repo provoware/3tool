@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -58,6 +60,9 @@ THEMES = {
 }
 
 # ---------- Helpers ----------
+IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov")
+AUDIO_EXTENSIONS = (".mp3", ".wav", ".flac", ".m4a", ".aac")
+SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
 
 def which(p: str):
@@ -133,16 +138,26 @@ class PairItem:
     def load_thumb(self):
         if self.thumb is None and self.image_path: self.thumb = make_thumb(self.image_path)
     def validate(self):
-        if not self.image_path or not self.audio_path:
+        image_path = (self.image_path or "").strip()
+        audio_path = (self.audio_path or "").strip() if self.audio_path else ""
+        if not image_path or not audio_path:
             self.valid=False; self.validation_msg="Bild oder Audio fehlt"; return
-        ip, ap = Path(self.image_path), Path(self.audio_path)
+        ip, ap = Path(image_path), Path(audio_path)
         if not ip.exists():
-            self.valid=False; self.validation_msg=f"Bild fehlt: {ip}"; return
+            self.valid=False; self.validation_msg="Bildpfad nicht gefunden"; return
         if not ap.exists():
-            self.valid=False; self.validation_msg=f"Audio fehlt: {ap}"; return
-        if not ip.is_dir() and ip.suffix.lower() not in (".jpg",".jpeg",".png",".bmp",".webp",".mp4",".mkv",".avi",".mov"):
-            self.valid=False; self.validation_msg="Ungültiges Bild/Video"; return
-        if ap.suffix.lower() not in (".mp3",".wav",".flac",".m4a",".aac"):
+            self.valid=False; self.validation_msg="Audiopfad nicht gefunden"; return
+        if ip.is_dir():
+            if not os.access(ip, os.R_OK | os.X_OK):
+                self.valid=False; self.validation_msg="Bildordner ist nicht lesbar (keine Rechte)"; return
+        else:
+            if not os.access(ip, os.R_OK):
+                self.valid=False; self.validation_msg="Bilddatei ist nicht lesbar (keine Rechte)"; return
+            if ip.suffix.lower() not in IMAGE_EXTENSIONS:
+                self.valid=False; self.validation_msg="Ungültiges Bild- oder Videoformat"; return
+        if not os.access(ap, os.R_OK):
+            self.valid=False; self.validation_msg="Audiodatei ist nicht lesbar (keine Rechte)"; return
+        if ap.suffix.lower() not in AUDIO_EXTENSIONS:
             self.valid=False; self.validation_msg="Ungültiges Audioformat"; return
         self.valid=True; self.validation_msg=""
 
@@ -985,7 +1000,7 @@ class MainWindow(QtWidgets.QMainWindow):
         path,_=QtWidgets.QFileDialog.getSaveFileName(self,"Projekt speichern",str(Path.cwd()/ "projekt.json"),"JSON (*.json)")
         if not path: return
         data={"pairs":[{"image":p.image_path,"audio":p.audio_path,"output":p.output} for p in self.pairs],
-              "settings":self._gather_settings()}
+              "settings":self._gather_settings(require_valid=False)}
         try:
             Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
         except Exception as e:
@@ -1024,16 +1039,52 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Projekt geladen: {path}")
 
     # ----- encode -----
-    def _gather_settings(self)->Dict[str,Any]:
+    def _gather_settings(self, require_valid: bool = True) -> Optional[Dict[str, Any]]:
+        abitrate = self.abitrate_edit.text().strip() or "192k"
+        if not re.match(r"^\d+(k|M)$", abitrate):
+            msg = (
+                "Bitte eine Audiobitrate wie 192k oder 2M eingeben. "
+                "Die Zahl ist die Datenmenge pro Sekunde, k=Kilobit, M=Megabit."
+            )
+            if require_valid:
+                QtWidgets.QMessageBox.warning(self, "Ungültige Audiobitrate", msg)
+                self._log("Abbruch: Audiobitrate ist ungültig.")
+                return None
+            self._log("Hinweis: Ungültige Audiobitrate erkannt, setze Standard 192k.")
+            abitrate = "192k"
         return {"out_dir": self.out_dir_edit.text().strip(),
                 "crf": self.crf_spin.value(),
                 "preset": self.preset_combo.currentText(),
                 "width": self.width_spin.value(),
                 "height": self.height_spin.value(),
-                "abitrate": self.abitrate_edit.text().strip() or "192k",
+                "abitrate": abitrate,
                 "mode": self.mode_combo.currentText()}
 
+    def _dir_has_slideshow_images(self, path: Path) -> bool:
+        try:
+            for entry in path.iterdir():
+                if entry.is_file() and entry.suffix.lower() in SLIDESHOW_IMAGE_EXTENSIONS:
+                    return True
+        except Exception:
+            return False
+        return False
+
+    def _flag_row_error(self, row: int, msg: str):
+        if 0 <= row < len(self.pairs):
+            item = self.pairs[row]
+            item.valid = False
+            item.status = "FEHLER"
+            item.validation_msg = msg
+            left = self.model.index(row, 0)
+            right = self.model.index(row, self.model.columnCount() - 1)
+            self.model.dataChanged.emit(left, right)
+        self._log(f"Fehler in Zeile {row+1}: {msg}")
+        self._update_counts()
+
     def _start_encode(self):
+        settings = self._gather_settings()
+        if settings is None:
+            return
         if not self.pairs:
             QtWidgets.QMessageBox.information(
                 self,
@@ -1043,11 +1094,46 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log("Encoding abgebrochen: keine Paare")
             return
         if any(p.audio_path is None for p in self.pairs):
-            QtWidgets.QMessageBox.warning(self,"Fehlende Audios","Nicht alle Bilder haben ein Audio."); return
-        for p in self.pairs: p.validate()
-        invalid=[p for p in self.pairs if not p.valid]
+            QtWidgets.QMessageBox.warning(self, "Fehlende Audios", "Nicht alle Bilder haben ein Audio.")
+            self._log("Encoding abgebrochen: nicht alle Bilder haben ein Audio.")
+            return
+        mode = settings.get("mode", "Standard")
+        if mode == "Mehrere Audios, 1 Bild":
+            if self.image_list.count() == 0:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Bild fehlt",
+                    "Für diesen Modus wird mindestens ein Bild benötigt.",
+                )
+                self._log("Encoding abgebrochen: kein Bild für 'Mehrere Audios, 1 Bild'.")
+                return
+        if mode == "Slideshow":
+            invalid_rows = False
+            for idx, p in enumerate(self.pairs):
+                img_path = Path(p.image_path) if p.image_path else None
+                if not img_path or not img_path.is_dir():
+                    self._flag_row_error(idx, "Slideshow benötigt einen Ordner mit Bildern.")
+                    invalid_rows = True
+                    continue
+                if not self._dir_has_slideshow_images(img_path):
+                    self._flag_row_error(idx, "Im Bildordner sind keine Bilddateien vorhanden.")
+                    invalid_rows = True
+            if invalid_rows:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Slideshow-Ordner prüfen",
+                    "Bitte pro Zeile einen Bildordner mit mindestens einem Bild wählen.",
+                )
+                return
+        for p in self.pairs:
+            p.validate()
+        invalid=[(i, p) for i, p in enumerate(self.pairs) if not p.valid]
         if invalid:
-            QtWidgets.QMessageBox.critical(self,"Validierungsfehler",invalid[0].validation_msg); return
+            first_row, first_item = invalid[0]
+            for row, item in invalid:
+                self._flag_row_error(row, item.validation_msg)
+            QtWidgets.QMessageBox.critical(self, "Validierungsfehler", first_item.validation_msg)
+            return
         out_dir = Path(self.out_dir_edit.text().strip())
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -1060,7 +1146,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         self.btn_encode.setEnabled(False); self.btn_stop.setEnabled(True)
         self.progress_total.setValue(0); self.dashboard.set_progress(0); self._log("Starte Encoding …")
-        self.worker = EncodeWorker(self.pairs, self._gather_settings(), self.copy_only)
+        self.worker = EncodeWorker(self.pairs, settings, self.copy_only)
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
@@ -1085,11 +1171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         v=int(perc); self.progress_total.setValue(v); self.dashboard.set_progress(v)
 
     def _on_row_error(self,row:int,msg:str):
-        self._log(f"Fehler in Zeile {row+1}: {msg}")
-        if 0<=row<len(self.pairs):
-            self.pairs[row].status="FEHLER"
-            idx=self.model.index(row,7); self.model.dataChanged.emit(idx,idx)
-        self._update_counts()
+        self._flag_row_error(row, msg)
 
     def _encode_finished(self):
         self.btn_encode.setEnabled(True); self.btn_stop.setEnabled(False)
@@ -1179,7 +1261,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/geometry", self.saveGeometry())
         self.settings.setValue("ui/window_state", self.saveState())
         self.settings.setValue("ui/clear_after", self.clear_after.isChecked())
-        s = self._gather_settings()
+        s = self._gather_settings(require_valid=False)
         self.settings.setValue("encode/out_dir", s["out_dir"])
         self.settings.setValue("encode/crf", s["crf"])
         self.settings.setValue("encode/preset", s["preset"])
