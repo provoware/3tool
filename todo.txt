@@ -27,3 +27,6 @@
 - [x] Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen
 - [x] Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern
 - [x] Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt
+- [x] Einstellungen für Standard-Projektordner, Dateinamen-Template und Parallelität ergänzt
+- [x] Protokoll-Stufe wählbar gemacht und Sprachwahl vorbereitet
+- [x] Output-Template validiert, Parallel-Encoding ergänzt und Tests ergänzt

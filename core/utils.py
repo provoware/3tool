@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -19,9 +20,39 @@ def human_time(seconds: float) -> str:
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}" if hours else f"{minutes:02d}:{seconds:02d}"
 
 
-def build_out_name(audio: str, out_dir: Path) -> Path:
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    return out_dir / f"{Path(audio).stem}_{stamp}.mp4"
+def _sanitize_filename(name: str) -> str:
+    name = name.strip()
+    if not name:
+        return "output.mp4"
+    name = name.replace("/", "_").replace("\\", "_")
+    name = re.sub(r'[<>:"|?*]', "_", name)
+    return name or "output.mp4"
+
+
+def build_out_name(
+    audio: str,
+    out_dir: Path,
+    template: str | None = None,
+    now: datetime | None = None,
+) -> Path:
+    now = now or datetime.now()
+    stamp = now.strftime("%Y%m%d-%H%M%S")
+    audio_stem = Path(audio).stem if audio else "audio"
+    values = {
+        "audio_stem": audio_stem or "audio",
+        "date": now.strftime("%Y%m%d"),
+        "time": now.strftime("%H%M%S"),
+        "stamp": stamp,
+    }
+    template = (template or "{audio_stem}_{stamp}.mp4").strip()
+    try:
+        filename = template.format(**values)
+    except KeyError as exc:
+        raise ValueError(f"Unbekannter Platzhalter: {exc.args[0]}") from exc
+    filename = _sanitize_filename(filename)
+    if not filename.lower().endswith(".mp4"):
+        filename = f"{filename}.mp4"
+    return out_dir / filename
 
 
 def probe_duration(path: str) -> float:
