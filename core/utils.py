@@ -16,7 +16,11 @@ def human_time(seconds: float) -> str:
     seconds = int(seconds)
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}" if hours else f"{minutes:02d}:{seconds:02d}"
+    return (
+        f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        if hours
+        else f"{minutes:02d}:{seconds:02d}"
+    )
 
 
 def build_out_name(audio: str, out_dir: Path) -> Path:
