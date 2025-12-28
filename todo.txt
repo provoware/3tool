@@ -27,3 +27,4 @@
 - [x] Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen
 - [x] Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern
 - [x] Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt
+- [x] Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt
