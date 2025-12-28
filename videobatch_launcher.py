@@ -79,7 +79,6 @@ def main():
 
     try:
         from PySide6 import QtCore, QtGui, QtWidgets
-        from PySide6 import QtCore, QtWidgets
     except Exception as e:
         print("Qt konnte nicht geladen werden:", e)
         sys.exit(1)
@@ -112,65 +111,6 @@ def main():
             else:
                 self.results_ready.emit(results)
 
-    class FixWorker(QtCore.QThread):
-        progress = QtCore.Signal(int, str)
-        finished = QtCore.Signal(object)
-
-        def __init__(self, py: str, missing_pkgs: list[str], ffmpeg_ok: bool):
-            super().__init__()
-            self.py = py
-            self.missing_pkgs = list(missing_pkgs)
-            self.ffmpeg_ok = ffmpeg_ok
-
-        def run(self):
-            errors = []
-            self.progress.emit(5, "Installationsprüfung startet…")
-
-            if self.missing_pkgs:
-                self.progress.emit(15, "Python-Pakete werden installiert…")
-                try:
-                    pip_install(self.py, self.missing_pkgs)
-                except Exception as e:
-                    errors.append({
-                        "title": "Pakete konnten nicht installiert werden",
-                        "message": (
-                            "Bitte pruefe deine Internetverbindung und "
-                            "die Schreibrechte im Projektordner."
-                        ),
-                        "details": str(e),
-                        "permission": False,
-                    })
-
-            self.progress.emit(45, "Pruefe ffmpeg/ffprobe…")
-            self.ffmpeg_ok = bool(shutil.which("ffmpeg") and shutil.which("ffprobe"))
-            if not self.ffmpeg_ok and sys.platform.startswith("linux"):
-                self.progress.emit(60, "ffmpeg wird installiert (Administratorrechte erforderlich)…")
-                try:
-                    sp.check_call(["sudo", "apt", "update"])
-                    sp.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
-                except Exception as e:
-                    errors.append({
-                        "title": "Administratorrechte fehlen",
-                        "message": (
-                            "Die automatische Installation braucht "
-                            "Administratorrechte (Root-Rechte). "
-                            "Bitte starte das Programm mit passenden Rechten "
-                            "oder installiere ffmpeg manuell."
-                        ),
-                        "details": str(e),
-                        "permission": True,
-                    })
-
-            self.progress.emit(85, "Abschlusspruefung laeuft…")
-            missing_after = [p for p in REQ_PKGS if not pip_show(self.py, p)]
-            ffmpeg_after = bool(shutil.which("ffmpeg") and shutil.which("ffprobe"))
-            self.progress.emit(100, "Fertig.")
-            self.finished.emit({
-                "missing_pkgs": missing_after,
-                "ffmpeg_ok": ffmpeg_after,
-                "errors": errors,
-            })
-
     class Wizard(QtWidgets.QDialog):
         def __init__(self):
             super().__init__()
@@ -178,8 +118,7 @@ def main():
             self.resize(700, 520)
             self._debug_enabled = os.environ.get("VT_DEBUG") == "1"
             self.resize(600, 420)
-            self.py = str(venv_python())
-            self.worker = None
+            self.py = str(launcher_checks.venv_python())
             self._build_ui()
             self._start_check()
 
@@ -238,16 +177,6 @@ def main():
             self.progress.setValue(pct)
             self.btn_fix.setEnabled(True)
             self.btn_start.setEnabled(self._all_required_ok(results))
-        def _set_busy(self, busy: bool) -> None:
-            self.btn_fix.setEnabled(not busy)
-            self.btn_start.setEnabled(not busy and self.progress.value() == 100)
-            self.btn_exit.setEnabled(not busy)
-            self.status_label.setText("Installation laeuft…" if busy else "Bereit.")
-
-        def _check(self):
-            self.missing_pkgs = [p for p in REQ_PKGS if not pip_show(self.py, p)]
-            self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
-
         def _handle_error(self, message):
             self.info.setHtml(f"<p>Fehler bei der Prüfung: {message}</p>")
             self.btn_fix.setEnabled(True)
