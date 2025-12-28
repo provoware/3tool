@@ -148,6 +148,7 @@
 [2025-12-28] Gefuehrter Start, Hochkontrast-Themes, grosse Bedienelemente und bessere Fehlervorschlaege umgesetzt (Aufgaben "Gefuehrten Start (Wizard) und Bild-Hilfe im GUI ergaenzen", "Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen", "Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern" erledigt)
 [2025-12-28] Launcher-Setup stabilisiert, Reparatur-Workflow korrigiert und Theme-Wechsel entkoppelt (Aufgabe "Launcher-Setup stabilisieren (Reparatur-Workflow korrigieren, Theme-Wechsel entkoppeln)" erledigt)
 [2025-12-28] Audio-Vorschau, Sortieroptionen in Dateilisten und optimierte Dateidialoge umgesetzt (Aufgabe "Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt" erledigt)
+[2025-12-28] Projektstruktur-Ansicht mit Filter/Suche und Aktualisierung bei Laden/Speichern ergänzt (Aufgabe "Projektstruktur-Ansicht mit Filter/Suche sowie Update bei Laden/Speichern ergänzt" erledigt)
 [2025-12-28] Analyse-Projekt als abgeschlossen markiert, Backlog bereinigt und todo-Konsistenz geprueft (Aufgabe "Analyse-Projekt abgeschlossen, Backlog bereinigt und todo-Konsistenz geprueft" erledigt)
 [2025-12-28] Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt (Aufgabe "Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt" erledigt)
 [2025-12-28] Projektordner-Auswahl, Standard-Startpfade und relative Projektpfade ergänzt (Aufgabe "Projektordner-Auswahl, Startpfade und relative Projektpfade in der GUI ergänzt" erledigt)
