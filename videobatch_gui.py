@@ -15,7 +15,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -70,6 +72,14 @@ THEMES = {
     ),
     "Dunkel": (
         "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
+        "QPushButton{background-color:#444;color:#e0e0e0;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#3a3a3a;color:#f0f0f0;} "
+        "QWidget:focus{outline:2px solid #90caf9;}"
+    ),
+    "Sepia": (
+        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;} "
+        "QWidget:focus{outline:2px solid #8d6e63;}"
         "QPushButton{background-color:#444;color:#e0e0e0;}" + FOCUS_STYLE
     ),
     "Sepia": (
@@ -150,6 +160,10 @@ def get_used_dir() -> Path:
 
 def default_output_dir() -> Path:
     return Path.home() / "Videos" / "VideoBatchTool_Out"
+
+
+def default_project_dir() -> Path:
+    return Path.home() / "VideoBatchTool_Projekte"
 
 
 def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
@@ -386,6 +400,160 @@ class EncodeWorker(QtCore.QObject):
         self.pairs = pairs
         self.settings = settings
         self.copy_only = copy_only
+        self._stop_event = threading.Event()
+        self._process_lock = threading.Lock()
+        self._processes: List[subprocess.Popen] = []
+        self._progress_lock = threading.Lock()
+        self._completed = 0
+
+    def stop(self):
+        self._stop_event.set()
+        with self._process_lock:
+            for proc in list(self._processes):
+                try:
+                    proc.kill()
+                except Exception:
+                    continue
+    def _escape_ffmpeg_path(self, path: Path) -> str:
+        return path.as_posix().replace("'", r"\'")
+    def _register_process(self, proc: subprocess.Popen) -> None:
+        with self._process_lock:
+            self._processes.append(proc)
+
+    def _unregister_process(self, proc: subprocess.Popen) -> None:
+        with self._process_lock:
+            if proc in self._processes:
+                self._processes.remove(proc)
+
+    def _mark_complete(self, total: int) -> None:
+        with self._progress_lock:
+            self._completed += 1
+            completed = self._completed
+        self.overall_progress.emit(completed / max(1, total) * 100.0)
+
+    def _encode_item(self, index: int, item: PairItem, total: int) -> None:
+        list_path: Optional[str] = None
+        if self._stop_event.is_set():
+            item.status = "ABGEBROCHEN"
+            self._mark_complete(total)
+            return
+        item.validate()
+        if not item.valid:
+            item.status = "FEHLER"
+            self.row_error.emit(index, item.validation_msg)
+            self._mark_complete(total)
+            return
+        try:
+            item.status = "ENCODIERE"
+            item.progress = 0.0
+            self.row_progress.emit(index, 0.0)
+            out_dir = Path(self.settings["out_dir"]).resolve()
+            out_dir.mkdir(parents=True, exist_ok=True)
+            item.output = build_out_name(
+                item.audio_path,
+                out_dir,
+                self.settings.get("output_template"),
+            )
+            w, h = self.settings["width"], self.settings["height"]
+            crf = self.settings["crf"]
+            preset = self.settings["preset"]
+            ab = self.settings["abitrate"]
+            duration = item.duration or 1
+            mode = self.settings.get("mode", "Standard")
+            if mode == "Video + Audio":
+                vdur = probe_duration(item.image_path)
+                extra = max(0.0, duration - vdur)
+                cmd = ["ffmpeg", "-y", "-i", item.image_path, "-i", item.audio_path]
+                if extra > 0:
+                    cmd += ["-vf", f"tpad=stop_mode=clone:stop_duration={extra}", "-c:v", "libx264"]
+                else:
+                    cmd += ["-c:v", "copy"]
+                cmd += [
+                    "-c:a",
+                    "aac",
+                    "-b:a",
+                    ab,
+                    "-shortest",
+                    "-preset",
+                    preset,
+                    "-crf",
+                    str(crf),
+                    item.output,
+                ]
+            elif mode == "Slideshow":
+                img_dir = Path(item.image_path)
+                imgs = []
+                for ext in ("*.jpg", "*.jpeg", "*.png", "*.bmp", "*.webp"):
+                    imgs.extend(sorted(img_dir.glob(ext)))
+                if not imgs:
+                    raise Exception("Keine Bilder für Slideshow")
+                per = duration / len(imgs) if duration else 2
+                with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".txt") as f:
+                    for im in imgs:
+                        escaped_path = self._escape_ffmpeg_path(im)
+                        f.write(f"file '{escaped_path}'\n")
+                        f.write(f"duration {per}\n")
+                    escaped_last = self._escape_ffmpeg_path(imgs[-1])
+                    f.write(f"file '{escaped_last}'\n")
+                    list_path = f.name
+                cmd = [
+                    "ffmpeg",
+                    "-y",
+                    "-f",
+                    "concat",
+                    "-safe",
+                    "0",
+                    "-i",
+                    list_path,
+                    "-i",
+                    item.audio_path,
+                    "-c:v",
+                    "libx264",
+                    "-vf",
+                    f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                    "-c:a",
+                    "aac",
+                    "-b:a",
+                    ab,
+                    "-shortest",
+                    "-preset",
+                    preset,
+                    "-crf",
+                    str(crf),
+                    item.output,
+                ]
+            else:
+                cmd = [
+                    "ffmpeg",
+                    "-y",
+                    "-loop",
+                    "1",
+                    "-i",
+                    item.image_path,
+                    "-i",
+                    item.audio_path,
+                    "-c:v",
+                    "libx264",
+                    "-tune",
+                    "stillimage",
+                    "-vf",
+                    f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                    "-c:a",
+                    "aac",
+                    "-b:a",
+                    ab,
+                    "-shortest",
+                    "-preset",
+                    preset,
+                    "-crf",
+                    str(crf),
+                    item.output,
+                ]
+            proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            self._register_process(proc)
+            if proc.stderr:
+                for line in proc.stderr:
+                    if self._stop_event.is_set():
         self._stop = False
 
     def stop(self):
@@ -536,6 +704,55 @@ class EncodeWorker(QtCore.QObject):
                         try:
                             t = line.split("time=")[1].split(" ")[0]
                             h_, m_, s_ = t.split(":")
+                            elapsed = float(h_) * 3600 + float(m_) * 60 + float(s_)
+                            perc = min(100.0, elapsed / duration * 100.0)
+                            item.progress = perc
+                            self.row_progress.emit(index, perc)
+                        except Exception as e:
+                            print("Fehler beim Lesen des Fortschritts:", e, file=sys.stderr)
+            proc.wait()
+            if self._stop_event.is_set():
+                item.status = "ABGEBROCHEN"
+                self.log.emit("Abbruch durch Benutzer.")
+            elif proc.returncode != 0:
+                item.status = "FEHLER"
+                self.row_error.emit(index, "FFmpeg-Fehler")
+                self.log.emit(f"FFmpeg-Fehler bei {item.output}")
+            else:
+                item.status = "FERTIG"
+                item.progress = 100.0
+                self.row_progress.emit(index, 100.0)
+                self.log.emit(f"Fertig: {item.output}")
+        except Exception as e:
+            item.status = "FEHLER"
+            self.row_error.emit(index, str(e))
+            file_hint = item.output or item.image_path or item.audio_path or "unbekannte Datei"
+            self.log.emit(f"Fehler bei {file_hint}: {e}")
+        finally:
+            if list_path:
+                try:
+                    Path(list_path).unlink(missing_ok=True)
+                except Exception as cleanup_error:
+                    self.log.emit(
+                        f"Konnte temporaere Liste nicht loeschen: {list_path} ({cleanup_error})"
+                    )
+            if "proc" in locals():
+                self._unregister_process(proc)
+            self._mark_complete(total)
+
+    def run(self):
+        total = len(self.pairs)
+        parallel_jobs = max(1, int(self.settings.get("parallel_jobs", 1)))
+        if parallel_jobs == 1:
+            for i, item in enumerate(self.pairs):
+                self._encode_item(i, item, total)
+        else:
+            with ThreadPoolExecutor(max_workers=parallel_jobs) as executor:
+                futures = [executor.submit(self._encode_item, i, item, total) for i, item in enumerate(self.pairs)]
+                while futures:
+                    done, futures = wait(futures, return_when=FIRST_COMPLETED)
+                    if self._stop_event.is_set():
+                        break
                             elapsed = (
                                 float(h_) * 3600 + float(m_) * 60 + float(s_)
                             )
@@ -1105,6 +1322,11 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self._font_size = self.settings.value("ui/font_size", 11, int)
         self.debug_mode = self.settings.value("ui/debug", False, bool)
+        self.log_level = self.settings.value("log/level", "", str).upper()
+        if not self.log_level:
+            self.log_level = "DEBUG" if self.debug_mode else "INFO"
+        self.large_controls = self.settings.value("ui/large_controls", False, bool)
+        self._apply_log_level(self.log_level)
         self.large_controls = self.settings.value(
             "ui/large_controls", False, bool
         )
@@ -1211,6 +1433,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_out_open.setText("Öffnen")
         self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
         self.btn_out_open.setAccessibleName("Ordner öffnen")
+        self.btn_out_open.setAccessibleDescription("Ordner im Dateimanager anzeigen")
+        self.project_dir_edit = QtWidgets.QLineEdit(
+            str(self.settings.value("project/default_dir", default_project_dir(), str))
+        )
+        self.project_dir_edit.setPlaceholderText("Standardordner für Projektdateien")
+        self.project_dir_edit.setAccessibleName("Standard-Projektordner")
+        self.project_dir_edit.setAccessibleDescription("Standardpfad für Projektdateien")
+        self.btn_project_dir = QtWidgets.QToolButton()
+        self.btn_project_dir.setText("Auswählen")
+        self.btn_project_dir.setToolTip("Standard-Projektordner auswählen")
+        self.btn_project_dir.setAccessibleName("Projektordner auswählen")
+        self.btn_project_dir.setAccessibleDescription("Ordner für Projektdateien auswählen")
+        self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
         self.btn_out_open.setAccessibleDescription(
             "Ordner im Dateimanager anzeigen"
         )
@@ -1259,6 +1494,15 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.abitrate_edit.setPlaceholderText("z.B. 192k")
         self.abitrate_edit.setAccessibleName("Audio-Bitrate")
+        self.abitrate_edit.setAccessibleDescription("Audioqualität als Bitrate, zum Beispiel 192k")
+        self.output_template_edit = QtWidgets.QLineEdit(
+            self.settings.value("encode/output_template", "{audio_stem}_{stamp}.mp4", str)
+        )
+        self.output_template_edit.setPlaceholderText("{audio_stem}_{stamp}.mp4")
+        self.output_template_edit.setAccessibleName("Dateinamen-Template")
+        self.output_template_edit.setAccessibleDescription("Vorlage für Ausgabedateien")
+        self.mode_combo   = QtWidgets.QComboBox();
+        self.mode_combo.addItems(["Standard","Slideshow","Video + Audio","Mehrere Audios, 1 Bild"])
         self.abitrate_edit.setAccessibleDescription(
             "Audioqualität als Bitrate, zum Beispiel 192k"
         )
@@ -1271,6 +1515,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.value("encode/mode", "Standard", str)
         )
         self.mode_combo.setAccessibleName("Modus")
+        self.mode_combo.setAccessibleDescription("Auswahl des Verarbeitungsmodus")
+        max_parallel = max(1, os.cpu_count() or 4)
+        self.parallel_jobs_spin = QtWidgets.QSpinBox()
+        self.parallel_jobs_spin.setRange(1, max_parallel)
+        self.parallel_jobs_spin.setValue(self.settings.value("encode/parallel_jobs", 1, int))
+        self.parallel_jobs_spin.setAccessibleName("Parallelität")
+        self.parallel_jobs_spin.setAccessibleDescription("Anzahl paralleler Jobs")
+        self.clear_after   = QtWidgets.QCheckBox("Nach Fertigstellung Listen leeren")
+        self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
+        self.auto_open_output = QtWidgets.QCheckBox("Ausgabeordner nach Fertigstellung öffnen")
+        self.auto_open_output.setChecked(self.settings.value("ui/auto_open_output", True, bool))
+        self.auto_open_output.setAccessibleName("Ausgabeordner automatisch öffnen")
         self.mode_combo.setAccessibleDescription(
             "Auswahl des Verarbeitungsmodus"
         )
@@ -1325,8 +1581,46 @@ class MainWindow(QtWidgets.QMainWindow):
             "Buttons, Tabellenzeilen und Text etwas größer"
         )
         self.large_controls_toggle.toggled.connect(self._toggle_large_controls)
+        self.log_level_combo = QtWidgets.QComboBox()
+        self.log_level_combo.addItems(["DEBUG", "INFO", "WARNING", "ERROR"])
+        self.log_level_combo.setCurrentText(self.log_level)
+        self.log_level_combo.setAccessibleName("Protokollstufe")
+        self.log_level_combo.setAccessibleDescription("Protokollierungsstufe auswählen")
+        self.language_combo = QtWidgets.QComboBox()
+        self.language_combo.addItems(["Deutsch (Standard)", "Englisch (vorbereitet)"])
+        self.language_combo.setCurrentText(
+            self.settings.value("ui/language", "Deutsch (Standard)", str)
+        )
+        self.language_combo.setAccessibleName("Sprache")
+        self.language_combo.setAccessibleDescription("Sprache vorbereiten")
 
         form = QtWidgets.QFormLayout()
+        out_wrap_layout = QtWidgets.QHBoxLayout(); out_wrap_layout.setContentsMargins(0,0,0,0)
+        out_wrap_layout.addWidget(self.out_dir_edit); out_wrap_layout.addWidget(self.btn_out_open)
+        out_wrap = QtWidgets.QWidget(); out_wrap.setLayout(out_wrap_layout)
+        project_wrap_layout = QtWidgets.QHBoxLayout()
+        project_wrap_layout.setContentsMargins(0, 0, 0, 0)
+        project_wrap_layout.addWidget(self.project_dir_edit)
+        project_wrap_layout.addWidget(self.btn_project_dir)
+        project_wrap = QtWidgets.QWidget()
+        project_wrap.setLayout(project_wrap_layout)
+        self._add_form(form,"Ausgabeordner",out_wrap,"Zielordner für MP4s")
+        self._add_form(form, "Standard-Projektordner", project_wrap, "Standardordner für Projekte")
+        self._add_form(form,"CRF",self.crf_spin,"Qualität (0=lossless, 23=Standard)")
+        self._add_form(form,"Preset",self.preset_combo,"x264 Preset (schneller = größere Datei)")
+        self._add_form(form,"Breite",self.width_spin,"Video-Breite in Pixel")
+        self._add_form(form,"Höhe",self.height_spin,"Video-Höhe in Pixel")
+        self._add_form(form,"Audio-Bitrate",self.abitrate_edit,"z.B. 192k, 256k")
+        self._add_form(
+            form,
+            "Dateinamen-Template",
+            self.output_template_edit,
+            "Platzhalter: {audio_stem}, {date}, {time}, {stamp}",
+        )
+        self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
+        self._add_form(form, "Parallelität (Jobs)", self.parallel_jobs_spin, "Anzahl paralleler Jobs")
+        self._add_form(form, "Protokoll-Stufe", self.log_level_combo, "DETAILS für das Protokoll wählen")
+        self._add_form(form, "Sprache", self.language_combo, "Sprachwahl vorbereiten")
         out_wrap_layout = QtWidgets.QHBoxLayout()
         out_wrap_layout.setContentsMargins(0, 0, 0, 0)
         out_wrap_layout.addWidget(self.out_dir_edit)
@@ -1561,9 +1855,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_wizard.clicked.connect(self._show_guided_wizard)
         self.table.doubleClicked.connect(self._show_statusbar_path)
         self.btn_out_open.clicked.connect(self._open_out_dir)
+        self.btn_project_dir.clicked.connect(self._pick_default_project_dir)
+        self.project_dir_edit.editingFinished.connect(self._validate_project_dir)
+        self.output_template_edit.editingFinished.connect(self._validate_output_template)
+        self.log_level_combo.currentTextChanged.connect(self._update_log_level)
+        self.language_combo.currentTextChanged.connect(self._update_language)
         self.auto_open_output.toggled.connect(self._toggle_auto_open_output)
         self.auto_save_project.toggled.connect(self._toggle_auto_save_project)
         self.mode_combo.currentTextChanged.connect(self._update_default_mode)
+        self.parallel_jobs_spin.valueChanged.connect(self._update_parallel_jobs)
         self.structure_filter.currentTextChanged.connect(self._apply_structure_filter)
         self.structure_search.textChanged.connect(self._apply_structure_filter)
         self.out_dir_edit.editingFinished.connect(self._refresh_structure_view)
@@ -1709,6 +2009,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/theme", name)
         self._log(f"Theme gewechselt: {name}")
 
+    def _apply_log_level(self, level_name: str) -> None:
+        level_name = (level_name or "INFO").upper()
+        if level_name not in ("DEBUG", "INFO", "WARNING", "ERROR"):
+            level_name = "INFO"
+        self.log_level = level_name
+        level = getattr(logging, level_name, logging.INFO)
+        logger.setLevel(level)
+        for handler in logger.handlers:
+            handler.setLevel(level)
+        root_logger = logging.getLogger()
+        root_logger.setLevel(level)
+        for handler in root_logger.handlers:
+            handler.setLevel(level)
+        self.debug_mode = level_name == "DEBUG"
+        self.settings.setValue("log/level", level_name)
+        self.settings.setValue("ui/debug", self.debug_mode)
+        if hasattr(self, "log_level_combo") and self.log_level_combo.currentText() != level_name:
+            self.log_level_combo.blockSignals(True)
+            self.log_level_combo.setCurrentText(level_name)
+            self.log_level_combo.blockSignals(False)
+        if hasattr(self, "act_debug"):
+            self.act_debug.setChecked(self.debug_mode)
+
     def _open_out_dir(self):
         path = self.out_dir_edit.text().strip()
         if not path:
@@ -1745,9 +2068,61 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(LOG_FILE)))
         self._log("Logdatei geöffnet")
 
+    def _pick_default_project_dir(self):
+        start_dir = self.project_dir_edit.text().strip() or str(default_project_dir())
+        selected = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            "Standard-Projektordner auswählen",
+            start_dir,
+        )
+        if not selected:
+            return
+        self.project_dir_edit.setText(selected)
+        self._validate_project_dir()
+
+    def _validate_project_dir(self):
+        value = self.project_dir_edit.text().strip()
+        if not value:
+            return
+        path = Path(value).expanduser()
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except Exception as exc:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Projektordner ungültig",
+                f"Der Ordner konnte nicht erstellt werden:\n{exc}",
+            )
+            self._log(f"Standard-Projektordner ungültig: {exc}", logging.ERROR)
+            fallback = str(default_project_dir())
+            self.project_dir_edit.setText(fallback)
+            self.settings.setValue("project/default_dir", fallback)
+            return
+        self.settings.setValue("project/default_dir", str(path))
+        self._log(f"Standard-Projektordner gesetzt: {path}")
+
     def _copy_log_path(self):
         QtWidgets.QApplication.clipboard().setText(str(LOG_DIR))
         self._log(f"Log-Pfad kopiert: {LOG_DIR}")
+
+    def _validate_output_template(self):
+        template = self.output_template_edit.text().strip()
+        if not template:
+            template = "{audio_stem}_{stamp}.mp4"
+            self.output_template_edit.setText(template)
+        try:
+            build_out_name("beispiel.mp3", Path.cwd(), template)
+        except ValueError as exc:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Template ungültig",
+                f"{exc}\nErlaubt sind: {{audio_stem}}, {{date}}, {{time}}, {{stamp}}.",
+            )
+            self._log(f"Dateinamen-Template ungültig: {exc}", logging.ERROR)
+            template = "{audio_stem}_{stamp}.mp4"
+            self.output_template_edit.setText(template)
+        self.settings.setValue("encode/output_template", template)
+        self._log("Dateinamen-Template gespeichert.")
 
     def _show_help_window(self):
         dlg = QtWidgets.QDialog(self)
@@ -1851,12 +2226,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if state:
             self.restoreState(state)
 
-    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
-        self.settings.setValue("ui/window_geometry", self.saveGeometry())
-        self.settings.setValue("ui/window_state", self.saveState())
-        self._stop_audio_preview()
-        super().closeEvent(event)
-
     def _show_error_dialog(
         self,
         title: str,
@@ -1895,6 +2264,13 @@ class MainWindow(QtWidgets.QMainWindow):
             return str(project_root)
         return str(fallback)
 
+    def _get_project_start_dir(self) -> str:
+        default_dir = self.project_dir_edit.text().strip()
+        if default_dir:
+            stored = Path(default_dir).expanduser()
+            if stored.exists():
+                return str(stored)
+        return self._get_last_dir("ui/last_project_dir", Path.cwd())
     def _get_project_root(self) -> Optional[Path]:
         value = self.settings.value("ui/project_root", "", str)
         if not value:
@@ -2382,7 +2758,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ----- save / load -----
     def _save_project(self):
-        start_dir = self._get_last_dir("ui/last_project_dir", Path.cwd())
+        start_dir = self._get_project_start_dir()
         start_path = str(Path(start_dir) / "projekt.json")
         path, _ = QtWidgets.QFileDialog.getSaveFileName(
             self, "Projekt speichern", start_path, "JSON (*.json)"
@@ -2415,6 +2791,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):
+        start_dir = self._get_project_start_dir()
+        path,_ = QtWidgets.QFileDialog.getOpenFileName(self, "Projekt laden", start_dir, "JSON (*.json)")
         start_dir = self._get_last_dir("ui/last_project_dir", Path.cwd())
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Projekt laden", start_dir, "JSON (*.json)"
@@ -2455,6 +2833,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.width_spin.setValue(s.get("width", self.width_spin.value()))
         self.height_spin.setValue(s.get("height", self.height_spin.value()))
         self.abitrate_edit.setText(s.get("abitrate", self.abitrate_edit.text()))
+        self.output_template_edit.setText(
+            s.get("output_template", self.output_template_edit.text())
+        )
+        self.mode_combo.setCurrentText(s.get("mode", self.mode_combo.currentText()))
+        self.parallel_jobs_spin.setValue(
+            s.get("parallel_jobs", self.parallel_jobs_spin.value())
         self.mode_combo.setCurrentText(
             s.get("mode", self.mode_combo.currentText())
         )
@@ -2483,6 +2867,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 "Hinweis: Ungültige Audiobitrate erkannt, setze Standard 192k."
             )
             abitrate = "192k"
+        output_template = self.output_template_edit.text().strip() or "{audio_stem}_{stamp}.mp4"
+        try:
+            build_out_name("beispiel.mp3", Path.cwd(), output_template)
+        except ValueError as exc:
+            msg = (
+                f"{exc}\nErlaubt sind: {{audio_stem}}, {{date}}, {{time}}, {{stamp}}."
+            )
+            if require_valid:
+                QtWidgets.QMessageBox.warning(self, "Ungültiges Template", msg)
+                self._log("Abbruch: Dateinamen-Template ist ungültig.")
+                return None
+            self._log("Hinweis: Template ungültig, setze Standard.")
+            output_template = "{audio_stem}_{stamp}.mp4"
         return {
             "out_dir": self.out_dir_edit.text().strip(),
             "crf": self.crf_spin.value(),
@@ -2491,6 +2888,8 @@ class MainWindow(QtWidgets.QMainWindow):
             "height": self.height_spin.value(),
             "abitrate": abitrate,
             "mode": self.mode_combo.currentText(),
+            "output_template": output_template,
+            "parallel_jobs": self.parallel_jobs_spin.value(),
         }
 
     def _dir_has_slideshow_images(self, path: Path) -> bool:
@@ -2586,6 +2985,8 @@ class MainWindow(QtWidgets.QMainWindow):
             p.validate()
         invalid = [(i, p) for i, p in enumerate(self.pairs) if not p.valid]
         if invalid:
+            row, first_item = invalid[0]
+            idx = self.model.index(row, 0)
             first_row, first_item = invalid[0]
             idx = self.model.index(first_row, 0)
             sel = self.table.selectionModel()
@@ -2600,6 +3001,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 idx, QtWidgets.QAbstractItemView.PositionAtCenter
             )
             self.table.setFocus()
+            self._show_error_dialog("Validierungsfehler", first_item.validation_msg)
+            for row, item in invalid:
+                self._flag_row_error(row, item.validation_msg)
             self._show_error_dialog(
                 "Validierungsfehler", first_item.validation_msg
             )
@@ -2609,7 +3013,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 self, "Validierungsfehler", first_item.validation_msg
             )
             return
-        out_dir = Path(self.out_dir_edit.text().strip())
+        out_dir_value = settings.get("out_dir", "").strip()
+        if not out_dir_value:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Ausgabeordner fehlt",
+                "Bitte einen Ausgabeordner festlegen.",
+            )
+            self._log("Encoding abgebrochen: Ausgabeordner fehlt.")
+            return
+        out_dir = Path(out_dir_value)
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
             test_file = out_dir / ".write_test"
@@ -2743,10 +3156,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/show_sidebar", checked)
 
     def _toggle_debug(self, checked: bool):
-        self.debug_mode = checked
-        logger.setLevel(logging.DEBUG if checked else logging.INFO)
-        self.settings.setValue("ui/debug", checked)
+        self._apply_log_level("DEBUG" if checked else "INFO")
         self._log(f"Debug-Log {'aktiviert' if checked else 'deaktiviert'}")
+
+    def _update_log_level(self, level: str) -> None:
+        self._apply_log_level(level)
+        self._log(f"Protokoll-Stufe gesetzt: {self.log_level}")
 
     def _toggle_auto_open_output(self, checked: bool):
         self.settings.setValue("ui/auto_open_output", checked)
@@ -2768,6 +3183,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("encode/mode", mode)
         self._log(f"Standard-Modus gesetzt: {mode}")
 
+    def _update_parallel_jobs(self, value: int) -> None:
+        self.settings.setValue("encode/parallel_jobs", value)
+        self._log(f"Parallelität gesetzt: {value} Job(s)")
+
+    def _update_language(self, language: str) -> None:
+        self.settings.setValue("ui/language", language)
+        self._log(f"Sprache vorbereitet: {language}")
     def _toggle_large_controls(self, checked: bool):
         self.large_controls = checked
         self.settings.setValue("ui/large_controls", checked)
@@ -2860,6 +3282,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/geometry", self.saveGeometry())
         self.settings.setValue("ui/window_state", self.saveState())
         self.settings.setValue("ui/clear_after", self.clear_after.isChecked())
+        self.settings.setValue("ui/auto_open_output", self.auto_open_output.isChecked())
+        self.settings.setValue("ui/auto_save_project", self.auto_save_project.isChecked())
         self.settings.setValue(
             "ui/auto_open_output", self.auto_open_output.isChecked()
         )
@@ -2868,16 +3292,23 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         s = self._gather_settings(require_valid=False)
         self.settings.setValue("ui/large_controls", self.large_controls)
-        s = self._gather_settings()
-        self.settings.setValue("encode/out_dir", s["out_dir"])
-        self.settings.setValue("encode/crf", s["crf"])
-        self.settings.setValue("encode/preset", s["preset"])
-        self.settings.setValue("encode/width", s["width"])
-        self.settings.setValue("encode/height", s["height"])
-        self.settings.setValue("encode/abitrate", s["abitrate"])
-        self.settings.setValue("encode/mode", s["mode"])
+        self.settings.setValue("project/default_dir", self.project_dir_edit.text().strip())
+        self.settings.setValue("log/level", self.log_level)
+        self.settings.setValue("ui/language", self.language_combo.currentText())
+        s = self._gather_settings(require_valid=False)
+        if s:
+            self.settings.setValue("encode/out_dir", s["out_dir"])
+            self.settings.setValue("encode/crf", s["crf"])
+            self.settings.setValue("encode/preset", s["preset"])
+            self.settings.setValue("encode/width", s["width"])
+            self.settings.setValue("encode/height", s["height"])
+            self.settings.setValue("encode/abitrate", s["abitrate"])
+            self.settings.setValue("encode/mode", s["mode"])
+            self.settings.setValue("encode/output_template", s["output_template"])
+            self.settings.setValue("encode/parallel_jobs", s["parallel_jobs"])
         if self.auto_save_project.isChecked():
             self._auto_save_project("Schließen")
+        self._stop_audio_preview()
         super().closeEvent(event)
 
 

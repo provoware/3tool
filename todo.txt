@@ -32,6 +32,9 @@
 - [ ] Konfigurations- und Nutzerdaten konsequent in separaten Datenordner auslagern
 - [ ] Einheitliche Validierung/Fehlermeldungen für alle Eingaben dokumentieren und prüfen
 - [x] Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt
+- [x] Einstellungen für Standard-Projektordner, Dateinamen-Template und Parallelität ergänzt
+- [x] Protokoll-Stufe wählbar gemacht und Sprachwahl vorbereitet
+- [x] Output-Template validiert, Parallel-Encoding ergänzt und Tests ergänzt
 - [x] Projektstruktur-Ansicht mit Filter/Suche sowie Update bei Laden/Speichern ergänzt
 - [x] Analyse-Projekt abgeschlossen, Backlog bereinigt und todo-Konsistenz geprueft
 - [x] Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt
