@@ -10,6 +10,8 @@ import logging
 import sys
 import os
 from pathlib import Path
+import shutil
+import subprocess
 
 from core import launcher_checks
 from core.paths import log_dir, user_data_dir
@@ -131,7 +133,7 @@ def main():
             if self.missing_pkgs:
                 self.progress.emit(15, "Python-Pakete werden installiert…")
                 try:
-                    pip_install(self.py, self.missing_pkgs)
+                    launcher_checks.pip_install(self.py, self.missing_pkgs)
                 except Exception as e:
                     errors.append(
                         {
@@ -155,8 +157,8 @@ def main():
                     "ffmpeg wird installiert (Administratorrechte erforderlich)…",
                 )
                 try:
-                    sp.check_call(["sudo", "apt", "update"])
-                    sp.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
+                    subprocess.check_call(["sudo", "apt", "update"])
+                    subprocess.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
                 except Exception as e:
                     errors.append(
                         {
@@ -173,7 +175,10 @@ def main():
                     )
 
             self.progress.emit(85, "Abschlusspruefung laeuft…")
-            missing_after = [p for p in REQ_PKGS if not pip_show(self.py, p)]
+            missing_after = [
+                p for p in launcher_checks.REQ_PKGS
+                if not launcher_checks.pip_show(self.py, p)
+            ]
             ffmpeg_after = bool(
                 shutil.which("ffmpeg") and shutil.which("ffprobe")
             )
@@ -263,7 +268,8 @@ def main():
 
         def _check(self):
             self.missing_pkgs = [
-                p for p in REQ_PKGS if not pip_show(self.py, p)
+                p for p in launcher_checks.REQ_PKGS
+                if not launcher_checks.pip_show(self.py, p)
             ]
             self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
 
