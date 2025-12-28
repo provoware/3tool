@@ -42,18 +42,43 @@ logger = logging.getLogger("VideoBatchTool")
 
 # ---------- Themes ----------
 # Drei augenschonende Darstellungsstile
+FOCUS_STYLE = (
+    "QWidget:focus{outline:2px solid #ffbf00;outline-offset:1px;} "
+    "QLineEdit:focus,QComboBox:focus,QSpinBox:focus,"
+    "QAbstractItemView:focus,QPushButton:focus,QTabBar::tab:focus{"
+    "outline:2px solid #ffbf00;outline-offset:1px;}"
+)
 THEMES = {
     "Hell": (
         "QWidget{background-color:#ffffff;color:#202020;} "
         "QPushButton{background-color:#e0e0e0;color:#202020;}"
+        + FOCUS_STYLE
     ),
     "Dunkel": (
         "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
         "QPushButton{background-color:#444;color:#e0e0e0;}"
+        + FOCUS_STYLE
     ),
     "Sepia": (
         "QWidget{background-color:#f4ecd8;color:#5b4636;} "
         "QPushButton{background-color:#d6c3a0;color:#5b4636;}"
+        + FOCUS_STYLE
+    ),
+    "Hochkontrast Hell": (
+        "QWidget{background-color:#ffffff;color:#000000;} "
+        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;}"
+        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
+        "background-color:#ffffff;color:#000000;border:2px solid #000000;}"
+        "QHeaderView::section{background-color:#000000;color:#ffffff;}"
+        + FOCUS_STYLE
+    ),
+    "Hochkontrast Dunkel": (
+        "QWidget{background-color:#000000;color:#ffffff;} "
+        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
+        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
+        "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
+        "QHeaderView::section{background-color:#ffffff;color:#000000;}"
+        + FOCUS_STYLE
     ),
 }
 
@@ -525,6 +550,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.audio_list.files_dropped.connect(self._on_audios_added)
 
         pool_tabs = QtWidgets.QTabWidget()
+        pool_tabs.setAccessibleName("Datei-Register")
+        pool_tabs.setAccessibleDescription("Register für Bilder, Audios und Favoriten")
         pool_tabs.addTab(self.image_list, "Bilder")
         pool_tabs.addTab(self.audio_list, "Audios")
         pool_tabs.addTab(self.favorite_list, "Favoriten")
@@ -573,19 +600,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_out_open.setAccessibleName("Ordner öffnen")
         self.btn_out_open.setAccessibleDescription("Ordner im Dateimanager anzeigen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
+        self.crf_spin.setAccessibleName("CRF Qualität")
+        self.crf_spin.setAccessibleDescription("Qualität für das Video (0 bis 51)")
         self.preset_combo  = QtWidgets.QComboBox(); self.preset_combo.addItems(
             ["ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"])
         self.preset_combo.setCurrentText(self.settings.value("encode/preset","ultrafast",str))
+        self.preset_combo.setAccessibleName("Preset")
+        self.preset_combo.setAccessibleDescription("Geschwindigkeits-Voreinstellung für die Kodierung")
         self.width_spin    = QtWidgets.QSpinBox(); self.width_spin.setRange(16,7680); self.width_spin.setValue(self.settings.value("encode/width",1920,int))
+        self.width_spin.setAccessibleName("Video-Breite")
+        self.width_spin.setAccessibleDescription("Breite des Videos in Pixel")
         self.height_spin   = QtWidgets.QSpinBox(); self.height_spin.setRange(16,4320); self.height_spin.setValue(self.settings.value("encode/height",1080,int))
+        self.height_spin.setAccessibleName("Video-Höhe")
+        self.height_spin.setAccessibleDescription("Höhe des Videos in Pixel")
         self.abitrate_edit = QtWidgets.QLineEdit(self.settings.value("encode/abitrate","192k",str))
         self.abitrate_edit.setPlaceholderText("z.B. 192k")
+        self.abitrate_edit.setAccessibleName("Audio-Bitrate")
+        self.abitrate_edit.setAccessibleDescription("Audioqualität als Bitrate, zum Beispiel 192k")
         self.mode_combo   = QtWidgets.QComboBox();
         self.mode_combo.addItems(["Standard","Slideshow","Video + Audio","Mehrere Audios, 1 Bild"])
         self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
         self.mode_combo.setCurrentText(self.settings.value("encode/mode","Standard",str))
+        self.mode_combo.setAccessibleName("Modus")
+        self.mode_combo.setAccessibleDescription("Auswahl des Verarbeitungsmodus")
         self.clear_after   = QtWidgets.QCheckBox("Nach Fertigstellung Listen leeren")
         self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
+        self.clear_after.setAccessibleName("Listen automatisch leeren")
+        self.clear_after.setAccessibleDescription("Nach dem Abschluss alle Listen leeren")
+
+        self.font_slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.font_slider.setRange(8, 32)
+        self.font_slider.setValue(self._font_size)
+        self.font_slider.setAccessibleName("Schriftgrößen-Schieber")
+        self.font_slider.setAccessibleDescription("Schriftgröße der Oberfläche einstellen")
+        self.font_value_label = QtWidgets.QLabel(str(self._font_size))
+        self.font_value_label.setAccessibleName("Schriftgröße Anzeige")
+        self.font_slider.valueChanged.connect(self._on_font_slider_changed)
 
         form = QtWidgets.QFormLayout()
         out_wrap_layout = QtWidgets.QHBoxLayout(); out_wrap_layout.setContentsMargins(0,0,0,0)
@@ -598,6 +648,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(form,"Höhe",self.height_spin,"Video-Höhe in Pixel")
         self._add_form(form,"Audio-Bitrate",self.abitrate_edit,"z.B. 192k, 256k")
         self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
+        font_row = QtWidgets.QHBoxLayout()
+        font_row.setContentsMargins(0, 0, 0, 0)
+        font_row.addWidget(self.font_slider)
+        font_row.addWidget(self.font_value_label)
+        font_wrap = QtWidgets.QWidget(); font_wrap.setLayout(font_row)
+        self._add_form(form, "Schriftgröße", font_wrap, "Schriftgröße der Oberfläche anpassen")
         form.addRow("", self.clear_after)
 
         settings_box = QtWidgets.QGroupBox("Einstellungen")
@@ -613,6 +669,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.help_box = help_box
 
         left_tabs = QtWidgets.QTabWidget()
+        left_tabs.setAccessibleName("Seitenleiste-Register")
+        left_tabs.setAccessibleDescription("Register für Dateilisten und Einstellungen")
         left_tabs.addTab(pool_box, "Dateien")
         left_tabs.addTab(self.settings_widget, "Einstellungen")
         self.sidebar.setWidget(left_tabs)
@@ -728,12 +786,25 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
             self._show_help_window
         )
+        QtGui.QShortcut(QtGui.QKeySequence("F5"), self).activated.connect(
+            self._start_encode
+        )
 
     # ----- UI helpers -----
     def _build_menus(self):
         menubar = self.menuBar()
 
         m_datei = menubar.addMenu("Datei")
+        act_load = QAction("Projekt laden", self)
+        act_load.setToolTip("Gespeichertes Projekt laden")
+        act_load.setShortcut(QtGui.QKeySequence("Ctrl+O"))
+        act_load.triggered.connect(self._load_project)
+        m_datei.addAction(act_load)
+        act_save = QAction("Projekt speichern", self)
+        act_save.setToolTip("Projekt sichern")
+        act_save.setShortcut(QtGui.QKeySequence("Ctrl+S"))
+        act_save.triggered.connect(self._save_project)
+        m_datei.addAction(act_save)
         act_quit = QAction("Beenden", self); act_quit.setToolTip("Programm schließen"); act_quit.triggered.connect(self.close)
         m_datei.addAction(act_quit)
 
@@ -782,10 +853,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def _change_font(self, delta:int):
         self._set_font(self._font_size + delta)
 
+    def _on_font_slider_changed(self, value: int):
+        self.font_value_label.setText(str(value))
+        self._set_font(value)
+
     def _set_font(self, size:int):
         size = max(8, min(32, size))
         self._font_size = size
         self._apply_font()
+        if hasattr(self, "font_slider") and self.font_slider.value() != size:
+            self.font_slider.setValue(size)
+        if hasattr(self, "font_value_label"):
+            self.font_value_label.setText(str(size))
         self.settings.setValue("ui/font_size", size)
         self._log(f"Schriftgröße gesetzt auf {size}")
 
