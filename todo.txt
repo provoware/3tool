@@ -14,3 +14,9 @@
 - [x] Slideshow um Seed, Profil- und Normalisierungsoptionen erweitern
 - [x] Dokumentation zu Slideshow-Profilen und Streaming-Datenraten aktualisieren
 - [x] Hochkontrast-Themes, Fokus-Stil, Shortcuts und Barrierefreiheit in der GUI ergänzen
+- [x] Launcher-Installation asynchron mit Fortschritt und Rechte-Feedback umsetzen
+- [x] Slideshow-Listenpfade escapen und Temp-Dateien sicher loeschen
+- [x] Eingabevalidierungen in GUI und PairItem erweitern
+- [x] Gefuehrten Start (Wizard) und Bild-Hilfe im GUI ergaenzen
+- [x] Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen
+- [x] Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern
