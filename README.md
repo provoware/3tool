@@ -147,6 +147,8 @@ python3 videobatch_extra.py --selftest
 
 Vor der Veröffentlichung ("Release") sollten alle Funktionen noch einmal getestet werden.
 Gehe die Datei `todo.txt` durch und prüfe, ob überall `[x]` steht.
+Sieh außerdem in `CHANGELOG.md` (Änderungsprotokoll: Liste der wichtigsten Änderungen),
+ob die aktuelle Version enthalten ist.
 Für das finale Paket empfiehlt sich folgendes Vorgehen:
 
 1. **Abhängigkeiten ("Dependencies") prüfen**:
