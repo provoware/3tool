@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -43,21 +46,46 @@ logger = logging.getLogger("VideoBatchTool")
 # ---------- Themes ----------
 # Drei augenschonende Darstellungsstile
 THEMES = {
+    "Modern": (
+        "QWidget{background-color:#f6f7fb;color:#1e1e1e;} "
+        "QPushButton{background-color:#e6e8f0;color:#1e1e1e;border-radius:4px;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#ffffff;color:#1e1e1e;} "
+        "QWidget:focus{outline:2px solid #1a73e8;}"
+    ),
     "Hell": (
         "QWidget{background-color:#ffffff;color:#202020;} "
-        "QPushButton{background-color:#e0e0e0;color:#202020;}"
+        "QPushButton{background-color:#e0e0e0;color:#202020;} "
+        "QWidget:focus{outline:2px solid #1a73e8;}"
     ),
     "Dunkel": (
         "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
-        "QPushButton{background-color:#444;color:#e0e0e0;}"
+        "QPushButton{background-color:#444;color:#e0e0e0;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#3a3a3a;color:#f0f0f0;} "
+        "QWidget:focus{outline:2px solid #90caf9;}"
     ),
     "Sepia": (
         "QWidget{background-color:#f4ecd8;color:#5b4636;} "
-        "QPushButton{background-color:#d6c3a0;color:#5b4636;}"
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;} "
+        "QWidget:focus{outline:2px solid #8d6e63;}"
+    ),
+    "Hochkontrast Hell": (
+        "QWidget{background-color:#ffffff;color:#000000;} "
+        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#ffffff;color:#000000;border:2px solid #000000;} "
+        "QWidget:focus{outline:3px solid #ffbf00;}"
+    ),
+    "Hochkontrast Dunkel": (
+        "QWidget{background-color:#000000;color:#ffffff;} "
+        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#000000;color:#ffffff;border:2px solid #ffffff;} "
+        "QWidget:focus{outline:3px solid #ffbf00;}"
     ),
 }
 
 # ---------- Helpers ----------
+IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov")
+AUDIO_EXTENSIONS = (".mp3", ".wav", ".flac", ".m4a", ".aac")
+SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 
 
 def which(p: str):
@@ -133,16 +161,26 @@ class PairItem:
     def load_thumb(self):
         if self.thumb is None and self.image_path: self.thumb = make_thumb(self.image_path)
     def validate(self):
-        if not self.image_path or not self.audio_path:
+        image_path = (self.image_path or "").strip()
+        audio_path = (self.audio_path or "").strip() if self.audio_path else ""
+        if not image_path or not audio_path:
             self.valid=False; self.validation_msg="Bild oder Audio fehlt"; return
-        ip, ap = Path(self.image_path), Path(self.audio_path)
+        ip, ap = Path(image_path), Path(audio_path)
         if not ip.exists():
-            self.valid=False; self.validation_msg=f"Bild fehlt: {ip}"; return
+            self.valid=False; self.validation_msg="Bildpfad nicht gefunden"; return
         if not ap.exists():
-            self.valid=False; self.validation_msg=f"Audio fehlt: {ap}"; return
-        if not ip.is_dir() and ip.suffix.lower() not in (".jpg",".jpeg",".png",".bmp",".webp",".mp4",".mkv",".avi",".mov"):
-            self.valid=False; self.validation_msg="Ungültiges Bild/Video"; return
-        if ap.suffix.lower() not in (".mp3",".wav",".flac",".m4a",".aac"):
+            self.valid=False; self.validation_msg="Audiopfad nicht gefunden"; return
+        if ip.is_dir():
+            if not os.access(ip, os.R_OK | os.X_OK):
+                self.valid=False; self.validation_msg="Bildordner ist nicht lesbar (keine Rechte)"; return
+        else:
+            if not os.access(ip, os.R_OK):
+                self.valid=False; self.validation_msg="Bilddatei ist nicht lesbar (keine Rechte)"; return
+            if ip.suffix.lower() not in IMAGE_EXTENSIONS:
+                self.valid=False; self.validation_msg="Ungültiges Bild- oder Videoformat"; return
+        if not os.access(ap, os.R_OK):
+            self.valid=False; self.validation_msg="Audiodatei ist nicht lesbar (keine Rechte)"; return
+        if ap.suffix.lower() not in AUDIO_EXTENSIONS:
             self.valid=False; self.validation_msg="Ungültiges Audioformat"; return
         self.valid=True; self.validation_msg=""
 
@@ -210,9 +248,12 @@ class EncodeWorker(QtCore.QObject):
         super().__init__()
         self.pairs = pairs; self.settings = settings; self.copy_only = copy_only; self._stop=False
     def stop(self): self._stop=True
+    def _escape_ffmpeg_path(self, path: Path) -> str:
+        return path.as_posix().replace("'", r"\'")
     def run(self):
         total = len(self.pairs)
         for i, item in enumerate(self.pairs):
+            list_path: Optional[str] = None
             if self._stop: self.log.emit("Abbruch durch Benutzer."); break
             item.validate()
             if not item.valid:
@@ -245,9 +286,11 @@ class EncodeWorker(QtCore.QObject):
                     per = duration/len(imgs) if duration else 2
                     with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as f:
                         for im in imgs:
-                            f.write(f"file '{im}'\n")
+                            escaped_path = self._escape_ffmpeg_path(im)
+                            f.write(f"file '{escaped_path}'\n")
                             f.write(f"duration {per}\n")
-                        f.write(f"file '{imgs[-1]}'\n")
+                        escaped_last = self._escape_ffmpeg_path(imgs[-1])
+                        f.write(f"file '{escaped_last}'\n")
                         list_path = f.name
                     cmd = ["ffmpeg","-y","-f","concat","-safe","0","-i",list_path,
                            "-i",item.audio_path,
@@ -275,11 +318,22 @@ class EncodeWorker(QtCore.QObject):
                 proc.wait()
                 if proc.returncode!=0:
                     item.status="FEHLER"; self.row_error.emit(i,"FFmpeg-Fehler")
+                    self.log.emit(f"FFmpeg-Fehler bei {item.output}")
                 else:
                     item.status="FERTIG"; item.progress=100.0
                     self.row_progress.emit(i,100.0); self.log.emit(f"Fertig: {item.output}")
             except Exception as e:
                 item.status="FEHLER"; self.row_error.emit(i,str(e))
+                file_hint = item.output or item.image_path or item.audio_path or "unbekannte Datei"
+                self.log.emit(f"Fehler bei {file_hint}: {e}")
+            finally:
+                if list_path:
+                    try:
+                        Path(list_path).unlink(missing_ok=True)
+                    except Exception as cleanup_error:
+                        self.log.emit(
+                            f"Konnte temporaere Liste nicht loeschen: {list_path} ({cleanup_error})"
+                        )
             done = sum(1 for p in self.pairs if p.status=="FERTIG")
             self.overall_progress.emit(done/max(1,total)*100.0)
         if all(p.status=="FERTIG" for p in self.pairs):
@@ -423,6 +477,23 @@ class HelpPane(QtWidgets.QTextBrowser):
         self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHtml(self._html())
+    @staticmethod
+    def _guide_svg_data() -> str:
+        svg = """
+        <svg xmlns="http://www.w3.org/2000/svg" width="520" height="120">
+          <rect x="10" y="10" width="160" height="100" rx="10" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
+          <rect x="180" y="10" width="160" height="100" rx="10" fill="#e6f4ea" stroke="#137333" stroke-width="2"/>
+          <rect x="350" y="10" width="160" height="100" rx="10" fill="#fce8e6" stroke="#c5221f" stroke-width="2"/>
+          <text x="90" y="55" font-size="14" text-anchor="middle" fill="#1a73e8">1. Bilder wählen</text>
+          <text x="260" y="55" font-size="14" text-anchor="middle" fill="#137333">2. Audios wählen</text>
+          <text x="430" y="55" font-size="14" text-anchor="middle" fill="#c5221f">3. Start</text>
+          <text x="90" y="80" font-size="11" text-anchor="middle" fill="#1a73e8">Fotos/Ordner</text>
+          <text x="260" y="80" font-size="11" text-anchor="middle" fill="#137333">MP3/WAV etc.</text>
+          <text x="430" y="80" font-size="11" text-anchor="middle" fill="#c5221f">Videos erzeugen</text>
+        </svg>
+        """.strip()
+        encoded = urllib.parse.quote(svg)
+        return f"data:image/svg+xml;utf8,{encoded}"
     def _html(self)->str:
         return (
             "<h2>Bedienhilfe</h2>"
@@ -443,7 +514,120 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
             "<li>Unter 'Ansicht' kann der Log-Bereich ein- oder ausgeblendet werden</li>"
             "</ul>"
+            "<h3>Geführter Start (mit Bild)</h3>"
+            "<p>Schritt für Schritt: Bilder wählen → Audios wählen → Start.</p>"
+            f"<img src='{self._guide_svg_data()}' alt='Schrittbild: Bilder, Audios, Start' />"
         )
+
+class GuidedWizard(QtWidgets.QDialog):
+    def __init__(self, main_window: "MainWindow"):
+        super().__init__(main_window)
+        self.main_window = main_window
+        self.setWindowTitle("Geführter Start – Schritt für Schritt")
+        self.resize(520, 340)
+        self._build_ui()
+
+    def _build_ui(self):
+        self.stack = QtWidgets.QStackedWidget()
+        self.stack.addWidget(self._page_images())
+        self.stack.addWidget(self._page_audios())
+        self.stack.addWidget(self._page_start())
+
+        self.btn_back = QtWidgets.QPushButton("Zurück")
+        self.btn_next = QtWidgets.QPushButton("Weiter")
+        self.btn_close = QtWidgets.QPushButton("Schließen")
+        self.btn_back.clicked.connect(self._back)
+        self.btn_next.clicked.connect(self._next)
+        self.btn_close.clicked.connect(self.reject)
+
+        nav = QtWidgets.QHBoxLayout()
+        nav.addWidget(self.btn_back)
+        nav.addWidget(self.btn_next)
+        nav.addStretch(1)
+        nav.addWidget(self.btn_close)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.stack)
+        layout.addLayout(nav)
+        self._update_buttons()
+
+    def _page_images(self) -> QtWidgets.QWidget:
+        w = QtWidgets.QWidget()
+        lay = QtWidgets.QVBoxLayout(w)
+        title = QtWidgets.QLabel("<h3>1. Bilder auswählen</h3>")
+        hint = QtWidgets.QLabel(
+            "Wähle Bilder oder einen Ordner mit Bildern. "
+            "Damit entsteht das Videobild."
+        )
+        hint.setWordWrap(True)
+        btn = QtWidgets.QPushButton("Bilder wählen")
+        btn.clicked.connect(self._pick_images)
+        lay.addWidget(title)
+        lay.addWidget(hint)
+        lay.addWidget(btn)
+        lay.addStretch(1)
+        return w
+
+    def _page_audios(self) -> QtWidgets.QWidget:
+        w = QtWidgets.QWidget()
+        lay = QtWidgets.QVBoxLayout(w)
+        title = QtWidgets.QLabel("<h3>2. Audios auswählen</h3>")
+        hint = QtWidgets.QLabel(
+            "Wähle Audiodateien (z. B. MP3 oder WAV). "
+            "Audio ist die Tonspur."
+        )
+        hint.setWordWrap(True)
+        btn = QtWidgets.QPushButton("Audios wählen")
+        btn.clicked.connect(self._pick_audios)
+        lay.addWidget(title)
+        lay.addWidget(hint)
+        lay.addWidget(btn)
+        lay.addStretch(1)
+        return w
+
+    def _page_start(self) -> QtWidgets.QWidget:
+        w = QtWidgets.QWidget()
+        lay = QtWidgets.QVBoxLayout(w)
+        title = QtWidgets.QLabel("<h3>3. Start</h3>")
+        hint = QtWidgets.QLabel(
+            "Wenn alles passt, kannst du den Startknopf drücken. "
+            "Das Tool erzeugt dann die Videos."
+        )
+        hint.setWordWrap(True)
+        btn = QtWidgets.QPushButton("Start")
+        btn.clicked.connect(self._start)
+        lay.addWidget(title)
+        lay.addWidget(hint)
+        lay.addWidget(btn)
+        lay.addStretch(1)
+        return w
+
+    def _pick_images(self):
+        self.main_window._pick_images()
+        self._next()
+
+    def _pick_audios(self):
+        self.main_window._pick_audios()
+        self._next()
+
+    def _start(self):
+        self.main_window._start_encode()
+        self.accept()
+
+    def _back(self):
+        idx = max(0, self.stack.currentIndex() - 1)
+        self.stack.setCurrentIndex(idx)
+        self._update_buttons()
+
+    def _next(self):
+        idx = min(self.stack.count() - 1, self.stack.currentIndex() + 1)
+        self.stack.setCurrentIndex(idx)
+        self._update_buttons()
+
+    def _update_buttons(self):
+        idx = self.stack.currentIndex()
+        self.btn_back.setEnabled(idx > 0)
+        self.btn_next.setEnabled(idx < self.stack.count() - 1)
 
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):
@@ -503,6 +687,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings("Provoware", "VideoBatchTool")
         self._font_size = self.settings.value("ui/font_size", 11, int)
         self.debug_mode = self.settings.value("ui/debug", False, bool)
+        self.large_controls = self.settings.value("ui/large_controls", False, bool)
         logger.setLevel(logging.DEBUG if self.debug_mode else logging.INFO)
 
         sys.excepthook = self._global_exception
@@ -586,6 +771,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mode_combo.setCurrentText(self.settings.value("encode/mode","Standard",str))
         self.clear_after   = QtWidgets.QCheckBox("Nach Fertigstellung Listen leeren")
         self.clear_after.setChecked(self.settings.value("ui/clear_after", False, bool))
+        self.large_controls_toggle = QtWidgets.QCheckBox("Große Bedienelemente (besser klickbar)")
+        self.large_controls_toggle.setChecked(self.large_controls)
+        self.large_controls_toggle.setToolTip("Buttons, Tabellenzeilen und Text etwas größer")
+        self.large_controls_toggle.toggled.connect(self._toggle_large_controls)
 
         form = QtWidgets.QFormLayout()
         out_wrap_layout = QtWidgets.QHBoxLayout(); out_wrap_layout.setContentsMargins(0,0,0,0)
@@ -599,6 +788,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(form,"Audio-Bitrate",self.abitrate_edit,"z.B. 192k, 256k")
         self._add_form(form,"Modus",self.mode_combo,"z.B. Slideshow oder Video + Audio")
         form.addRow("", self.clear_after)
+        form.addRow("", self.large_controls_toggle)
 
         settings_box = QtWidgets.QGroupBox("Einstellungen")
         settings_box.setLayout(form)
@@ -654,6 +844,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_load       = QtWidgets.QPushButton("Projekt laden")
         self.btn_encode     = QtWidgets.QPushButton("START")
         self.btn_stop       = QtWidgets.QPushButton("Stop"); self.btn_stop.setEnabled(False)
+        self.btn_wizard     = QtWidgets.QPushButton("Geführter Start")
 
         self.btn_add_images.setToolTip("Bilder (Fotos) auswählen")
         self.btn_add_audios.setToolTip("Audiodateien auswählen")
@@ -664,6 +855,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_load.setToolTip("Gespeichertes Projekt laden")
         self.btn_encode.setToolTip("Encoding starten")
         self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
+        self.btn_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen")
 
         self.btn_encode.setStyleSheet("font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;")
 
@@ -674,6 +866,7 @@ class MainWindow(QtWidgets.QMainWindow):
             (self.btn_add_images, "Bilder oder Ordner auswählen"),
             (self.btn_add_audios, "Audiodateien hinzufügen"),
             (self.btn_auto_pair, "Dateien automatisch koppeln"),
+            (self.btn_wizard, "Assistent für Einsteiger öffnen"),
             (self.btn_clear, "Listen komplett leeren"),
             (self.btn_undo, "Letzten Schritt rückgängig"),
             (self.btn_save, "Projekt auf Platte sichern"),
@@ -718,11 +911,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_load.clicked.connect(self._load_project)
         self.btn_encode.clicked.connect(self._start_encode)
         self.btn_stop.clicked.connect(self._stop_encode)
+        self.btn_wizard.clicked.connect(self._show_guided_wizard)
         self.table.doubleClicked.connect(self._show_statusbar_path)
         self.btn_out_open.clicked.connect(self._open_out_dir)
 
         self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
+        self._apply_large_controls(self.large_controls)
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
         QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
@@ -775,9 +970,11 @@ class MainWindow(QtWidgets.QMainWindow):
         act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
         act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(self._open_logfile)
         act_help = QAction("Kurzanleitung", self); act_help.setToolTip("Kurzes Hilfefenster anzeigen"); act_help.triggered.connect(self._show_help_window)
+        act_wizard = QAction("Geführter Start", self); act_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen"); act_wizard.triggered.connect(self._show_guided_wizard)
         m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
         m_hilfe.addAction(act_help)
+        m_hilfe.addAction(act_wizard)
 
     def _change_font(self, delta:int):
         self._set_font(self._font_size + delta)
@@ -821,6 +1018,11 @@ class MainWindow(QtWidgets.QMainWindow):
         dlg.resize(400, 300)
         dlg.exec()
         self._log("Hilfefenster geöffnet")
+
+    def _show_guided_wizard(self):
+        dlg = GuidedWizard(self)
+        dlg.exec()
+        self._log("Geführter Start geöffnet")
 
     def _add_form(self, layout: QtWidgets.QFormLayout, label: str, widget: QtWidgets.QWidget, help_text: str):
         widget.setToolTip(help_text); widget.setStatusTip(help_text)
@@ -885,6 +1087,31 @@ class MainWindow(QtWidgets.QMainWindow):
         files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Audios wählen",str(Path.cwd()),
                                                        "Audio (*.mp3 *.wav *.flac *.m4a *.aac)")
         if files: self._on_audios_added(files)
+    def _pick_image_folder(self):
+        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Bildordner wählen", str(Path.cwd()))
+        if not d:
+            return
+        files = self._collect_media_files(Path(d), (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov"))
+        if not files:
+            QtWidgets.QMessageBox.information(self, "Keine Bilder", "Im Ordner wurden keine Bilddateien gefunden.")
+            return
+        self._on_images_added([str(f) for f in files])
+
+    def _pick_audio_folder(self):
+        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Audioordner wählen", str(Path.cwd()))
+        if not d:
+            return
+        files = self._collect_media_files(Path(d), (".mp3", ".wav", ".flac", ".m4a", ".aac"))
+        if not files:
+            QtWidgets.QMessageBox.information(self, "Keine Audios", "Im Ordner wurden keine Audiodateien gefunden.")
+            return
+        self._on_audios_added([str(f) for f in files])
+
+    def _collect_media_files(self, folder: Path, suffixes: Tuple[str, ...]) -> List[Path]:
+        if not folder.exists() or not folder.is_dir():
+            return []
+        files = [p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in suffixes]
+        return sorted(files)
 
     def _on_images_added(self, files: List[str]):
         self._push_history()
@@ -985,7 +1212,7 @@ class MainWindow(QtWidgets.QMainWindow):
         path,_=QtWidgets.QFileDialog.getSaveFileName(self,"Projekt speichern",str(Path.cwd()/ "projekt.json"),"JSON (*.json)")
         if not path: return
         data={"pairs":[{"image":p.image_path,"audio":p.audio_path,"output":p.output} for p in self.pairs],
-              "settings":self._gather_settings()}
+              "settings":self._gather_settings(require_valid=False)}
         try:
             Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
         except Exception as e:
@@ -1024,16 +1251,57 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Projekt geladen: {path}")
 
     # ----- encode -----
-    def _gather_settings(self)->Dict[str,Any]:
+    def _gather_settings(self, require_valid: bool = True) -> Optional[Dict[str, Any]]:
+        abitrate = self.abitrate_edit.text().strip() or "192k"
+        if not re.match(r"^\d+(k|M)$", abitrate):
+            msg = (
+                "Bitte eine Audiobitrate wie 192k oder 2M eingeben. "
+                "Die Zahl ist die Datenmenge pro Sekunde, k=Kilobit, M=Megabit."
+            )
+            if require_valid:
+                QtWidgets.QMessageBox.warning(self, "Ungültige Audiobitrate", msg)
+                self._log("Abbruch: Audiobitrate ist ungültig.")
+                return None
+            self._log("Hinweis: Ungültige Audiobitrate erkannt, setze Standard 192k.")
+            abitrate = "192k"
         return {"out_dir": self.out_dir_edit.text().strip(),
                 "crf": self.crf_spin.value(),
                 "preset": self.preset_combo.currentText(),
                 "width": self.width_spin.value(),
                 "height": self.height_spin.value(),
-                "abitrate": self.abitrate_edit.text().strip() or "192k",
+                "abitrate": abitrate,
                 "mode": self.mode_combo.currentText()}
 
+    def _dir_has_slideshow_images(self, path: Path) -> bool:
+        try:
+            for entry in path.iterdir():
+                if entry.is_file() and entry.suffix.lower() in SLIDESHOW_IMAGE_EXTENSIONS:
+                    return True
+        except Exception:
+            return False
+        return False
+
+    def _flag_row_error(self, row: int, msg: str):
+        if 0 <= row < len(self.pairs):
+            item = self.pairs[row]
+            item.valid = False
+            item.status = "FEHLER"
+            item.validation_msg = msg
+            left = self.model.index(row, 0)
+            right = self.model.index(row, self.model.columnCount() - 1)
+            self.model.dataChanged.emit(left, right)
+        self._log(f"Fehler in Zeile {row+1}: {msg}")
+        self._update_counts()
+
     def _start_encode(self):
+        settings = self._gather_settings()
+        if settings is None:
+        if self.image_list.count() == 0:
+            self._suggest_add_images()
+            return
+        if self.audio_list.count() == 0:
+            self._suggest_add_audios()
+            return
         if not self.pairs:
             QtWidgets.QMessageBox.information(
                 self,
@@ -1043,11 +1311,50 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log("Encoding abgebrochen: keine Paare")
             return
         if any(p.audio_path is None for p in self.pairs):
-            QtWidgets.QMessageBox.warning(self,"Fehlende Audios","Nicht alle Bilder haben ein Audio."); return
+            QtWidgets.QMessageBox.warning(self, "Fehlende Audios", "Nicht alle Bilder haben ein Audio.")
+            self._log("Encoding abgebrochen: nicht alle Bilder haben ein Audio.")
+            return
+        mode = settings.get("mode", "Standard")
+        if mode == "Mehrere Audios, 1 Bild":
+            if self.image_list.count() == 0:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Bild fehlt",
+                    "Für diesen Modus wird mindestens ein Bild benötigt.",
+                )
+                self._log("Encoding abgebrochen: kein Bild für 'Mehrere Audios, 1 Bild'.")
+                return
+        if mode == "Slideshow":
+            invalid_rows = False
+            for idx, p in enumerate(self.pairs):
+                img_path = Path(p.image_path) if p.image_path else None
+                if not img_path or not img_path.is_dir():
+                    self._flag_row_error(idx, "Slideshow benötigt einen Ordner mit Bildern.")
+                    invalid_rows = True
+                    continue
+                if not self._dir_has_slideshow_images(img_path):
+                    self._flag_row_error(idx, "Im Bildordner sind keine Bilddateien vorhanden.")
+                    invalid_rows = True
+            if invalid_rows:
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Slideshow-Ordner prüfen",
+                    "Bitte pro Zeile einen Bildordner mit mindestens einem Bild wählen.",
+                )
+                return
+        for p in self.pairs:
+            p.validate()
+        invalid=[(i, p) for i, p in enumerate(self.pairs) if not p.valid]
+            self._suggest_add_audios()
+            return
         for p in self.pairs: p.validate()
         invalid=[p for p in self.pairs if not p.valid]
         if invalid:
-            QtWidgets.QMessageBox.critical(self,"Validierungsfehler",invalid[0].validation_msg); return
+            first_row, first_item = invalid[0]
+            for row, item in invalid:
+                self._flag_row_error(row, item.validation_msg)
+            QtWidgets.QMessageBox.critical(self, "Validierungsfehler", first_item.validation_msg)
+            return
         out_dir = Path(self.out_dir_edit.text().strip())
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -1060,7 +1367,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         self.btn_encode.setEnabled(False); self.btn_stop.setEnabled(True)
         self.progress_total.setValue(0); self.dashboard.set_progress(0); self._log("Starte Encoding …")
-        self.worker = EncodeWorker(self.pairs, self._gather_settings(), self.copy_only)
+        self.worker = EncodeWorker(self.pairs, settings, self.copy_only)
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
@@ -1070,6 +1377,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.worker.log.connect(self._log)
         self.worker.finished.connect(self._encode_finished)
         self.thread.start()
+
+    def _suggest_add_images(self):
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Bilder fehlen")
+        msg.setText("Bitte zuerst Bilder auswählen.")
+        msg.setInformativeText("Tipp: Du kannst einzelne Dateien oder einen Ordner wählen.")
+        btn_files = msg.addButton("Bilder wählen", QtWidgets.QMessageBox.AcceptRole)
+        btn_folder = msg.addButton("Bildordner wählen", QtWidgets.QMessageBox.ActionRole)
+        msg.addButton("Abbrechen", QtWidgets.QMessageBox.RejectRole)
+        msg.exec()
+        if msg.clickedButton() == btn_files:
+            self._pick_images()
+        elif msg.clickedButton() == btn_folder:
+            self._pick_image_folder()
+
+    def _suggest_add_audios(self):
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Audios fehlen")
+        msg.setText("Bitte Audiodateien auswählen.")
+        msg.setInformativeText("Tipp: Ein Audio pro Bild, oder nutze den Modus 'Mehrere Audios, 1 Bild'.")
+        btn_files = msg.addButton("Audios wählen", QtWidgets.QMessageBox.AcceptRole)
+        btn_folder = msg.addButton("Audioordner wählen", QtWidgets.QMessageBox.ActionRole)
+        msg.addButton("Abbrechen", QtWidgets.QMessageBox.RejectRole)
+        msg.exec()
+        if msg.clickedButton() == btn_files:
+            self._pick_audios()
+        elif msg.clickedButton() == btn_folder:
+            self._pick_audio_folder()
 
     def _stop_encode(self):
         if self.worker: self.worker.stop()
@@ -1085,11 +1420,7 @@ class MainWindow(QtWidgets.QMainWindow):
         v=int(perc); self.progress_total.setValue(v); self.dashboard.set_progress(v)
 
     def _on_row_error(self,row:int,msg:str):
-        self._log(f"Fehler in Zeile {row+1}: {msg}")
-        if 0<=row<len(self.pairs):
-            self.pairs[row].status="FEHLER"
-            idx=self.model.index(row,7); self.model.dataChanged.emit(idx,idx)
-        self._update_counts()
+        self._flag_row_error(row, msg)
 
     def _encode_finished(self):
         self.btn_encode.setEnabled(True); self.btn_stop.setEnabled(False)
@@ -1124,6 +1455,26 @@ class MainWindow(QtWidgets.QMainWindow):
         logger.setLevel(logging.DEBUG if checked else logging.INFO)
         self.settings.setValue("ui/debug", checked)
         self._log(f"Debug-Log {'aktiviert' if checked else 'deaktiviert'}")
+
+    def _toggle_large_controls(self, checked: bool):
+        self.large_controls = checked
+        self.settings.setValue("ui/large_controls", checked)
+        self._apply_large_controls(checked)
+        self._log(f"Große Bedienelemente {'aktiviert' if checked else 'deaktiviert'}")
+
+    def _apply_large_controls(self, enabled: bool):
+        height = 40 if enabled else 28
+        font_size = self._font_size + (2 if enabled else 0)
+        buttons = [
+            self.btn_add_images, self.btn_add_audios, self.btn_auto_pair, self.btn_clear,
+            self.btn_undo, self.btn_save, self.btn_load, self.btn_encode, self.btn_stop,
+            self.btn_wizard, self.btn_out_open,
+        ]
+        for btn in buttons:
+            btn.setMinimumHeight(height)
+            btn.setFont(QtGui.QFont("DejaVu Sans", font_size))
+        self.table.verticalHeader().setDefaultSectionSize(36 if enabled else 24)
+        self.log_edit.setFont(QtGui.QFont("DejaVu Sans", font_size))
 
     def _global_exception(self, etype, value, tb):
         import traceback
@@ -1179,6 +1530,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/geometry", self.saveGeometry())
         self.settings.setValue("ui/window_state", self.saveState())
         self.settings.setValue("ui/clear_after", self.clear_after.isChecked())
+        s = self._gather_settings(require_valid=False)
+        self.settings.setValue("ui/large_controls", self.large_controls)
         s = self._gather_settings()
         self.settings.setValue("encode/out_dir", s["out_dir"])
         self.settings.setValue("encode/crf", s["crf"])
