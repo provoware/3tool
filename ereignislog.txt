@@ -172,3 +172,4 @@
 [2025-12-29] 0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt (Aufgabe "0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt" erledigt)
 [2025-12-29] CI um Pytest-Schritt und Dev-Abhaengigkeiten bereinigt (Aufgabe "CI um Pytest-Schritt und Dev-Abhaengigkeiten bereinigt (mypy verschoben, pytest ergaenzt)" erledigt)
 [2025-12-28] ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt (Aufgabe "ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt" erledigt)
+[2025-12-28] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert (Aufgabe "Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert" erledigt)

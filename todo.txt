@@ -52,3 +52,4 @@
 - [x] Changelog erstellt und Release-Hinweis in der README ergänzt
 - [x] Launcher-Start nutzt REQ_PKGS und installiert fehlende Pakete gesammelt
 - [x] ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt
+- [x] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert

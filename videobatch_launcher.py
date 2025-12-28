@@ -6,16 +6,12 @@
 # =========================================
 
 from __future__ import annotations
+
 import logging
-import shutil
-import subprocess as sp
-import sys
 import os
-import shutil
-import subprocess as sp
 from pathlib import Path
 import shutil
-import subprocess
+import sys
 
 from core import launcher_checks
 from core.paths import log_dir, user_data_dir
@@ -126,127 +122,6 @@ def build_wizard():
                 self.failed.emit(str(exc))
             else:
                 self.results_ready.emit(results)
-
-    class InstallWorker(QtCore.QThread):
-        progress = QtCore.Signal(int, str)
-        finished = QtCore.Signal(object)
-
-        def __init__(self, py: str, missing_pkgs: list[str], ffmpeg_ok: bool):
-            super().__init__()
-            self.py = py
-            self.missing_pkgs = list(missing_pkgs)
-            self.ffmpeg_ok = ffmpeg_ok
-
-        def run(self):
-            errors = []
-            self.progress.emit(5, "Installationsprüfung startet…")
-
-            if self.missing_pkgs:
-                self.progress.emit(15, "Python-Pakete werden installiert…")
-                try:
-                    launcher_checks.pip_install(self.py, self.missing_pkgs)
-                except Exception as e:
-                    errors.append(
-                        {
-                            "title": "Pakete konnten nicht installiert werden",
-                            "message": (
-                                "Bitte pruefe deine Internetverbindung und "
-                                "die Schreibrechte im Projektordner."
-                            ),
-                            "details": str(e),
-                            "permission": False,
-                        }
-                    )
-
-            self.progress.emit(45, "Pruefe ffmpeg/ffprobe…")
-            self.ffmpeg_ok = bool(
-                shutil.which("ffmpeg") and shutil.which("ffprobe")
-            )
-            if not self.ffmpeg_ok and sys.platform.startswith("linux"):
-                manager = launcher_checks.linux_package_manager()
-                if not manager:
-                    self.progress.emit(
-                        60,
-                        "ffmpeg wird installiert (Administratorrechte erforderlich)…",
-                    )
-                    try:
-                        subprocess.check_call(["sudo", "apt", "update"])
-                        subprocess.check_call(
-                            ["sudo", "apt", "install", "-y", "ffmpeg"]
-                        )
-                    except Exception:
-                        errors.append(
-                            {
-                                "title": "Kein Paketmanager erkannt",
-                                "message": (
-                                    "Deine Linux-Distribution wurde nicht "
-                                    "erkannt. Bitte installiere ffmpeg manuell."
-                                ),
-                                "details": launcher_checks.ffmpeg_install_hint(),
-                                "permission": False,
-                            }
-                        )
-                else:
-                    self.progress.emit(
-                        60,
-                        (
-                            "ffmpeg wird installiert (Administratorrechte "
-                            "erforderlich)…"
-                        ),
-                    )
-                    try:
-                        if manager.update_cmd:
-                            sp.check_call(manager.update_cmd)
-                        sp.check_call(manager.install_cmd)
-                    except sp.CalledProcessError as e:
-                        errors.append(
-                            {
-                                "title": "Administratorrechte fehlen",
-                                "message": (
-                                    "Die automatische Installation braucht "
-                                    "Administratorrechte (Admin-Rechte). "
-                                    "Bitte starte das Programm mit passenden "
-                                    "Rechten oder installiere ffmpeg manuell."
-                                ),
-                                "details": (
-                                    f"{manager.name}: "
-                                    f"{launcher_checks.format_command(manager.install_cmd)} "
-                                    f"({e})"
-                                ),
-                                "permission": True,
-                            }
-                        )
-                    except FileNotFoundError as e:
-                        errors.append(
-                            {
-                                "title": "Paketmanager nicht gefunden",
-                                "message": (
-                                    "Der Paketmanager-Befehl ist nicht "
-                                    "verfügbar. Bitte installiere ffmpeg "
-                                    "manuell."
-                                ),
-                                "details": str(e),
-                                "permission": False,
-                            }
-                        )
-
-            self.progress.emit(85, "Abschlusspruefung laeuft…")
-            missing_after = [
-                p
-                for p in launcher_checks.REQ_PKGS
-                if not launcher_checks.pip_show(self.py, p)
-            ]
-            ffmpeg_after = bool(
-                shutil.which("ffmpeg") and shutil.which("ffprobe")
-            )
-            self.progress.emit(100, "Fertig.")
-            self.finished.emit(
-                {
-                    "missing_pkgs": missing_after,
-                    "ffmpeg_ok": ffmpeg_after,
-                    "errors": errors,
-                }
-            )
 
     class Wizard(QtWidgets.QDialog):
         def __init__(self):
@@ -475,67 +350,6 @@ def build_wizard():
                 self.setPalette(palette)
             else:
                 self.setPalette(self.style().standardPalette())
-            if self.worker and self.worker.isRunning():
-                return
-            self._set_busy(True)
-            self.progress.setValue(0)
-            self.status_label.setText("Installation laeuft…")
-            self.worker = InstallWorker(
-                self.py, self.missing_pkgs, self.ffmpeg_ok
-            )
-            self.worker.progress.connect(self._on_progress)
-            self.worker.finished.connect(self._on_fix_finished)
-            self.worker.start()
-
-        def _on_progress(self, value: int, text: str) -> None:
-            self.progress.setValue(max(0, min(100, value)))
-            self.status_label.setText(text)
-
-        def _show_error(
-            self,
-            title: str,
-            message: str,
-            details: str,
-            permission: bool,
-        ) -> None:
-            msg = QtWidgets.QMessageBox(self)
-            msg.setWindowTitle(title)
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText(message)
-            details_btn = None
-            if permission:
-                details_btn = msg.addButton(
-                    "Details anzeigen",
-                    QtWidgets.QMessageBox.ActionRole,
-                )
-                msg.addButton(QtWidgets.QMessageBox.Ok)
-            else:
-                msg.setDetailedText(details)
-                msg.addButton(QtWidgets.QMessageBox.Ok)
-            msg.exec()
-            if (
-                permission
-                and details_btn is not None
-                and msg.clickedButton() == details_btn
-            ):
-                QtWidgets.QMessageBox.information(
-                    self,
-                    "Details",
-                    details,
-                )
-
-        def _on_fix_finished(self, result: dict) -> None:
-            self.missing_pkgs = result.get("missing_pkgs", [])
-            self.ffmpeg_ok = result.get("ffmpeg_ok", False)
-            for err in result.get("errors", []):
-                self._show_error(
-                    err.get("title", "Fehler"),
-                    err.get("message", "Es ist ein Fehler aufgetreten."),
-                    err.get("details", ""),
-                    bool(err.get("permission", False)),
-                )
-            self._set_busy(False)
-            self._check()
 
     return Wizard, QtWidgets, QtCore, QtGui
 
