@@ -81,7 +81,6 @@ def main():
 
     try:
         from PySide6 import QtCore, QtGui, QtWidgets
-        from PySide6 import QtCore, QtWidgets
     except Exception as e:
         print("Qt konnte nicht geladen werden:", e)
         sys.exit(1)
@@ -193,8 +192,7 @@ def main():
             self.resize(700, 520)
             self._debug_enabled = os.environ.get("VT_DEBUG") == "1"
             self.resize(600, 420)
-            self.py = str(venv_python())
-            self.worker = None
+            self.py = str(launcher_checks.venv_python())
             self._build_ui()
             self._start_check()
 
