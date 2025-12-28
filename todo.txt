@@ -49,4 +49,5 @@
 - [x] Themes ausgelagert, Duplikat-Check und Kontrastwarnung ergänzt
 - [x] Launcher-Installationspruefung konsolidiert (Modulpfade/Imports bereinigt)
 - [x] Einrueckungen in Kontextmenues und Launcher-ffmpeg-Check repariert
+- [x] Changelog erstellt und Release-Hinweis in der README ergänzt
 - [x] Launcher-Start nutzt REQ_PKGS und installiert fehlende Pakete gesammelt

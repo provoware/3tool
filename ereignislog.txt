@@ -166,6 +166,7 @@
 [2025-12-28] Launcher-Installationspruefung konsolidiert, Modulpfade und Imports bereinigt (Aufgabe "Launcher-Installationspruefung konsolidiert (Modulpfade/Imports bereinigt)" erledigt)
 [2025-12-28] Farbschema-Bezeichnungen vereinheitlicht und Dokumentation sprachlich bereinigt (Aufgabe "Farbschema-Bezeichnungen vereinheitlicht und Dokumentation sprachlich bereinigt" erledigt)
 [2025-12-28] Einrueckungen in Kontextmenues und Launcher-ffmpeg-Check repariert (Aufgabe "Einrueckungen in Kontextmenues und Launcher-ffmpeg-Check repariert" erledigt)
+[2025-12-29] Changelog erstellt und Release-Hinweis in der README ergänzt (Aufgabe "Changelog erstellt und Release-Hinweis in der README ergänzt" erledigt)
 
 [2025-12-28] Launcher-Start nutzt REQ_PKGS und installiert fehlende Pakete gesammelt (Aufgabe "Launcher-Start nutzt REQ_PKGS und installiert fehlende Pakete gesammelt" erledigt)
 [2025-12-29] 0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt (Aufgabe "0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt" erledigt)
