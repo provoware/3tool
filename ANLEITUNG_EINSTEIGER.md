@@ -53,5 +53,5 @@ Diese Anleitung richtet sich an Anfaenger und erklaert jeden Schritt.
    - In der Liste **Bilder** mit der rechten Maustaste auf ein Bild klicken und **Zu Favoriten** wählen.
    - Wechsle zum Tab **Favoriten**. Dort kannst du das Bild per Drag&Drop in den Arbeitsbereich ziehen.
    - Unter **Ansicht** lässt sich zudem die Schriftgröße vergrößern, was für sehschwache Menschen hilfreich ist.
-   - Über das Menü **Theme** kann ein kontrastreiches Farbschema gewählt werden.
+   - Über das Menü **Farbschema** kann ein kontrastreiches Design (Theme) gewählt werden.
 Weitere Fragen werden in `README.md` beantwortet.

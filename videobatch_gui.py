@@ -1555,7 +1555,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_save = QtWidgets.QPushButton("Projekt speichern")
         self.btn_load = QtWidgets.QPushButton("Projekt laden")
         self.btn_encode = QtWidgets.QPushButton("START")
-        self.btn_stop = QtWidgets.QPushButton("Stop")
+        self.btn_stop = QtWidgets.QPushButton("Stopp")
         self.btn_stop.setEnabled(False)
         self.btn_wizard = QtWidgets.QPushButton("Geführter Start")
 
@@ -1715,7 +1715,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.act_show_sidebar.toggled.connect(self._toggle_sidebar)
         m_ansicht.addAction(self.act_show_sidebar)
 
-        m_theme = menubar.addMenu("Theme")
+        m_theme = menubar.addMenu("Farbschema")
         for name in THEMES.keys():
             act = QAction(name, self)
             act.triggered.connect(lambda _=False, n=name: self._apply_theme(n))
@@ -1782,7 +1782,7 @@ class MainWindow(QtWidgets.QMainWindow):
         css = THEMES.get(name, "")
         QtWidgets.QApplication.instance().setStyleSheet(css)
         self.settings.setValue("ui/theme", name)
-        self._log(f"Theme gewechselt: {name}")
+        self._log(f"Farbschema gewechselt: {name}")
 
     def _apply_log_level(self, level_name: str) -> None:
         level_name = (level_name or "INFO").upper()

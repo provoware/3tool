@@ -60,7 +60,7 @@ In der Oberflaeche siehst du den Log-Pfad direkt im Protokollbereich unten.
 ## Neues in der Oberfläche
 
 - **Favoriten** – Bilder lassen sich per Rechtsklick zu einer Favoritenliste hinzufügen. Im Tab "Favoriten" können sie per Drag&Drop in den Arbeitsbereich gezogen werden.
-- **Farb-Themes** – über das Menü "Theme" stehen sieben unterschiedliche Farbkombinationen bereit. Neu ist das freundliche Design "Modern". Das Theme "Kontrast" bietet weiterhin hohe Lesbarkeit.
+- **Farbschemata (Themes = Designfarben)** – über das Menü "Farbschema" stehen sieben unterschiedliche Farbkombinationen bereit. Neu ist das freundliche Design "Modern". Das Farbschema "Kontrast" bietet weiterhin hohe Lesbarkeit.
 - **Schriftgröße** – im Menü "Ansicht" lässt sich die Schrift stufenweise anpassen.
 - **Log-Anzeige** – unten im Fenster erscheinen alle Aktionen sofort als Text.
 - **Überschriften** – jede Sektion besitzt nun einen klaren Titel, damit man sich leichter zurechtfindet.
@@ -87,37 +87,34 @@ Zusätzliche Tipps stehen in `ANLEITUNG_TIPPS.md`.
 
 ## Bedienhilfen
 
-- Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößfert die Schrift.
-- Unter "Theme" gibt es ein besonders kontrastreiches Design namens "Kontrast". Daneben steht das neue Theme "Modern" mit frischen Farben bereit.
+- Im Menü "Ansicht" kann die Schriftgröße verändert werden. Mehrfach auf "+" klicken vergrößert die Schrift.
+- Unter "Farbschema" gibt es ein besonders kontrastreiches Design namens "Kontrast". Daneben steht das neue Farbschema "Modern" mit frischen Farben bereit.
 - Im unteren Fensterbereich läuft ein Protokoll ("Log") mit.
 - Über "Ansicht → Log-Bereich" kann diese Anzeige ausgeblendet werden.
 - Über **Optionen → Debug-Log** lassen sich zusätzliche Meldungen einschalten.
 - Wer lieber mit dem Terminal arbeitet, startet das Programm mit `--debug` und
   sieht dort mehr Hinweise.
-- Wenn etwas schlecht zu erkennen ist, nutze das Theme "Kontrast" oder vergrößere die Schrift über "Ansicht".
+- Wenn etwas schlecht zu erkennen ist, nutze das Farbschema "Kontrast" oder vergrößere die Schrift über "Ansicht".
 - Bilder lassen sich als Favoriten speichern und später per Drag&Drop nutzen.
 - Wenn du das Fenster größer oder kleiner ziehst, ordnen sich alle Elemente
   automatisch neu an. Auch die Trennleisten lassen sich flexibel verschieben.
 
 ## Hilfe-Fenster
-
-
 Im Menü **Hilfe** gibt es den Punkt **Kurzanleitung**. Ein kleines Fenster zeigt dort die wichtigsten Schritte. Es lässt sich jederzeit öffnen.
 
 ## Tipps für ältere Nutzer
 
-- Wähle unter "Theme" den Eintrag **Kontrast**, wenn Texte schwer zu lesen sind.
+- Wähle unter "Farbschema" den Eintrag **Kontrast**, wenn Texte schwer zu lesen sind.
 - Über "Ansicht → Schriftgröße" lässt sich die Schrift schnell vergrößern.
 - Drücke **F11** für den Vollbildmodus. Alle Elemente werden größer dargestellt.
 - Die Hilfe erreichst du jederzeit über **Hilfe → Kurzanleitung** oder die Taste **F1**.
-- Mit **F1** öffnet sich das Hilfefenster sofort.
 
 ## Barrierefreiheit
 
 Diese Tipps erleichtern die Bedienung für alle Nutzenden:
 
 - Unter **Ansicht → Schrift +** lässt sich die Schriftgröße jederzeit erhöhen.
-- Das Theme **Kontrast** bietet besonders hohe Lesbarkeit bei wenig Licht.
+- Das Farbschema **Kontrast** bietet besonders hohe Lesbarkeit bei wenig Licht.
 - Viele Funktionen sind auch per Tastatur erreichbar, zum Beispiel **F1** für die Hilfe.
 - Alle Bedienelemente besitzen einen klaren "AccessibleName",
   damit Screenreader die Bezeichnungen vorlesen können.
