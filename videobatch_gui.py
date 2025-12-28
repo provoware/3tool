@@ -1534,6 +1534,10 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
 
         m_datei = menubar.addMenu("Datei")
+        act_project_root = QAction("Projektordner wählen", self)
+        act_project_root.setToolTip("Startordner für Dialoge festlegen")
+        act_project_root.triggered.connect(self._choose_project_root)
+        m_datei.addAction(act_project_root)
         act_load = QAction("Projekt laden", self)
         act_load.setToolTip("Gespeichertes Projekt laden")
         act_load.setShortcut(QtGui.QKeySequence("Ctrl+O"))
@@ -1832,7 +1836,26 @@ class MainWindow(QtWidgets.QMainWindow):
             stored = Path(value)
             if stored.exists():
                 return str(stored)
+        project_root = self._get_project_root()
+        if project_root:
+            return str(project_root)
         return str(fallback)
+
+    def _get_project_root(self) -> Optional[Path]:
+        value = self.settings.value("ui/project_root", "", str)
+        if not value:
+            return None
+        root = Path(value).expanduser()
+        if root.exists() and root.is_dir():
+            return root
+        return None
+
+    def _set_project_root(self, path: Path) -> None:
+        if not path or not path.exists() or not path.is_dir():
+            return
+        self.settings.setValue("ui/project_root", str(path))
+        self.settings.setValue("ui/last_project_root_dir", str(path))
+        self._log(f"Projektordner gesetzt: {path}")
 
     def _set_last_dir(self, key: str, path: Path | str) -> None:
         if not path:
@@ -1849,10 +1872,56 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/last_project_path", str(project_path))
         self.settings.setValue("ui/last_project_dir", str(project_path.parent))
 
+    def _choose_project_root(self) -> None:
+        start_dir = self._get_last_dir("ui/last_project_root_dir", Path.cwd())
+        chosen = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            "Projektordner wählen",
+            start_dir,
+        )
+        if not chosen:
+            return
+        project_root = Path(chosen).expanduser()
+        if not project_root.exists() or not project_root.is_dir():
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Projektordner ungültig",
+                "Der ausgewählte Ordner ist nicht verfügbar oder ungültig.",
+            )
+            return
+        self._set_project_root(project_root)
+
+    def _make_project_relative(self, path: str) -> str:
+        if not path:
+            return path
+        project_root = self._get_project_root()
+        if not project_root:
+            return path
+        file_path = Path(path).expanduser()
+        try:
+            return str(file_path.relative_to(project_root))
+        except ValueError:
+            return str(file_path)
+
+    def _resolve_project_path(self, path: str, project_file: Optional[Path]) -> str:
+        if not path:
+            return path
+        candidate = Path(path).expanduser()
+        if candidate.is_absolute():
+            return str(candidate)
+        project_root = self._get_project_root()
+        base = project_root or (project_file.parent if project_file else None)
+        if base:
+            return str(base / candidate)
+        return str(candidate)
+
     def _project_payload(self) -> Dict[str, Any]:
         return {
             "pairs": [
                 {
+                    "image": self._make_project_relative(p.image_path),
+                    "audio": self._make_project_relative(p.audio_path or ""),
+                    "output": self._make_project_relative(p.output),
                     "image": p.image_path,
                     "audio": p.audio_path,
                     "output": p.output,
@@ -1963,6 +2032,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self._on_audios_added(files)
 
     def _pick_image_folder(self):
+        start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
+        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Bildordner wählen", start_dir)
+        if not d:
+            return
+        self._set_last_dir("ui/last_image_dir", d)
+        files = self._collect_media_files(Path(d), (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov"))
         d = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Bildordner wählen", str(Path.cwd())
         )
@@ -1992,6 +2067,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self._on_images_added([str(f) for f in files])
 
     def _pick_audio_folder(self):
+        start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
+        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Audioordner wählen", start_dir)
+        if not d:
+            return
+        self._set_last_dir("ui/last_audio_dir", d)
+        files = self._collect_media_files(Path(d), (".mp3", ".wav", ".flac", ".m4a", ".aac"))
         d = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Audioordner wählen", str(Path.cwd())
         )
@@ -2149,6 +2230,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not path:
             return
         data = self._project_payload()
+        data["settings"] = self._gather_settings(require_valid=False)
         data = {
             "pairs": [
                 {
@@ -2187,6 +2269,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self._set_last_project_path(path)
         self._push_history()
         self.model.clear()
+        project_file = Path(path).expanduser()
+        new=[]
+        for d in data.get("pairs",[]):
+            image_path = self._resolve_project_path(d.get("image", ""), project_file)
+            audio_path = self._resolve_project_path(d.get("audio", ""), project_file)
+            output_path = self._resolve_project_path(d.get("output", ""), project_file)
+            p=PairItem(image_path, audio_path or None)
+            p.output=output_path; p.update_duration(); p.validate(); new.append(p)
         new = []
         for d in data.get("pairs", []):
             p = PairItem(d.get("image", ""), d.get("audio"))
