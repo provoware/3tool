@@ -513,7 +513,11 @@ class MainWindow(QtWidgets.QMainWindow):
         ff_ok = check_ffmpeg()
         self.dashboard = InfoDashboard(); self.dashboard.set_env(ff_ok, True)
         if not ff_ok:
-            QtWidgets.QMessageBox.warning(self, "FFmpeg fehlt", "Bitte FFmpeg installieren, sonst kann kein Video erzeugt werden.")
+            self._show_error_dialog(
+                "FFmpeg fehlt",
+                "Bitte FFmpeg installieren oder im Setup reparieren, sonst kann kein Video erzeugt werden.",
+                QtWidgets.QMessageBox.Warning,
+            )
 
         self.image_list = ImageListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
         self.audio_list = DropListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
@@ -849,6 +853,39 @@ class MainWindow(QtWidgets.QMainWindow):
             self.dashboard.log(msg)
         logger.log(level, msg)
 
+    def _log_details(self, max_chars: int = 4000) -> str:
+        try:
+            text = LOG_FILE.read_text(encoding="utf-8", errors="replace")
+        except Exception as e:
+            return f"Logdatei: {LOG_FILE}\nKonnte Log nicht lesen: {e}"
+        if len(text) > max_chars:
+            text = "... (gekürzt)\n" + text[-max_chars:]
+        return f"Logdatei: {LOG_FILE}\n\n{text}"
+
+    def _show_error_dialog(
+        self,
+        title: str,
+        message: str,
+        icon: QtWidgets.QMessageBox.Icon = QtWidgets.QMessageBox.Critical,
+    ) -> None:
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(icon)
+        box.setWindowTitle(title)
+        box.setText(message)
+        box.setDetailedText(self._log_details())
+        box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        box.exec()
+
+    def _normalize_error_message(self, msg: str) -> str:
+        replacements = {
+            "Fehlendes Audio": "Bitte Audio hinzufügen oder Modus ändern",
+            "FFmpeg-Fehler": "FFmpeg installieren oder im Setup reparieren",
+        }
+        for old, new in replacements.items():
+            if old in msg:
+                return msg.replace(old, new)
+        return msg
+
     def _debug(self, msg:str):
         self._log(f"DEBUG: {msg}", logging.DEBUG)
 
@@ -989,7 +1026,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Fehler beim Speichern", str(e))
+            self._show_error_dialog("Fehler beim Speichern", str(e))
             self._log(f"Fehler beim Speichern: {e}")
             return
         self._log(f"Projekt gespeichert: {path}")
@@ -1001,7 +1038,7 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             data = json.loads(Path(path).read_text(encoding="utf-8"))
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Fehler beim Laden", str(e))
+            self._show_error_dialog("Fehler beim Laden", str(e))
             self._log(f"Fehler beim Laden: {e}")
             return
         self._push_history()
@@ -1043,11 +1080,25 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log("Encoding abgebrochen: keine Paare")
             return
         if any(p.audio_path is None for p in self.pairs):
-            QtWidgets.QMessageBox.warning(self,"Fehlende Audios","Nicht alle Bilder haben ein Audio."); return
+            self._show_error_dialog(
+                "Fehlendes Audio",
+                "Bitte Audio hinzufügen oder Modus ändern.",
+                QtWidgets.QMessageBox.Warning,
+            )
+            return
         for p in self.pairs: p.validate()
         invalid=[p for p in self.pairs if not p.valid]
         if invalid:
-            QtWidgets.QMessageBox.critical(self,"Validierungsfehler",invalid[0].validation_msg); return
+            row = self.pairs.index(invalid[0])
+            idx = self.model.index(row, 0)
+            sel = self.table.selectionModel()
+            if sel is not None:
+                sel.select(idx, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows)
+                self.table.setCurrentIndex(idx)
+            self.table.scrollTo(idx, QtWidgets.QAbstractItemView.PositionAtCenter)
+            self.table.setFocus()
+            self._show_error_dialog("Validierungsfehler", invalid[0].validation_msg)
+            return
         out_dir = Path(self.out_dir_edit.text().strip())
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -1055,7 +1106,7 @@ class MainWindow(QtWidgets.QMainWindow):
             test_file.touch()
             test_file.unlink()
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Ordnerproblem", str(e))
+            self._show_error_dialog("Ordnerproblem", str(e))
             self._log(f"Encoding abgebrochen: Ordnerproblem ({e})")
             return
         self.btn_encode.setEnabled(False); self.btn_stop.setEnabled(True)
@@ -1085,10 +1136,13 @@ class MainWindow(QtWidgets.QMainWindow):
         v=int(perc); self.progress_total.setValue(v); self.dashboard.set_progress(v)
 
     def _on_row_error(self,row:int,msg:str):
+        msg = self._normalize_error_message(msg)
         self._log(f"Fehler in Zeile {row+1}: {msg}")
         if 0<=row<len(self.pairs):
             self.pairs[row].status="FEHLER"
             idx=self.model.index(row,7); self.model.dataChanged.emit(idx,idx)
+            self.table.scrollTo(idx, QtWidgets.QAbstractItemView.PositionAtCenter)
+        self._show_error_dialog("Fehler in Zeile", msg)
         self._update_counts()
 
     def _encode_finished(self):
@@ -1130,7 +1184,7 @@ class MainWindow(QtWidgets.QMainWindow):
         msg = "".join(traceback.format_exception(etype, value, tb))
         self._log(msg, logging.ERROR)
         short = msg if len(msg) < 1000 else msg[:1000] + "\n...\nSiehe Logdatei für Details."
-        QtWidgets.QMessageBox.critical(self, "Unerwarteter Fehler", short)
+        self._show_error_dialog("Unerwarteter Fehler", short)
 
     def _resize_columns(self):
         header = self.table.horizontalHeader()
