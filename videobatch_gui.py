@@ -210,9 +210,12 @@ class EncodeWorker(QtCore.QObject):
         super().__init__()
         self.pairs = pairs; self.settings = settings; self.copy_only = copy_only; self._stop=False
     def stop(self): self._stop=True
+    def _escape_ffmpeg_path(self, path: Path) -> str:
+        return path.as_posix().replace("'", r"\'")
     def run(self):
         total = len(self.pairs)
         for i, item in enumerate(self.pairs):
+            list_path: Optional[str] = None
             if self._stop: self.log.emit("Abbruch durch Benutzer."); break
             item.validate()
             if not item.valid:
@@ -245,9 +248,11 @@ class EncodeWorker(QtCore.QObject):
                     per = duration/len(imgs) if duration else 2
                     with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix='.txt') as f:
                         for im in imgs:
-                            f.write(f"file '{im}'\n")
+                            escaped_path = self._escape_ffmpeg_path(im)
+                            f.write(f"file '{escaped_path}'\n")
                             f.write(f"duration {per}\n")
-                        f.write(f"file '{imgs[-1]}'\n")
+                        escaped_last = self._escape_ffmpeg_path(imgs[-1])
+                        f.write(f"file '{escaped_last}'\n")
                         list_path = f.name
                     cmd = ["ffmpeg","-y","-f","concat","-safe","0","-i",list_path,
                            "-i",item.audio_path,
@@ -275,11 +280,22 @@ class EncodeWorker(QtCore.QObject):
                 proc.wait()
                 if proc.returncode!=0:
                     item.status="FEHLER"; self.row_error.emit(i,"FFmpeg-Fehler")
+                    self.log.emit(f"FFmpeg-Fehler bei {item.output}")
                 else:
                     item.status="FERTIG"; item.progress=100.0
                     self.row_progress.emit(i,100.0); self.log.emit(f"Fertig: {item.output}")
             except Exception as e:
                 item.status="FEHLER"; self.row_error.emit(i,str(e))
+                file_hint = item.output or item.image_path or item.audio_path or "unbekannte Datei"
+                self.log.emit(f"Fehler bei {file_hint}: {e}")
+            finally:
+                if list_path:
+                    try:
+                        Path(list_path).unlink(missing_ok=True)
+                    except Exception as cleanup_error:
+                        self.log.emit(
+                            f"Konnte temporaere Liste nicht loeschen: {list_path} ({cleanup_error})"
+                        )
             done = sum(1 for p in self.pairs if p.status=="FERTIG")
             self.overall_progress.emit(done/max(1,total)*100.0)
         if all(p.status=="FERTIG" for p in self.pairs):
