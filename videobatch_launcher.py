@@ -11,7 +11,11 @@ import shutil
 import subprocess as sp
 import sys
 import os
+import shutil
+import subprocess as sp
 from pathlib import Path
+import shutil
+import subprocess
 
 from core import launcher_checks
 from core.paths import log_dir, user_data_dir
@@ -146,32 +150,76 @@ def build_wizard():
                 shutil.which("ffmpeg") and shutil.which("ffprobe")
             )
             if not self.ffmpeg_ok and sys.platform.startswith("linux"):
+                manager = launcher_checks.linux_package_manager()
+                if not manager:
                 self.progress.emit(
                     60,
                     "ffmpeg wird installiert (Administratorrechte erforderlich)…",
                 )
                 try:
-                    sp.check_call(["sudo", "apt", "update"])
-                    sp.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
+                    subprocess.check_call(["sudo", "apt", "update"])
+                    subprocess.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
                 except Exception as e:
                     errors.append(
                         {
-                            "title": "Administratorrechte fehlen",
+                            "title": "Kein Paketmanager erkannt",
                             "message": (
-                                "Die automatische Installation braucht "
-                                "Administratorrechte (Root-Rechte). "
-                                "Bitte starte das Programm mit passenden Rechten "
-                                "oder installiere ffmpeg manuell."
+                                "Deine Linux-Distribution wurde nicht erkannt. "
+                                "Bitte installiere ffmpeg manuell."
                             ),
-                            "details": str(e),
-                            "permission": True,
+                            "details": launcher_checks.ffmpeg_install_hint(),
+                            "permission": False,
                         }
                     )
+                else:
+                    self.progress.emit(
+                        60,
+                        (
+                            "ffmpeg wird installiert (Administratorrechte "
+                            "erforderlich)…"
+                        ),
+                    )
+                    try:
+                        if manager.update_cmd:
+                            sp.check_call(manager.update_cmd)
+                        sp.check_call(manager.install_cmd)
+                    except sp.CalledProcessError as e:
+                        errors.append(
+                            {
+                                "title": "Administratorrechte fehlen",
+                                "message": (
+                                    "Die automatische Installation braucht "
+                                    "Administratorrechte (Admin-Rechte). "
+                                    "Bitte starte das Programm mit passenden "
+                                    "Rechten oder installiere ffmpeg manuell."
+                                ),
+                                "details": (
+                                    f"{manager.name}: "
+                                    f"{launcher_checks.format_command(manager.install_cmd)} "
+                                    f"({e})"
+                                ),
+                                "permission": True,
+                            }
+                        )
+                    except FileNotFoundError as e:
+                        errors.append(
+                            {
+                                "title": "Paketmanager nicht gefunden",
+                                "message": (
+                                    "Der Paketmanager-Befehl ist nicht "
+                                    "verfügbar. Bitte installiere ffmpeg "
+                                    "manuell."
+                                ),
+                                "details": str(e),
+                                "permission": False,
+                            }
+                        )
 
             self.progress.emit(85, "Abschlusspruefung laeuft…")
             missing_after = [
                 p
                 for p in launcher_checks.REQ_PKGS
+                p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
             ffmpeg_after = bool(
@@ -200,21 +248,50 @@ def build_wizard():
         def _build_ui(self):
             self.info = QtWidgets.QTextBrowser()
             self.info.setOpenExternalLinks(True)
+            self.info.setAccessibleName("Info-Text")
+            self.info.setAccessibleDescription(
+                "Status- und Hilfeinformationen zur Installation und Prüfung."
+            )
             self.progress = QtWidgets.QProgressBar(maximum=100)
+            self.progress.setAccessibleName("Fortschritt")
+            self.progress.setAccessibleDescription(
+                "Zeigt den Fortschritt der Prüf- und Reparaturschritte."
+            )
             self.status_label = QtWidgets.QLabel("Bereit.")
 
-            self.theme_label = QtWidgets.QLabel("Farbschema (Theme):")
+            self.theme_label = QtWidgets.QLabel("&Farbschema (Theme):")
             self.theme_select = QtWidgets.QComboBox()
             self.theme_select.addItems(["Hell", "Dunkel", "Hoher Kontrast"])
             self.theme_select.currentTextChanged.connect(self._apply_theme)
+            self.theme_label.setBuddy(self.theme_select)
+            self.theme_select.setAccessibleName("Farbschema")
+            self.theme_select.setAccessibleDescription(
+                "Wählen Sie das Farbschema für den Launcher."
+            )
 
-            self.debug_check = QtWidgets.QCheckBox("Debug-Log (Fehlersuche)")
+            self.debug_check = QtWidgets.QCheckBox("&Debug-Log (Fehlersuche)")
             self.debug_check.setChecked(self._debug_enabled)
             self.debug_check.toggled.connect(self._toggle_debug)
+            self.debug_check.setAccessibleName("Debug-Log")
+            self.debug_check.setAccessibleDescription(
+                "Schaltet die ausführliche Protokollierung für die Fehlersuche ein."
+            )
 
-            self.btn_fix = QtWidgets.QPushButton("Automatisch reparieren")
-            self.btn_start = QtWidgets.QPushButton("Tool starten →")
-            self.btn_exit = QtWidgets.QPushButton("Beenden")
+            self.btn_fix = QtWidgets.QPushButton("&Reparieren")
+            self.btn_start = QtWidgets.QPushButton("&Starten →")
+            self.btn_exit = QtWidgets.QPushButton("B&eenden")
+            self.btn_fix.setAccessibleName("Reparieren")
+            self.btn_fix.setAccessibleDescription(
+                "Startet die automatische Reparatur der fehlenden Komponenten."
+            )
+            self.btn_start.setAccessibleName("Starten")
+            self.btn_start.setAccessibleDescription(
+                "Startet das Hauptprogramm nach erfolgreicher Prüfung."
+            )
+            self.btn_exit.setAccessibleName("Beenden")
+            self.btn_exit.setAccessibleDescription(
+                "Schließt den Launcher ohne Änderungen."
+            )
 
             self.btn_fix.clicked.connect(self._fix_all)
             self.btn_start.clicked.connect(self.accept)
@@ -235,6 +312,12 @@ def build_wizard():
             row.addWidget(self.btn_start)
             row.addWidget(self.btn_exit)
             lay.addLayout(row)
+            QtWidgets.QWidget.setTabOrder(self.theme_select, self.debug_check)
+            QtWidgets.QWidget.setTabOrder(self.debug_check, self.info)
+            QtWidgets.QWidget.setTabOrder(self.info, self.progress)
+            QtWidgets.QWidget.setTabOrder(self.progress, self.btn_fix)
+            QtWidgets.QWidget.setTabOrder(self.btn_fix, self.btn_start)
+            QtWidgets.QWidget.setTabOrder(self.btn_start, self.btn_exit)
 
         def _start_check(self):
             self.btn_fix.setEnabled(False)
@@ -265,6 +348,7 @@ def build_wizard():
             self.missing_pkgs = [
                 p
                 for p in launcher_checks.REQ_PKGS
+                p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
             self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")

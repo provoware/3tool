@@ -1,4 +1,5 @@
 # Aufgabenliste
+- [x] Barrierefreie Launcher-Shortcuts, Tab-Reihenfolge und Beschreibungen im Wizard ergänzt
 - [x] Bedienhilfe-Beispiele und Begriffserklärungen ergänzen
 - [x] Typpruefung mit mypy einbinden
 - [x] CI-Pipeline fuer automatisches Testen anlegen
@@ -41,3 +42,6 @@
 - [x] Projektordner-Auswahl, Startpfade und relative Projektpfade in der GUI ergänzt
 - [x] Formatter-Zeilenlaenge auf 80 gesetzt und Formatierung ausgefuehrt
 - [x] Tests fuer Launcher-Repairs, Wizard-Logik und GUI-Validierung ergaenzt
+- [x] Launcher verwendet Paketmanager-Helper und klare Hinweise bei fehlenden Rechten
+- [x] Themes ausgelagert, Duplikat-Check und Kontrastwarnung ergänzt
+- [x] Launcher-Installationspruefung konsolidiert (Modulpfade/Imports bereinigt)
