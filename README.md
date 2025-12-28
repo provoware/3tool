@@ -152,9 +152,21 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
 
 1. **Abhängigkeiten ("Dependencies") prüfen**:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements.txt -r requirements-dev.txt
    ```
-2. **Automatische Tests ausführen**:
+2. **Syntax-Check ("Syntax check")**:
+   ```bash
+   python -m compileall -q .
+   ```
+3. **Linting ("Stil- und Regelprüfung")**:
+   ```bash
+   python -m ruff check .
+   ```
+4. **Typprüfung ("Type check")**:
+   ```bash
+   mypy .
+   ```
+5. **Automatische Tests ausführen**:
    ```bash
    python3 -m pytest
    ```
@@ -162,11 +174,11 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
    ```bash
    python3 videobatch_extra.py --selftest
    ```
-3. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
+6. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
    ```bash
    zip -r videobatchtool.zip .
    ```
-4. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
+7. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
 
 ## Backup erstellen
 

@@ -168,3 +168,4 @@
 [2025-12-28] Einrueckungen in Kontextmenues und Launcher-ffmpeg-Check repariert (Aufgabe "Einrueckungen in Kontextmenues und Launcher-ffmpeg-Check repariert" erledigt)
 
 [2025-12-29] 0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt (Aufgabe "0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt" erledigt)
+[2025-12-29] CI um Pytest-Schritt und Dev-Abhaengigkeiten bereinigt (Aufgabe "CI um Pytest-Schritt und Dev-Abhaengigkeiten bereinigt (mypy verschoben, pytest ergaenzt)" erledigt)
