@@ -27,7 +27,7 @@
 - [x] Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen
 - [x] Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern
 - [x] Launcher-Setup stabilisieren (Reparatur-Workflow korrigieren, Theme-Wechsel entkoppeln)
-- [ ] Autostart-Checkliste um laienfreundliche Abhängigkeits-Erklärung erweitern
+- [x] Autostart-Checkliste um laienfreundliche Abhängigkeits-Erklärung erweitern
 - [ ] Konfigurations- und Nutzerdaten konsequent in separaten Datenordner auslagern
 - [ ] Einheitliche Validierung/Fehlermeldungen für alle Eingaben dokumentieren und prüfen
 - [x] Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt
