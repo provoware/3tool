@@ -26,3 +26,4 @@
 - [x] Gefuehrten Start (Wizard) und Bild-Hilfe im GUI ergaenzen
 - [x] Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen
 - [x] Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern
+- [x] Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt
