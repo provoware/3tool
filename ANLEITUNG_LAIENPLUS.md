@@ -44,7 +44,7 @@ ffmpeg -i clip.mp4 -vf "eq=brightness=0.1" heller.mp4
 ## 7. Schrift und Farben im Tool
 
 - Im Menü **Ansicht** kann man die Schriftgröße verändern.
-- Unter **Theme** hilft das Design **Kontrast** bei schwächerem Sehen.
+- Unter **Farbschema** hilft das Design **Kontrast** bei schwächerem Sehen.
 - Durch die neuen Überschriften findest du Dateien, Einstellungen, Tabelle und Hilfe leichter.
 - Mit **Schrift Reset** stellst du die Standardgröße wieder her.
 
@@ -66,8 +66,8 @@ Mit dem Knopf **Öffnen** im Hauptfenster wird der Ausgabeordner angezeigt.
 - Ziehe das Bild per Drag&Drop in den Arbeitsbereich, um es sofort zu verwenden.
 - Im unteren Log-Bereich erscheinen alle Schritte als Meldung.
 
-## 10. Kontrast-Theme einschalten
-- Öffne das Menü **Theme** oben im Fenster.
+## 10. Kontrast-Farbschema einschalten
+- Öffne das Menü **Farbschema** oben im Fenster.
 - Wähle dort **Kontrast**. Dadurch erscheinen gelbe Buchstaben auf schwarzem Hintergrund.
 - Diese Ansicht hilft, wenn die Augen nicht mehr so fit sind.
 
@@ -116,9 +116,9 @@ ffprobe -v quiet -show_format -show_streams eingang.mp4
 ```
 `ffprobe` ist ein Analyse-Werkzeug (Hilfsprogramm), das Informationen wie Auflösung und Kodierung ausgibt.
 
-## 18. Modernes Theme nutzen
+## 18. Modernes Farbschema nutzen
 
-- Öffne das Menü **Theme** im Hauptfenster.
+- Öffne das Menü **Farbschema** im Hauptfenster.
 - Wähle **Modern**. Dieses Design bietet gute Lesbarkeit und angenehme Farben.
 
 ## 19. Hilfe-Bereich ein- oder ausblenden
@@ -768,17 +768,17 @@ python3 videobatch_gui.py
 ```
 Startet die grafische Oberfläche (*GUI*), das Fenster lässt sich mit der Maus an den Rändern ziehen (Größe ändern).
 
-## 119. Dunkles Theme aktivieren
+## 119. Dunkles Farbschema aktivieren
 ```bash
 python3 videobatch_gui.py
 ```
-- Öffne das Menü **Theme**.
+- Öffne das Menü **Farbschema**.
 - Klicke auf **Dunkel**.
-- *Theme* (Darstellungsstil) bestimmt Farben; dunkle Töne schonen die Augen abends.
+- *Farbschema* (Theme = Darstellungsstil) bestimmt Farben; dunkle Töne schonen die Augen abends.
 
-## 120. Sepia-Theme nutzen
+## 120. Sepia-Farbschema nutzen
 ```bash
 python3 videobatch_gui.py
 ```
-- Öffne das Menü **Theme**.
+- Öffne das Menü **Farbschema**.
 - Wähle **Sepia** für warme Brauntöne (*Sepia* = altes Foto-Farbschema), angenehm bei langer Arbeit.
