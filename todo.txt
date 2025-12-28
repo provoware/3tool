@@ -1,4 +1,5 @@
 # Aufgabenliste
+- [x] Barrierefreie Launcher-Shortcuts, Tab-Reihenfolge und Beschreibungen im Wizard ergänzt
 - [x] Bedienhilfe-Beispiele und Begriffserklärungen ergänzen
 - [x] Typpruefung mit mypy einbinden
 - [x] CI-Pipeline fuer automatisches Testen anlegen

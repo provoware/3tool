@@ -200,21 +200,50 @@ def main():
         def _build_ui(self):
             self.info = QtWidgets.QTextBrowser()
             self.info.setOpenExternalLinks(True)
+            self.info.setAccessibleName("Info-Text")
+            self.info.setAccessibleDescription(
+                "Status- und Hilfeinformationen zur Installation und Prüfung."
+            )
             self.progress = QtWidgets.QProgressBar(maximum=100)
+            self.progress.setAccessibleName("Fortschritt")
+            self.progress.setAccessibleDescription(
+                "Zeigt den Fortschritt der Prüf- und Reparaturschritte."
+            )
             self.status_label = QtWidgets.QLabel("Bereit.")
 
-            self.theme_label = QtWidgets.QLabel("Farbschema (Theme):")
+            self.theme_label = QtWidgets.QLabel("&Farbschema (Theme):")
             self.theme_select = QtWidgets.QComboBox()
             self.theme_select.addItems(["Hell", "Dunkel", "Hoher Kontrast"])
             self.theme_select.currentTextChanged.connect(self._apply_theme)
+            self.theme_label.setBuddy(self.theme_select)
+            self.theme_select.setAccessibleName("Farbschema")
+            self.theme_select.setAccessibleDescription(
+                "Wählen Sie das Farbschema für den Launcher."
+            )
 
-            self.debug_check = QtWidgets.QCheckBox("Debug-Log (Fehlersuche)")
+            self.debug_check = QtWidgets.QCheckBox("&Debug-Log (Fehlersuche)")
             self.debug_check.setChecked(self._debug_enabled)
             self.debug_check.toggled.connect(self._toggle_debug)
+            self.debug_check.setAccessibleName("Debug-Log")
+            self.debug_check.setAccessibleDescription(
+                "Schaltet die ausführliche Protokollierung für die Fehlersuche ein."
+            )
 
-            self.btn_fix = QtWidgets.QPushButton("Automatisch reparieren")
-            self.btn_start = QtWidgets.QPushButton("Tool starten →")
-            self.btn_exit = QtWidgets.QPushButton("Beenden")
+            self.btn_fix = QtWidgets.QPushButton("&Reparieren")
+            self.btn_start = QtWidgets.QPushButton("&Starten →")
+            self.btn_exit = QtWidgets.QPushButton("B&eenden")
+            self.btn_fix.setAccessibleName("Reparieren")
+            self.btn_fix.setAccessibleDescription(
+                "Startet die automatische Reparatur der fehlenden Komponenten."
+            )
+            self.btn_start.setAccessibleName("Starten")
+            self.btn_start.setAccessibleDescription(
+                "Startet das Hauptprogramm nach erfolgreicher Prüfung."
+            )
+            self.btn_exit.setAccessibleName("Beenden")
+            self.btn_exit.setAccessibleDescription(
+                "Schließt den Launcher ohne Änderungen."
+            )
 
             self.btn_fix.clicked.connect(self._fix_all)
             self.btn_start.clicked.connect(self.accept)
@@ -235,6 +264,12 @@ def main():
             row.addWidget(self.btn_start)
             row.addWidget(self.btn_exit)
             lay.addLayout(row)
+            QtWidgets.QWidget.setTabOrder(self.theme_select, self.debug_check)
+            QtWidgets.QWidget.setTabOrder(self.debug_check, self.info)
+            QtWidgets.QWidget.setTabOrder(self.info, self.progress)
+            QtWidgets.QWidget.setTabOrder(self.progress, self.btn_fix)
+            QtWidgets.QWidget.setTabOrder(self.btn_fix, self.btn_start)
+            QtWidgets.QWidget.setTabOrder(self.btn_start, self.btn_exit)
 
         def _start_check(self):
             self.btn_fix.setEnabled(False)

@@ -155,6 +155,7 @@
 [2025-12-28] Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt (Aufgabe "Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt" erledigt)
 [2025-12-28] Projektordner-Auswahl, Standard-Startpfade und relative Projektpfade ergänzt (Aufgabe "Projektordner-Auswahl, Startpfade und relative Projektpfade in der GUI ergänzt" erledigt)
 [2025-12-28] Formatter-Zeilenlaenge auf 80 gesetzt, Formatierung bereinigt und Validierung in der GUI korrigiert (Aufgabe "Formatter-Zeilenlaenge auf 80 gesetzt und Formatierung ausgefuehrt" erledigt)
+[2025-12-28] Barrierefreie Launcher-Shortcuts, Tab-Reihenfolge und Beschreibungen im Wizard ergänzt (Aufgabe "Barrierefreie Launcher-Shortcuts, Tab-Reihenfolge und Beschreibungen im Wizard ergänzt" erledigt)
 
 [2025-12-28] Autostart-Checkliste um laienfreundliche Abhaengigkeits-Erklaerung erweitert (Aufgabe "Autostart-Checkliste um laienfreundliche Abhaengigkeits-Erklaerung erweitern" erledigt)
 [2025-12-28] Konfigurations- und Nutzerdaten in zentralem Datenordner gebuendelt (Aufgabe "Konfigurations- und Nutzerdaten konsequent in separaten Datenordner auslagern" erledigt)
