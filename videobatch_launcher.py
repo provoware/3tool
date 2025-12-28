@@ -9,6 +9,8 @@ from __future__ import annotations
 import logging
 import sys
 import os
+import shutil
+import subprocess as sp
 from pathlib import Path
 import shutil
 import subprocess
@@ -152,6 +154,8 @@ def main():
                 shutil.which("ffmpeg") and shutil.which("ffprobe")
             )
             if not self.ffmpeg_ok and sys.platform.startswith("linux"):
+                manager = launcher_checks.linux_package_manager()
+                if not manager:
                 self.progress.emit(
                     60,
                     "ffmpeg wird installiert (Administratorrechte erforderlich)…",
@@ -162,20 +166,63 @@ def main():
                 except Exception as e:
                     errors.append(
                         {
-                            "title": "Administratorrechte fehlen",
+                            "title": "Kein Paketmanager erkannt",
                             "message": (
-                                "Die automatische Installation braucht "
-                                "Administratorrechte (Root-Rechte). "
-                                "Bitte starte das Programm mit passenden Rechten "
-                                "oder installiere ffmpeg manuell."
+                                "Deine Linux-Distribution wurde nicht erkannt. "
+                                "Bitte installiere ffmpeg manuell."
                             ),
-                            "details": str(e),
-                            "permission": True,
+                            "details": launcher_checks.ffmpeg_install_hint(),
+                            "permission": False,
                         }
                     )
+                else:
+                    self.progress.emit(
+                        60,
+                        (
+                            "ffmpeg wird installiert (Administratorrechte "
+                            "erforderlich)…"
+                        ),
+                    )
+                    try:
+                        if manager.update_cmd:
+                            sp.check_call(manager.update_cmd)
+                        sp.check_call(manager.install_cmd)
+                    except sp.CalledProcessError as e:
+                        errors.append(
+                            {
+                                "title": "Administratorrechte fehlen",
+                                "message": (
+                                    "Die automatische Installation braucht "
+                                    "Administratorrechte (Admin-Rechte). "
+                                    "Bitte starte das Programm mit passenden "
+                                    "Rechten oder installiere ffmpeg manuell."
+                                ),
+                                "details": (
+                                    f"{manager.name}: "
+                                    f"{launcher_checks.format_command(manager.install_cmd)} "
+                                    f"({e})"
+                                ),
+                                "permission": True,
+                            }
+                        )
+                    except FileNotFoundError as e:
+                        errors.append(
+                            {
+                                "title": "Paketmanager nicht gefunden",
+                                "message": (
+                                    "Der Paketmanager-Befehl ist nicht "
+                                    "verfügbar. Bitte installiere ffmpeg "
+                                    "manuell."
+                                ),
+                                "details": str(e),
+                                "permission": False,
+                            }
+                        )
 
             self.progress.emit(85, "Abschlusspruefung laeuft…")
             missing_after = [
+                p
+                for p in launcher_checks.REQ_PKGS
                 p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
@@ -268,6 +315,8 @@ def main():
 
         def _check(self):
             self.missing_pkgs = [
+                p
+                for p in launcher_checks.REQ_PKGS
                 p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
