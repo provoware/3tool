@@ -12,12 +12,13 @@ import os
 from pathlib import Path
 
 from core import launcher_checks
+from core.paths import log_dir, user_data_dir
 
 ENV_DIR = launcher_checks.ENV_DIR
 SELF = Path(__file__).resolve()
 FLAG = "VT_BOOTSTRAPPED"
-USER_DATA_DIR = Path.home() / ".videobatchtool"
-LOG_FILE = USER_DATA_DIR / "logs" / "launcher.log"
+USER_DATA_DIR = user_data_dir()
+LOG_FILE = log_dir() / "launcher.log"
 
 
 def setup_logging(debug: bool) -> None:

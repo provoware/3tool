@@ -28,12 +28,13 @@ from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
+from core.paths import config_dir, log_dir, user_data_dir
 from core.utils import build_out_name, human_time, probe_duration
 
 # ---------- Paths ----------
-APP_DIR = Path.home() / ".videobatchtool"
-CONFIG_DIR = APP_DIR / "config"
-LOG_DIR = APP_DIR / "logs"
+APP_DIR = user_data_dir()
+CONFIG_DIR = config_dir()
+LOG_DIR = log_dir()
 CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 SETTINGS_FILE = CONFIG_DIR / "settings.ini"
@@ -443,6 +444,7 @@ class EncodeWorker(QtCore.QObject):
             self.row_error.emit(index, item.validation_msg)
             self._mark_complete(total)
             return
+        proc: Optional[subprocess.Popen] = None
         try:
             item.status = "ENCODIERE"
             item.progress = 0.0
@@ -465,7 +467,12 @@ class EncodeWorker(QtCore.QObject):
                 extra = max(0.0, duration - vdur)
                 cmd = ["ffmpeg", "-y", "-i", item.image_path, "-i", item.audio_path]
                 if extra > 0:
-                    cmd += ["-vf", f"tpad=stop_mode=clone:stop_duration={extra}", "-c:v", "libx264"]
+                    cmd += [
+                        "-vf",
+                        f"tpad=stop_mode=clone:stop_duration={extra}",
+                        "-c:v",
+                        "libx264",
+                    ]
                 else:
                     cmd += ["-c:v", "copy"]
                 cmd += [
@@ -488,7 +495,9 @@ class EncodeWorker(QtCore.QObject):
                 if not imgs:
                     raise Exception("Keine Bilder für Slideshow")
                 per = duration / len(imgs) if duration else 2
-                with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".txt") as f:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, mode="w", suffix=".txt"
+                ) as f:
                     for im in imgs:
                         escaped_path = self._escape_ffmpeg_path(im)
                         f.write(f"file '{escaped_path}'\n")
@@ -549,167 +558,35 @@ class EncodeWorker(QtCore.QObject):
                     str(crf),
                     item.output,
                 ]
-            proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            proc = subprocess.Popen(
+                cmd,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                text=True,
+            )
             self._register_process(proc)
             if proc.stderr:
                 for line in proc.stderr:
                     if self._stop_event.is_set():
-        self._stop = False
-
-    def stop(self):
-        self._stop = True
-
-    def _escape_ffmpeg_path(self, path: Path) -> str:
-        return path.as_posix().replace("'", r"\'")
-
-    def run(self):
-        total = len(self.pairs)
-        for i, item in enumerate(self.pairs):
-            list_path: Optional[str] = None
-            if self._stop:
-                self.log.emit("Abbruch durch Benutzer.")
-                break
-            item.validate()
-            if not item.valid:
-                item.status = "FEHLER"
-                self.row_error.emit(i, item.validation_msg)
-                continue
-            try:
-                item.status = "ENCODIERE"
-                item.progress = 0.0
-                self.row_progress.emit(i, 0.0)
-                out_dir = Path(self.settings["out_dir"]).resolve()
-                out_dir.mkdir(parents=True, exist_ok=True)
-                item.output = build_out_name(item.audio_path, out_dir)
-                w, h = self.settings["width"], self.settings["height"]
-                crf = self.settings["crf"]
-                preset = self.settings["preset"]
-                ab = self.settings["abitrate"]
-                duration = item.duration or 1
-                mode = self.settings.get("mode", "Standard")
-                if mode == "Video + Audio":
-                    vdur = probe_duration(item.image_path)
-                    extra = max(0.0, duration - vdur)
-                    cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i",
-                        item.image_path,
-                        "-i",
-                        item.audio_path,
-                    ]
-                    if extra > 0:
-                        cmd += [
-                            "-vf",
-                            f"tpad=stop_mode=clone:stop_duration={extra}",
-                            "-c:v",
-                            "libx264",
-                        ]
-                    else:
-                        cmd += ["-c:v", "copy"]
-                    cmd += [
-                        "-c:a",
-                        "aac",
-                        "-b:a",
-                        ab,
-                        "-shortest",
-                        "-preset",
-                        preset,
-                        "-crf",
-                        str(crf),
-                        item.output,
-                    ]
-                elif mode == "Slideshow":
-                    img_dir = Path(item.image_path)
-                    imgs = []
-                    for ext in ("*.jpg", "*.jpeg", "*.png", "*.bmp", "*.webp"):
-                        imgs.extend(sorted(img_dir.glob(ext)))
-                    if not imgs:
-                        raise Exception("Keine Bilder für Slideshow")
-                    per = duration / len(imgs) if duration else 2
-                    with tempfile.NamedTemporaryFile(
-                        delete=False, mode="w", suffix=".txt"
-                    ) as f:
-                        for im in imgs:
-                            escaped_path = self._escape_ffmpeg_path(im)
-                            f.write(f"file '{escaped_path}'\n")
-                            f.write(f"duration {per}\n")
-                        escaped_last = self._escape_ffmpeg_path(imgs[-1])
-                        f.write(f"file '{escaped_last}'\n")
-                        list_path = f.name
-                    cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-f",
-                        "concat",
-                        "-safe",
-                        "0",
-                        "-i",
-                        list_path,
-                        "-i",
-                        item.audio_path,
-                        "-c:v",
-                        "libx264",
-                        "-vf",
-                        f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
-                        "-c:a",
-                        "aac",
-                        "-b:a",
-                        ab,
-                        "-shortest",
-                        "-preset",
-                        preset,
-                        "-crf",
-                        str(crf),
-                        item.output,
-                    ]
-                else:
-                    cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-loop",
-                        "1",
-                        "-i",
-                        item.image_path,
-                        "-i",
-                        item.audio_path,
-                        "-c:v",
-                        "libx264",
-                        "-tune",
-                        "stillimage",
-                        "-vf",
-                        f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
-                        "-c:a",
-                        "aac",
-                        "-b:a",
-                        ab,
-                        "-shortest",
-                        "-preset",
-                        preset,
-                        "-crf",
-                        str(crf),
-                        item.output,
-                    ]
-                proc = subprocess.Popen(
-                    cmd,
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    text=True,
-                )
-                for line in proc.stderr:
-                    if self._stop:
                         proc.kill()
                         break
-                    if "time=" in line:
+                    if "time=" in line and duration:
                         try:
                             t = line.split("time=")[1].split(" ")[0]
                             h_, m_, s_ = t.split(":")
-                            elapsed = float(h_) * 3600 + float(m_) * 60 + float(s_)
+                            elapsed = (
+                                float(h_) * 3600
+                                + float(m_) * 60
+                                + float(s_)
+                            )
                             perc = min(100.0, elapsed / duration * 100.0)
                             item.progress = perc
                             self.row_progress.emit(index, perc)
                         except Exception as e:
-                            print("Fehler beim Lesen des Fortschritts:", e, file=sys.stderr)
+                            logger.warning(
+                                "Fehler beim Lesen des Fortschritts: %s",
+                                e,
+                            )
             proc.wait()
             if self._stop_event.is_set():
                 item.status = "ABGEBROCHEN"
@@ -726,7 +603,12 @@ class EncodeWorker(QtCore.QObject):
         except Exception as e:
             item.status = "FEHLER"
             self.row_error.emit(index, str(e))
-            file_hint = item.output or item.image_path or item.audio_path or "unbekannte Datei"
+            file_hint = (
+                item.output
+                or item.image_path
+                or item.audio_path
+                or "unbekannte Datei"
+            )
             self.log.emit(f"Fehler bei {file_hint}: {e}")
         finally:
             if list_path:
@@ -734,9 +616,10 @@ class EncodeWorker(QtCore.QObject):
                     Path(list_path).unlink(missing_ok=True)
                 except Exception as cleanup_error:
                     self.log.emit(
-                        f"Konnte temporaere Liste nicht loeschen: {list_path} ({cleanup_error})"
+                        "Konnte temporaere Liste nicht loeschen: "
+                        f"{list_path} ({cleanup_error})"
                     )
-            if "proc" in locals():
+            if proc is not None:
                 self._unregister_process(proc)
             self._mark_complete(total)
 
@@ -746,55 +629,22 @@ class EncodeWorker(QtCore.QObject):
         if parallel_jobs == 1:
             for i, item in enumerate(self.pairs):
                 self._encode_item(i, item, total)
+                if self._stop_event.is_set():
+                    break
         else:
             with ThreadPoolExecutor(max_workers=parallel_jobs) as executor:
-                futures = [executor.submit(self._encode_item, i, item, total) for i, item in enumerate(self.pairs)]
+                futures = [
+                    executor.submit(self._encode_item, i, item, total)
+                    for i, item in enumerate(self.pairs)
+                ]
                 while futures:
-                    done, futures = wait(futures, return_when=FIRST_COMPLETED)
+                    _, futures = wait(
+                        futures, return_when=FIRST_COMPLETED
+                    )
                     if self._stop_event.is_set():
+                        for future in futures:
+                            future.cancel()
                         break
-                            elapsed = (
-                                float(h_) * 3600 + float(m_) * 60 + float(s_)
-                            )
-                            perc = min(100.0, elapsed / duration * 100.0)
-                            item.progress = perc
-                            self.row_progress.emit(i, perc)
-                        except Exception as e:
-                            print(
-                                "Fehler beim Lesen des Fortschritts:",
-                                e,
-                                file=sys.stderr,
-                            )
-                proc.wait()
-                if proc.returncode != 0:
-                    item.status = "FEHLER"
-                    self.row_error.emit(i, "FFmpeg-Fehler")
-                    self.log.emit(f"FFmpeg-Fehler bei {item.output}")
-                else:
-                    item.status = "FERTIG"
-                    item.progress = 100.0
-                    self.row_progress.emit(i, 100.0)
-                    self.log.emit(f"Fertig: {item.output}")
-            except Exception as e:
-                item.status = "FEHLER"
-                self.row_error.emit(i, str(e))
-                file_hint = (
-                    item.output
-                    or item.image_path
-                    or item.audio_path
-                    or "unbekannte Datei"
-                )
-                self.log.emit(f"Fehler bei {file_hint}: {e}")
-            finally:
-                if list_path:
-                    try:
-                        Path(list_path).unlink(missing_ok=True)
-                    except Exception as cleanup_error:
-                        self.log.emit(
-                            f"Konnte temporaere Liste nicht loeschen: {list_path} ({cleanup_error})"
-                        )
-            done = sum(1 for p in self.pairs if p.status == "FERTIG")
-            self.overall_progress.emit(done / max(1, total) * 100.0)
         if all(p.status == "FERTIG" for p in self.pairs):
             try:
                 dst = get_used_dir()
@@ -805,7 +655,8 @@ class EncodeWorker(QtCore.QObject):
                             safe_move(Path(f), dst, copy_only=self.copy_only)
                             moved += 1
                 self.log.emit(
-                    f"{moved} Dateien nach {dst} {'kopiert' if self.copy_only else 'verschoben'}."
+                    f"{moved} Dateien nach {dst} "
+                    f"{'kopiert' if self.copy_only else 'verschoben'}."
                 )
             except Exception as e:
                 self.log.emit(f"Archivierung fehlgeschlagen: {e}")
