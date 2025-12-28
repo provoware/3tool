@@ -113,7 +113,7 @@ def main():
             else:
                 self.results_ready.emit(results)
 
-    class FixWorker(QtCore.QThread):
+    class InstallWorker(QtCore.QThread):
         progress = QtCore.Signal(int, str)
         finished = QtCore.Signal(object)
 
@@ -380,7 +380,7 @@ def main():
             self._set_busy(True)
             self.progress.setValue(0)
             self.status_label.setText("Installation laeuft…")
-            self.worker = FixWorker(self.py, self.missing_pkgs, self.ffmpeg_ok)
+            self.worker = InstallWorker(self.py, self.missing_pkgs, self.ffmpeg_ok)
             self.worker.progress.connect(self._on_progress)
             self.worker.finished.connect(self._on_fix_finished)
             self.worker.start()
