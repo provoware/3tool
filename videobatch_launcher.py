@@ -368,20 +368,33 @@ def main():
             self.progress.setValue(max(0, min(100, value)))
             self.status_label.setText(text)
 
-        def _show_error(self, title: str, message: str, details: str, permission: bool) -> None:
+        def _show_error(
+            self,
+            title: str,
+            message: str,
+            details: str,
+            permission: bool,
+        ) -> None:
             msg = QtWidgets.QMessageBox(self)
             msg.setWindowTitle(title)
             msg.setIcon(QtWidgets.QMessageBox.Warning)
             msg.setText(message)
             details_btn = None
             if permission:
-                details_btn = msg.addButton("Details anzeigen", QtWidgets.QMessageBox.ActionRole)
+                details_btn = msg.addButton(
+                    "Details anzeigen",
+                    QtWidgets.QMessageBox.ActionRole,
+                )
                 msg.addButton(QtWidgets.QMessageBox.Ok)
             else:
                 msg.setDetailedText(details)
                 msg.addButton(QtWidgets.QMessageBox.Ok)
             msg.exec()
-            if permission and details_btn is not None and msg.clickedButton() == details_btn:
+            if (
+                permission
+                and details_btn is not None
+                and msg.clickedButton() == details_btn
+            ):
                 QtWidgets.QMessageBox.information(
                     self,
                     "Details",
@@ -422,6 +435,7 @@ def main():
         if hasattr(gui, "LOG_FILE"):
             print("Details stehen in", gui.LOG_FILE)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
