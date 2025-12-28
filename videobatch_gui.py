@@ -46,8 +46,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler(LOG_FILE, encoding="utf-8"),
-        logging.StreamHandler(sys.stdout)
-    ]
+        logging.StreamHandler(sys.stdout),
+    ],
 )
 logger = logging.getLogger("VideoBatchTool")
 
@@ -68,8 +68,7 @@ THEMES = {
     ),
     "Hell": (
         "QWidget{background-color:#ffffff;color:#202020;} "
-        "QPushButton{background-color:#e0e0e0;color:#202020;}"
-        + FOCUS_STYLE
+        "QPushButton{background-color:#e0e0e0;color:#202020;}" + FOCUS_STYLE
     ),
     "Dunkel": (
         "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
@@ -81,6 +80,11 @@ THEMES = {
         "QWidget{background-color:#f4ecd8;color:#5b4636;} "
         "QPushButton{background-color:#d6c3a0;color:#5b4636;} "
         "QWidget:focus{outline:2px solid #8d6e63;}"
+        "QPushButton{background-color:#444;color:#e0e0e0;}" + FOCUS_STYLE
+    ),
+    "Sepia": (
+        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;}" + FOCUS_STYLE
     ),
     "Hochkontrast Hell": (
         "QWidget{background-color:#ffffff;color:#000000;} "
@@ -97,13 +101,49 @@ THEMES = {
         "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
         "QHeaderView::section{background-color:#ffffff;color:#000000;}"
         + FOCUS_STYLE
+        + "QPushButton{background-color:#e0e0e0;color:#202020;} "
+        "QWidget:focus{outline:2px solid #1a73e8;}"
+    ),
+    "Dunkel": (
+        "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
+        "QPushButton{background-color:#444;color:#e0e0e0;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#3a3a3a;color:#f0f0f0;} "
+        "QWidget:focus{outline:2px solid #90caf9;}"
+    ),
+    "Sepia": (
+        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;} "
+        "QWidget:focus{outline:2px solid #8d6e63;}"
+    ),
+    "Hochkontrast Hell": (
+        "QWidget{background-color:#ffffff;color:#000000;} "
+        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#ffffff;color:#000000;border:2px solid #000000;} "
+        "QWidget:focus{outline:3px solid #ffbf00;}"
+    ),
+    "Hochkontrast Dunkel": (
+        "QWidget{background-color:#000000;color:#ffffff;} "
+        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;} "
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#000000;color:#ffffff;border:2px solid #ffffff;} "
+        "QWidget:focus{outline:3px solid #ffbf00;}"
     ),
 }
 
 # ---------- Helpers ----------
-IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov")
+IMAGE_EXTENSIONS = (
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".bmp",
+    ".webp",
+    ".mp4",
+    ".mkv",
+    ".avi",
+    ".mov",
+)
 AUDIO_EXTENSIONS = (".mp3", ".wav", ".flac", ".m4a", ".aac")
 SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+OUTPUT_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov")
 
 
 def which(p: str):
@@ -131,7 +171,7 @@ def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
     tgt = dst_dir / src.name
     if tgt.exists():
         stem, suf = src.stem, src.suffix
-        timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         tgt = dst_dir / f"{stem}_{timestamp}{suf}"
     try:
         if copy_only:
@@ -147,15 +187,19 @@ def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
                 print("Fehler beim Löschen:", e, file=sys.stderr)
     return tgt
 
-def make_thumb(path: str, size: Tuple[int,int]=(160,90)) -> QtGui.QPixmap:
+
+def make_thumb(path: str, size: Tuple[int, int] = (160, 90)) -> QtGui.QPixmap:
     try:
         from PIL import Image
+
         img = Image.open(path)
         img.thumbnail(size)
         if img.mode != "RGBA":
             img = img.convert("RGBA")
         data = img.tobytes("raw", "RGBA")
-        qimg = QtGui.QImage(data, img.size[0], img.size[1], QtGui.QImage.Format_RGBA8888)
+        qimg = QtGui.QImage(
+            data, img.size[0], img.size[1], QtGui.QImage.Format_RGBA8888
+        )
         return QtGui.QPixmap.fromImage(qimg)
     except Exception:
         pix = QtGui.QPixmap(size[0], size[1])
@@ -164,7 +208,17 @@ def make_thumb(path: str, size: Tuple[int,int]=(160,90)) -> QtGui.QPixmap:
 
 
 # ---------- Datenmodell ----------
-COLUMNS = ["#", "Thumb", "Bild", "Audio", "Dauer", "Ausgabe", "Fortschritt", "Status"]
+COLUMNS = [
+    "#",
+    "Thumb",
+    "Bild",
+    "Audio",
+    "Dauer",
+    "Ausgabe",
+    "Fortschritt",
+    "Status",
+]
+
 
 @dataclass
 class PairItem:
@@ -179,94 +233,169 @@ class PairItem:
     validation_msg: str = ""
 
     def update_duration(self):
-        if self.audio_path: self.duration = probe_duration(self.audio_path)
+        if self.audio_path:
+            self.duration = probe_duration(self.audio_path)
+
     def load_thumb(self):
-        if self.thumb is None and self.image_path: self.thumb = make_thumb(self.image_path)
+        if self.thumb is None and self.image_path:
+            self.thumb = make_thumb(self.image_path)
+
     def validate(self):
         image_path = (self.image_path or "").strip()
         audio_path = (self.audio_path or "").strip() if self.audio_path else ""
         if not image_path or not audio_path:
-            self.valid=False; self.validation_msg="Bild oder Audio fehlt"; return
+            self.valid = False
+            self.validation_msg = "Bild oder Audio fehlt"
+            return
         ip, ap = Path(image_path), Path(audio_path)
         if not ip.exists():
-            self.valid=False; self.validation_msg="Bildpfad nicht gefunden"; return
+            self.valid = False
+            self.validation_msg = "Bildpfad nicht gefunden"
+            return
         if not ap.exists():
-            self.valid=False; self.validation_msg="Audiopfad nicht gefunden"; return
+            self.valid = False
+            self.validation_msg = "Audiopfad nicht gefunden"
+            return
         if ip.is_dir():
             if not os.access(ip, os.R_OK | os.X_OK):
-                self.valid=False; self.validation_msg="Bildordner ist nicht lesbar (keine Rechte)"; return
+                self.valid = False
+                self.validation_msg = (
+                    "Bildordner ist nicht lesbar (keine Rechte)"
+                )
+                return
         else:
             if not os.access(ip, os.R_OK):
-                self.valid=False; self.validation_msg="Bilddatei ist nicht lesbar (keine Rechte)"; return
+                self.valid = False
+                self.validation_msg = (
+                    "Bilddatei ist nicht lesbar (keine Rechte)"
+                )
+                return
             if ip.suffix.lower() not in IMAGE_EXTENSIONS:
-                self.valid=False; self.validation_msg="Ungültiges Bild- oder Videoformat"; return
+                self.valid = False
+                self.validation_msg = "Ungültiges Bild- oder Videoformat"
+                return
         if not os.access(ap, os.R_OK):
-            self.valid=False; self.validation_msg="Audiodatei ist nicht lesbar (keine Rechte)"; return
+            self.valid = False
+            self.validation_msg = "Audiodatei ist nicht lesbar (keine Rechte)"
+            return
         if ap.suffix.lower() not in AUDIO_EXTENSIONS:
-            self.valid=False; self.validation_msg="Ungültiges Audioformat"; return
-        self.valid=True; self.validation_msg=""
+            self.valid = False
+            self.validation_msg = "Ungültiges Audioformat"
+            return
+        self.valid = True
+        self.validation_msg = ""
+
 
 class PairTableModel(QAbstractTableModel):
     def __init__(self, pairs: List[PairItem]):
-        super().__init__(); self.pairs = pairs
-    def rowCount(self, parent=QModelIndex()): return len(self.pairs)
-    def columnCount(self, parent=QModelIndex()): return len(COLUMNS)
+        super().__init__()
+        self.pairs = pairs
+
+    def rowCount(self, parent=QModelIndex()):
+        return len(self.pairs)
+
+    def columnCount(self, parent=QModelIndex()):
+        return len(COLUMNS)
+
     def headerData(self, s, o, role=Qt.DisplayRole):
-        if role != Qt.DisplayRole: return None
-        return COLUMNS[s] if o == Qt.Horizontal else str(s+1)
+        if role != Qt.DisplayRole:
+            return None
+        return COLUMNS[s] if o == Qt.Horizontal else str(s + 1)
+
     def data(self, idx, role=Qt.DisplayRole):
-        if not idx.isValid(): return None
-        item = self.pairs[idx.row()]; col = idx.column()
+        if not idx.isValid():
+            return None
+        item = self.pairs[idx.row()]
+        col = idx.column()
         if role == Qt.DisplayRole:
-            if col==0: return str(idx.row()+1)
-            if col==2: return item.image_path
-            if col==3: return item.audio_path or "—"
-            if col==4: return human_time(item.duration) if item.duration else "?"
-            if col==5: return item.output or "—"
-            if col==6: return f"{int(item.progress)}%"
-            if col==7: return item.status
-        if role == Qt.DecorationRole and col==1:
-            item.load_thumb(); return item.thumb
+            if col == 0:
+                return str(idx.row() + 1)
+            if col == 2:
+                return item.image_path
+            if col == 3:
+                return item.audio_path or "—"
+            if col == 4:
+                return human_time(item.duration) if item.duration else "?"
+            if col == 5:
+                return item.output or "—"
+            if col == 6:
+                return f"{int(item.progress)}%"
+            if col == 7:
+                return item.status
+        if role == Qt.DecorationRole and col == 1:
+            item.load_thumb()
+            return item.thumb
         if role == Qt.ToolTipRole:
-            if col in (2,3,5): return {2:item.image_path,3:item.audio_path or "",5:item.output or ""}[col]
-            if not item.valid: return item.validation_msg
+            if col in (2, 3, 5):
+                return {
+                    2: item.image_path,
+                    3: item.audio_path or "",
+                    5: item.output or "",
+                }[col]
+            if not item.valid:
+                return item.validation_msg
         if role == Qt.ForegroundRole and not item.valid:
             return QtGui.QBrush(Qt.red)
         return None
+
     def flags(self, idx):
-        if not idx.isValid(): return Qt.NoItemFlags
+        if not idx.isValid():
+            return Qt.NoItemFlags
         f = Qt.ItemIsEnabled | Qt.ItemIsSelectable
-        if idx.column() in (2,3,5): f |= Qt.ItemIsEditable
+        if idx.column() in (2, 3, 5):
+            f |= Qt.ItemIsEditable
         return f
+
     def setData(self, idx, value, role=Qt.EditRole):
-        if role != Qt.EditRole or not idx.isValid(): return False
-        item = self.pairs[idx.row()]; col = idx.column()
-        if col==2: item.image_path=value; item.thumb=None
-        elif col==3: item.audio_path=value; item.update_duration()
-        elif col==5: item.output=value
-        else: return False
-        item.validate(); self.dataChanged.emit(idx, idx); return True
+        if role != Qt.EditRole or not idx.isValid():
+            return False
+        item = self.pairs[idx.row()]
+        col = idx.column()
+        if col == 2:
+            item.image_path = value
+            item.thumb = None
+        elif col == 3:
+            item.audio_path = value
+            item.update_duration()
+        elif col == 5:
+            item.output = value
+        else:
+            return False
+        item.validate()
+        self.dataChanged.emit(idx, idx)
+        return True
+
     def add_pairs(self, new_pairs: List[PairItem]):
-        self.beginInsertRows(QModelIndex(), len(self.pairs), len(self.pairs)+len(new_pairs)-1)
-        self.pairs.extend(new_pairs); self.endInsertRows()
+        self.beginInsertRows(
+            QModelIndex(), len(self.pairs), len(self.pairs) + len(new_pairs) - 1
+        )
+        self.pairs.extend(new_pairs)
+        self.endInsertRows()
+
     def remove_rows(self, rows: List[int]):
         for r in sorted(rows, reverse=True):
             if 0 <= r < len(self.pairs):
                 self.beginRemoveRows(QModelIndex(), r, r)
                 self.pairs.pop(r)
                 self.endRemoveRows()
+
     def clear(self):
-        self.beginResetModel(); self.pairs.clear(); self.endResetModel()
+        self.beginResetModel()
+        self.pairs.clear()
+        self.endResetModel()
+
 
 # ---------- Worker ----------
 class EncodeWorker(QtCore.QObject):
-    row_progress     = Signal(int, float)
+    row_progress = Signal(int, float)
     overall_progress = Signal(float)
-    row_error        = Signal(int, str)
-    log              = Signal(str)
-    finished         = Signal()
+    row_error = Signal(int, str)
+    log = Signal(str)
+    finished = Signal()
 
-    def __init__(self, pairs: List[PairItem], settings: Dict[str, Any], copy_only: bool):
+    def __init__(
+        self, pairs: List[PairItem], settings: Dict[str, Any], copy_only: bool
+    ):
         super().__init__()
         self.pairs = pairs
         self.settings = settings
@@ -425,6 +554,150 @@ class EncodeWorker(QtCore.QObject):
             if proc.stderr:
                 for line in proc.stderr:
                     if self._stop_event.is_set():
+        self._stop = False
+
+    def stop(self):
+        self._stop = True
+
+    def _escape_ffmpeg_path(self, path: Path) -> str:
+        return path.as_posix().replace("'", r"\'")
+
+    def run(self):
+        total = len(self.pairs)
+        for i, item in enumerate(self.pairs):
+            list_path: Optional[str] = None
+            if self._stop:
+                self.log.emit("Abbruch durch Benutzer.")
+                break
+            item.validate()
+            if not item.valid:
+                item.status = "FEHLER"
+                self.row_error.emit(i, item.validation_msg)
+                continue
+            try:
+                item.status = "ENCODIERE"
+                item.progress = 0.0
+                self.row_progress.emit(i, 0.0)
+                out_dir = Path(self.settings["out_dir"]).resolve()
+                out_dir.mkdir(parents=True, exist_ok=True)
+                item.output = build_out_name(item.audio_path, out_dir)
+                w, h = self.settings["width"], self.settings["height"]
+                crf = self.settings["crf"]
+                preset = self.settings["preset"]
+                ab = self.settings["abitrate"]
+                duration = item.duration or 1
+                mode = self.settings.get("mode", "Standard")
+                if mode == "Video + Audio":
+                    vdur = probe_duration(item.image_path)
+                    extra = max(0.0, duration - vdur)
+                    cmd = [
+                        "ffmpeg",
+                        "-y",
+                        "-i",
+                        item.image_path,
+                        "-i",
+                        item.audio_path,
+                    ]
+                    if extra > 0:
+                        cmd += [
+                            "-vf",
+                            f"tpad=stop_mode=clone:stop_duration={extra}",
+                            "-c:v",
+                            "libx264",
+                        ]
+                    else:
+                        cmd += ["-c:v", "copy"]
+                    cmd += [
+                        "-c:a",
+                        "aac",
+                        "-b:a",
+                        ab,
+                        "-shortest",
+                        "-preset",
+                        preset,
+                        "-crf",
+                        str(crf),
+                        item.output,
+                    ]
+                elif mode == "Slideshow":
+                    img_dir = Path(item.image_path)
+                    imgs = []
+                    for ext in ("*.jpg", "*.jpeg", "*.png", "*.bmp", "*.webp"):
+                        imgs.extend(sorted(img_dir.glob(ext)))
+                    if not imgs:
+                        raise Exception("Keine Bilder für Slideshow")
+                    per = duration / len(imgs) if duration else 2
+                    with tempfile.NamedTemporaryFile(
+                        delete=False, mode="w", suffix=".txt"
+                    ) as f:
+                        for im in imgs:
+                            escaped_path = self._escape_ffmpeg_path(im)
+                            f.write(f"file '{escaped_path}'\n")
+                            f.write(f"duration {per}\n")
+                        escaped_last = self._escape_ffmpeg_path(imgs[-1])
+                        f.write(f"file '{escaped_last}'\n")
+                        list_path = f.name
+                    cmd = [
+                        "ffmpeg",
+                        "-y",
+                        "-f",
+                        "concat",
+                        "-safe",
+                        "0",
+                        "-i",
+                        list_path,
+                        "-i",
+                        item.audio_path,
+                        "-c:v",
+                        "libx264",
+                        "-vf",
+                        f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                        "-c:a",
+                        "aac",
+                        "-b:a",
+                        ab,
+                        "-shortest",
+                        "-preset",
+                        preset,
+                        "-crf",
+                        str(crf),
+                        item.output,
+                    ]
+                else:
+                    cmd = [
+                        "ffmpeg",
+                        "-y",
+                        "-loop",
+                        "1",
+                        "-i",
+                        item.image_path,
+                        "-i",
+                        item.audio_path,
+                        "-c:v",
+                        "libx264",
+                        "-tune",
+                        "stillimage",
+                        "-vf",
+                        f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2",
+                        "-c:a",
+                        "aac",
+                        "-b:a",
+                        ab,
+                        "-shortest",
+                        "-preset",
+                        preset,
+                        "-crf",
+                        str(crf),
+                        item.output,
+                    ]
+                proc = subprocess.Popen(
+                    cmd,
+                    stderr=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    text=True,
+                )
+                for line in proc.stderr:
+                    if self._stop:
                         proc.kill()
                         break
                     if "time=" in line:
@@ -480,6 +753,48 @@ class EncodeWorker(QtCore.QObject):
                     done, futures = wait(futures, return_when=FIRST_COMPLETED)
                     if self._stop_event.is_set():
                         break
+                            elapsed = (
+                                float(h_) * 3600 + float(m_) * 60 + float(s_)
+                            )
+                            perc = min(100.0, elapsed / duration * 100.0)
+                            item.progress = perc
+                            self.row_progress.emit(i, perc)
+                        except Exception as e:
+                            print(
+                                "Fehler beim Lesen des Fortschritts:",
+                                e,
+                                file=sys.stderr,
+                            )
+                proc.wait()
+                if proc.returncode != 0:
+                    item.status = "FEHLER"
+                    self.row_error.emit(i, "FFmpeg-Fehler")
+                    self.log.emit(f"FFmpeg-Fehler bei {item.output}")
+                else:
+                    item.status = "FERTIG"
+                    item.progress = 100.0
+                    self.row_progress.emit(i, 100.0)
+                    self.log.emit(f"Fertig: {item.output}")
+            except Exception as e:
+                item.status = "FEHLER"
+                self.row_error.emit(i, str(e))
+                file_hint = (
+                    item.output
+                    or item.image_path
+                    or item.audio_path
+                    or "unbekannte Datei"
+                )
+                self.log.emit(f"Fehler bei {file_hint}: {e}")
+            finally:
+                if list_path:
+                    try:
+                        Path(list_path).unlink(missing_ok=True)
+                    except Exception as cleanup_error:
+                        self.log.emit(
+                            f"Konnte temporaere Liste nicht loeschen: {list_path} ({cleanup_error})"
+                        )
+            done = sum(1 for p in self.pairs if p.status == "FERTIG")
+            self.overall_progress.emit(done / max(1, total) * 100.0)
         if all(p.status == "FERTIG" for p in self.pairs):
             try:
                 dst = get_used_dir()
@@ -496,18 +811,26 @@ class EncodeWorker(QtCore.QObject):
                 self.log.emit(f"Archivierung fehlgeschlagen: {e}")
         self.finished.emit()
 
+
 # ---------- UI Widgets ----------
 class DropListWidget(QtWidgets.QListWidget):
     files_dropped = Signal(list)
-    def __init__(self, title:str, patterns:Tuple[str,...]):
+
+    def __init__(self, title: str, patterns: Tuple[str, ...]):
         super().__init__()
-        self.patterns=patterns
+        self.patterns = patterns
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
         self.setAlternatingRowColors(True)
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.setToolTip(title); self.setStatusTip(title)
+        self.setToolTip(title)
+        self.setStatusTip(title)
         self.itemDoubleClicked.connect(self._open_item)
+    def _notify_structure_update(self) -> None:
+        wnd = self.window()
+        if hasattr(wnd, "_refresh_structure_view"):
+            wnd._refresh_structure_view()
+
     def _sort_value(self, path: str, mode: str):
         file_path = Path(path)
         if mode == "name":
@@ -525,16 +848,22 @@ class DropListWidget(QtWidgets.QListWidget):
             except FileNotFoundError:
                 return 0
         return str(file_path).lower()
+
     def _sort_items(self, mode: str, reverse: bool = False) -> None:
         items = [self.item(i) for i in range(self.count())]
         items.sort(
-            key=lambda item: self._sort_value(item.data(Qt.UserRole) or "", mode),
+            key=lambda item: self._sort_value(
+                item.data(Qt.UserRole) or "", mode
+            ),
             reverse=reverse,
         )
         self.clear()
         for item in items:
             self.addItem(item)
-    def _add_sort_menu(self, menu: QtWidgets.QMenu) -> Dict[QAction, Tuple[str, bool]]:
+
+    def _add_sort_menu(
+        self, menu: QtWidgets.QMenu
+    ) -> Dict[QAction, Tuple[str, bool]]:
         sort_menu = menu.addMenu("Sortieren")
         actions: Dict[QAction, Tuple[str, bool]] = {}
         actions[sort_menu.addAction("Name A → Z")] = ("name", False)
@@ -545,51 +874,71 @@ class DropListWidget(QtWidgets.QListWidget):
         actions[sort_menu.addAction("Größe klein → groß")] = ("size", False)
         actions[sort_menu.addAction("Pfad A → Z")] = ("path", False)
         return actions
-    def dragEnterEvent(self,e):
-        if e.mimeData().hasUrls(): e.acceptProposedAction()
-        else: super().dragEnterEvent(e)
-    def dragMoveEvent(self,e):
-        if e.mimeData().hasUrls(): e.acceptProposedAction()
-        else: super().dragMoveEvent(e)
-    def dropEvent(self,e):
-        files=[u.toLocalFile() for u in e.mimeData().urls()]
-        acc=[f for f in files if Path(f).is_dir() or f.lower().endswith(self.patterns)]
-        if acc: self.add_files(acc); self.files_dropped.emit(acc)
+
+    def dragEnterEvent(self, e):
+        if e.mimeData().hasUrls():
+            e.acceptProposedAction()
+        else:
+            super().dragEnterEvent(e)
+
+    def dragMoveEvent(self, e):
+        if e.mimeData().hasUrls():
+            e.acceptProposedAction()
+        else:
+            super().dragMoveEvent(e)
+
+    def dropEvent(self, e):
+        files = [u.toLocalFile() for u in e.mimeData().urls()]
+        acc = [
+            f
+            for f in files
+            if Path(f).is_dir() or f.lower().endswith(self.patterns)
+        ]
+        if acc:
+            self.add_files(acc)
+            self.files_dropped.emit(acc)
         e.acceptProposedAction()
+
     def startDrag(self, supportedActions):
-        item=self.currentItem()
+        item = self.currentItem()
         if not item:
             return
-        mime=QtCore.QMimeData()
+        mime = QtCore.QMimeData()
         mime.setUrls([QtCore.QUrl.fromLocalFile(item.data(Qt.UserRole))])
-        drag=QtGui.QDrag(self)
+        drag = QtGui.QDrag(self)
         drag.setMimeData(mime)
         drag.exec(Qt.CopyAction)
-    def add_files(self, files:List[str]):
+
+    def add_files(self, files: List[str]):
         for f in files:
-            it=QtWidgets.QListWidgetItem(Path(f).name); it.setData(Qt.UserRole,f); self.addItem(it)
-    def selected_paths(self)->List[str]:
+            it = QtWidgets.QListWidgetItem(Path(f).name)
+            it.setData(Qt.UserRole, f)
+            self.addItem(it)
+
+    def selected_paths(self) -> List[str]:
         return [i.data(Qt.UserRole) for i in self.selectedItems()]
-    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
-        item=self.itemAt(e.pos())
+
+    def contextMenuEvent(self, e: QtGui.QContextMenuEvent):
+        item = self.itemAt(e.pos())
         if not item:
             return
-        path=item.data(Qt.UserRole)
-        menu=QtWidgets.QMenu(self)
-        act_open=menu.addAction("Im Ordner zeigen")
-        act_copy=menu.addAction("Pfad kopieren")
-        act_remove=menu.addAction("Entfernen")
+        path = item.data(Qt.UserRole)
+        menu = QtWidgets.QMenu(self)
+        act_open = menu.addAction("Im Ordner zeigen")
+        act_copy = menu.addAction("Pfad kopieren")
+        act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
-        act=menu.exec(e.globalPos())
-        if act==act_open:
+        act = menu.exec(e.globalPos())
+        if act == act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
             self.window()._log(f"Im Ordner gezeigt: {path}")
-        elif act==act_copy:
+        elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             self.window()._log(f"Pfad kopiert: {path}")
-        elif act==act_remove:
+        elif act == act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
+            self._notify_structure_update()
         elif act in sort_actions:
             mode, reverse = sort_actions[act]
             self._sort_items(mode, reverse=reverse)
@@ -597,38 +946,43 @@ class DropListWidget(QtWidgets.QListWidget):
             if hasattr(wnd, "_log"):
                 wnd._log("Liste sortiert")
         e.accept()
-    def _open_item(self,item:QtWidgets.QListWidgetItem):
-        path=item.data(Qt.UserRole)
+
+    def _open_item(self, item: QtWidgets.QListWidgetItem):
+        path = item.data(Qt.UserRole)
         if path:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
             wnd = self.window()
             if hasattr(wnd, "_log"):
                 wnd._log(f"Im Ordner gezeigt: {path}")
 
+
 class ImageListWidget(DropListWidget):
     add_to_fav = Signal(str)
-    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
-        item=self.itemAt(e.pos())
+
+    def contextMenuEvent(self, e: QtGui.QContextMenuEvent):
+        item = self.itemAt(e.pos())
         if not item:
             return
-        path=item.data(Qt.UserRole)
-        menu=QtWidgets.QMenu(self)
-        act_open=menu.addAction("Im Ordner zeigen")
-        act_copy=menu.addAction("Pfad kopieren")
-        act_fav=menu.addAction("Zu Favoriten")
-        act_remove=menu.addAction("Entfernen")
+        path = item.data(Qt.UserRole)
+        menu = QtWidgets.QMenu(self)
+        act_open = menu.addAction("Im Ordner zeigen")
+        act_copy = menu.addAction("Pfad kopieren")
+        act_fav = menu.addAction("Zu Favoriten")
+        act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
-        act=menu.exec(e.globalPos())
-        if act==act_open:
+        act = menu.exec(e.globalPos())
+        if act == act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
             self.window()._log(f"Im Ordner gezeigt: {path}")
-        elif act==act_copy:
+        elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             self.window()._log(f"Pfad kopiert: {path}")
-        elif act==act_remove:
+        elif act == act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
+            self._notify_structure_update()
         elif act==act_fav:
+        elif act == act_fav:
             self.add_to_fav.emit(path)
             self.window()._log(f"Zu Favoriten: {path}")
         elif act in sort_actions:
@@ -636,6 +990,7 @@ class ImageListWidget(DropListWidget):
             self._sort_items(mode, reverse=reverse)
             self.window()._log("Liste sortiert")
         e.accept()
+
 
 class AudioListWidget(DropListWidget):
     def contextMenuEvent(self, e: QtGui.QContextMenuEvent):
@@ -665,11 +1020,13 @@ class AudioListWidget(DropListWidget):
         elif act == act_remove:
             self.takeItem(self.row(item))
             wnd._log(f"Eintrag entfernt: {path}")
+            self._notify_structure_update()
         elif act in sort_actions:
             mode, reverse = sort_actions[act]
             self._sort_items(mode, reverse=reverse)
             wnd._log("Liste sortiert")
         e.accept()
+
     def _open_item(self, item: QtWidgets.QListWidgetItem):
         path = item.data(Qt.UserRole)
         wnd = self.window()
@@ -678,31 +1035,33 @@ class AudioListWidget(DropListWidget):
         else:
             super()._open_item(item)
 
+
 class FavoriteListWidget(DropListWidget):
     use_fav = Signal(str)
     removed = Signal(str)
-    def contextMenuEvent(self,e:QtGui.QContextMenuEvent):
-        item=self.itemAt(e.pos())
+
+    def contextMenuEvent(self, e: QtGui.QContextMenuEvent):
+        item = self.itemAt(e.pos())
         if not item:
             return
-        path=item.data(Qt.UserRole)
-        menu=QtWidgets.QMenu(self)
-        act_open=menu.addAction("Im Ordner zeigen")
-        act_copy=menu.addAction("Pfad kopieren")
-        act_use=menu.addAction("Zum Arbeitsbereich")
-        act_remove=menu.addAction("Entfernen")
+        path = item.data(Qt.UserRole)
+        menu = QtWidgets.QMenu(self)
+        act_open = menu.addAction("Im Ordner zeigen")
+        act_copy = menu.addAction("Pfad kopieren")
+        act_use = menu.addAction("Zum Arbeitsbereich")
+        act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
-        act=menu.exec(e.globalPos())
-        if act==act_open:
+        act = menu.exec(e.globalPos())
+        if act == act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
             self.window()._log(f"Im Ordner gezeigt: {path}")
-        elif act==act_copy:
+        elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             self.window()._log(f"Pfad kopiert: {path}")
-        elif act==act_use:
+        elif act == act_use:
             self.use_fav.emit(path)
             self.window()._log(f"Favorit genutzt: {path}")
-        elif act==act_remove:
+        elif act == act_remove:
             self.removed.emit(path)
             self.takeItem(self.row(item))
             self.window()._log(f"Favorit entfernt: {path}")
@@ -720,6 +1079,7 @@ class HelpPane(QtWidgets.QTextBrowser):
         self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHtml(self._html())
+
     @staticmethod
     def _guide_svg_data() -> str:
         svg = """
@@ -737,15 +1097,22 @@ class HelpPane(QtWidgets.QTextBrowser):
         """.strip()
         encoded = urllib.parse.quote(svg)
         return f"data:image/svg+xml;utf8,{encoded}"
-    def _html(self)->str:
+
+    def _html(self) -> str:
         return (
             "<h2>Bedienhilfe</h2>"
             "<ol>"
             "<li>Bilder oder Ordner sowie Audios hineinziehen</li>"
-            "<li>Gewünschten Modus wählen (Standard, Slideshow, Video + Audio, Mehrere Audios)</li>"
+            "<li>Gewünschten Modus wählen (Standard, Slideshow (Diashow), Video + Audio, Mehrere Audios)</li>"
             "<li>Mit 'Auto-Paaren' Dateien koppeln oder selbst zuweisen</li>"
             "<li>Einstellungen prüfen und START klicken</li>"
             "</ol>"
+            "<h3>Kurze Beispiele</h3>"
+            "<ul>"
+            "<li>10 Bilder + 1 MP3 → 1 Video</li>"
+            "<li>30 Bilder + 3 MP3 → 3 Videos (je Audio ein Video)</li>"
+            "<li>1 Bild + 1 WAV → 1 Video mit Standbild</li>"
+            "</ul>"
             "<ul>"
             "<li>Doppelklick editiert Pfade, Rechtsklick öffnet Menü</li>"
             "<li>Kontextmenü kann Pfad kopieren oder Zeile löschen</li>"
@@ -753,8 +1120,10 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<li>Hilfe-Menü zeigt README und Logdatei</li>"
             "<li>Knopf 'Öffnen' zeigt den Ausgabeordner</li>"
             "<li>Tooltips zeigen volle Pfade</li>"
-            "<li>Menü 'Optionen' hat einen Debug-Schalter für mehr Meldungen</li>"
+            "<li>Menü 'Optionen' hat einen Debug-Schalter (Fehlersuche-Modus) für mehr Meldungen</li>"
+            "<li>Preset (Geschwindigkeits-Voreinstellung) passt die Abspielgeschwindigkeit an</li>"
             "<li>Mehr Beispiele im Abschnitt 'Weiterführende Befehle' der Anleitung</li>"
+            "<li>Ausführliche Anleitungen: <a href='README.md'>README öffnen</a></li>"
             "<li>Unter 'Ansicht' kann der Log-Bereich ein- oder ausgeblendet werden</li>"
             "<li>Der Log-Pfad steht im Protokollbereich unten</li>"
             "</ul>"
@@ -762,6 +1131,7 @@ class HelpPane(QtWidgets.QTextBrowser):
             "<p>Schritt für Schritt: Bilder wählen → Audios wählen → Start.</p>"
             f"<img src='{self._guide_svg_data()}' alt='Schrittbild: Bilder, Audios, Start' />"
         )
+
 
 class GuidedWizard(QtWidgets.QDialog):
     def __init__(self, main_window: "MainWindow"):
@@ -817,8 +1187,7 @@ class GuidedWizard(QtWidgets.QDialog):
         lay = QtWidgets.QVBoxLayout(w)
         title = QtWidgets.QLabel("<h3>2. Audios auswählen</h3>")
         hint = QtWidgets.QLabel(
-            "Wähle Audiodateien (z. B. MP3 oder WAV). "
-            "Audio ist die Tonspur."
+            "Wähle Audiodateien (z. B. MP3 oder WAV). Audio ist die Tonspur."
         )
         hint.setWordWrap(True)
         btn = QtWidgets.QPushButton("Audios wählen")
@@ -873,6 +1242,7 @@ class GuidedWizard(QtWidgets.QDialog):
         self.btn_back.setEnabled(idx > 0)
         self.btn_next.setEnabled(idx < self.stack.count() - 1)
 
+
 class InfoDashboard(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -894,21 +1264,40 @@ class InfoDashboard(QtWidgets.QWidget):
         self.mini_log.setMaximumBlockCount(300)
         self.mini_log.setFixedHeight(90)
         self.mini_log.setAccessibleName("Kurzprotokoll")
-        row=QtWidgets.QHBoxLayout()
-        for w in (QtWidgets.QLabel("Gesamt:"), self.total_label,
-                  QtWidgets.QLabel("Fertig:"),  self.done_label,
-                  QtWidgets.QLabel("Fehler:"),  self.err_label,
-                  QtWidgets.QLabel("Progress:"),self.progress,
-                  self.ffmpeg_lbl, self.env_lbl):
+        row = QtWidgets.QHBoxLayout()
+        for w in (
+            QtWidgets.QLabel("Gesamt:"),
+            self.total_label,
+            QtWidgets.QLabel("Fertig:"),
+            self.done_label,
+            QtWidgets.QLabel("Fehler:"),
+            self.err_label,
+            QtWidgets.QLabel("Progress:"),
+            self.progress,
+            self.ffmpeg_lbl,
+            self.env_lbl,
+        ):
             row.addWidget(w)
         row.addStretch(1)
-        lay=QtWidgets.QVBoxLayout(self); lay.addLayout(row); lay.addWidget(self.mini_log)
-    def set_counts(self,t,d,e): self.total_label.setText(str(t)); self.done_label.setText(str(d)); self.err_label.setText(str(e))
-    def set_progress(self,v): self.progress.setValue(v)
-    def set_env(self,ff_ok,imp_ok=True):
+        lay = QtWidgets.QVBoxLayout(self)
+        lay.addLayout(row)
+        lay.addWidget(self.mini_log)
+
+    def set_counts(self, t, d, e):
+        self.total_label.setText(str(t))
+        self.done_label.setText(str(d))
+        self.err_label.setText(str(e))
+
+    def set_progress(self, v):
+        self.progress.setValue(v)
+
+    def set_env(self, ff_ok, imp_ok=True):
         self.ffmpeg_lbl.setText(f"ffmpeg: {'OK' if ff_ok else 'FEHLT'}")
         self.env_lbl.setText(f"Env: {'OK' if imp_ok else 'FEHLT'}")
-    def log(self,msg): self.mini_log.appendPlainText(msg)
+
+    def log(self, msg):
+        self.mini_log.appendPlainText(msg)
+
 
 # ---------- MainWindow ----------
 class MainWindow(QtWidgets.QMainWindow):
@@ -928,7 +1317,9 @@ class MainWindow(QtWidgets.QMainWindow):
         min_h = min(600, int(screen.height() * 0.5))
         self.setMinimumSize(min_w, min_h)
 
-        self.settings = QtCore.QSettings(str(SETTINGS_FILE), QtCore.QSettings.IniFormat)
+        self.settings = QtCore.QSettings(
+            str(SETTINGS_FILE), QtCore.QSettings.IniFormat
+        )
         self._font_size = self.settings.value("ui/font_size", 11, int)
         self.debug_mode = self.settings.value("ui/debug", False, bool)
         self.log_level = self.settings.value("log/level", "", str).upper()
@@ -936,10 +1327,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self.log_level = "DEBUG" if self.debug_mode else "INFO"
         self.large_controls = self.settings.value("ui/large_controls", False, bool)
         self._apply_log_level(self.log_level)
+        self.large_controls = self.settings.value(
+            "ui/large_controls", False, bool
+        )
+        logger.setLevel(logging.DEBUG if self.debug_mode else logging.INFO)
         self._audio_player = QtMultimedia.QMediaPlayer(self)
         self._audio_output = QtMultimedia.QAudioOutput(self)
         self._audio_player.setAudioOutput(self._audio_output)
-        self._audio_output.setVolume(self.settings.value("ui/audio_preview_volume", 0.8, float))
+        self._audio_output.setVolume(
+            self.settings.value("ui/audio_preview_volume", 0.8, float)
+        )
         self._audio_player.errorOccurred.connect(self._on_audio_preview_error)
 
         self._restore_window_state()
@@ -950,7 +1347,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model = PairTableModel(self.pairs)
 
         ff_ok = check_ffmpeg()
-        self.dashboard = InfoDashboard(); self.dashboard.set_env(ff_ok, True)
+        self.dashboard = InfoDashboard()
+        self.dashboard.set_env(ff_ok, True)
         if not ff_ok:
             self._show_error_dialog(
                 "FFmpeg fehlt",
@@ -958,18 +1356,28 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.Warning,
             )
 
-        self.image_list = ImageListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
-        self.audio_list = AudioListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
-        self.favorite_list = FavoriteListWidget("Favoriten", (".jpg",".jpeg",".png",".bmp",".webp"))
+        self.image_list = ImageListWidget(
+            "Bilder", (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+        )
+        self.audio_list = AudioListWidget(
+            "Audios", (".mp3", ".wav", ".flac", ".m4a", ".aac")
+        )
+        self.favorite_list = FavoriteListWidget(
+            "Favoriten", (".jpg", ".jpeg", ".png", ".bmp", ".webp")
+        )
         self.image_list.add_to_fav.connect(self._add_to_favorites)
         self.favorite_list.use_fav.connect(self._use_favorite)
-        self.favorite_list.removed.connect(lambda p: self._log(f"Favorit entfernt: {p}"))
+        self.favorite_list.removed.connect(
+            lambda p: self._log(f"Favorit entfernt: {p}")
+        )
         self.image_list.files_dropped.connect(self._on_images_added)
         self.audio_list.files_dropped.connect(self._on_audios_added)
 
         pool_tabs = QtWidgets.QTabWidget()
         pool_tabs.setAccessibleName("Datei-Register")
-        pool_tabs.setAccessibleDescription("Register für Bilder, Audios und Favoriten")
+        pool_tabs.setAccessibleDescription(
+            "Register für Bilder, Audios und Favoriten"
+        )
         pool_tabs.addTab(self.image_list, "Bilder")
         pool_tabs.addTab(self.audio_list, "Audios")
         pool_tabs.addTab(self.favorite_list, "Favoriten")
@@ -995,8 +1403,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setAlternatingRowColors(True)
         self.table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table.customContextMenuRequested.connect(self._table_menu)
-        self.table.setToolTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
-        self.table.setStatusTip("Doppelklick: Pfad bearbeiten, Rechtsklick für Menü")
+        self.table.setToolTip(
+            "Doppelklick: Pfad bearbeiten, Rechtsklick für Menü"
+        )
+        self.table.setStatusTip(
+            "Doppelklick: Pfad bearbeiten, Rechtsklick für Menü"
+        )
         self.table.setAccessibleName("Paar-Tabelle")
         self.table.setAccessibleDescription("Liste der Bild- und Audio-Paare")
         header = self.table.horizontalHeader()
@@ -1009,11 +1421,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.help_pane.setAccessibleDescription("Kurzanleitung zum Tool")
 
         # Einstellungen
-        self.out_dir_edit  = QtWidgets.QLineEdit(str(self.settings.value("encode/out_dir", default_output_dir(), str)))
+        self.out_dir_edit = QtWidgets.QLineEdit(
+            str(
+                self.settings.value("encode/out_dir", default_output_dir(), str)
+            )
+        )
         self.out_dir_edit.setPlaceholderText("Zielordner für fertige Videos")
         self.out_dir_edit.setAccessibleName("Zielordner")
         self.out_dir_edit.setAccessibleDescription("Pfad für fertige Videos")
-        self.btn_out_open  = QtWidgets.QToolButton(); self.btn_out_open.setText("Öffnen")
+        self.btn_out_open = QtWidgets.QToolButton()
+        self.btn_out_open.setText("Öffnen")
         self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
         self.btn_out_open.setAccessibleName("Ordner öffnen")
         self.btn_out_open.setAccessibleDescription("Ordner im Dateimanager anzeigen")
@@ -1029,20 +1446,52 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_project_dir.setAccessibleName("Projektordner auswählen")
         self.btn_project_dir.setAccessibleDescription("Ordner für Projektdateien auswählen")
         self.crf_spin      = QtWidgets.QSpinBox(); self.crf_spin.setRange(0,51); self.crf_spin.setValue(self.settings.value("encode/crf",23,int))
+        self.btn_out_open.setAccessibleDescription(
+            "Ordner im Dateimanager anzeigen"
+        )
+        self.crf_spin = QtWidgets.QSpinBox()
+        self.crf_spin.setRange(0, 51)
+        self.crf_spin.setValue(self.settings.value("encode/crf", 23, int))
         self.crf_spin.setAccessibleName("CRF Qualität")
-        self.crf_spin.setAccessibleDescription("Qualität für das Video (0 bis 51)")
-        self.preset_combo  = QtWidgets.QComboBox(); self.preset_combo.addItems(
-            ["ultrafast","superfast","veryfast","faster","fast","medium","slow","slower","veryslow"])
-        self.preset_combo.setCurrentText(self.settings.value("encode/preset","ultrafast",str))
+        self.crf_spin.setAccessibleDescription(
+            "Qualität für das Video (0 bis 51)"
+        )
+        self.preset_combo = QtWidgets.QComboBox()
+        self.preset_combo.addItems(
+            [
+                "ultrafast",
+                "superfast",
+                "veryfast",
+                "faster",
+                "fast",
+                "medium",
+                "slow",
+                "slower",
+                "veryslow",
+            ]
+        )
+        self.preset_combo.setCurrentText(
+            self.settings.value("encode/preset", "ultrafast", str)
+        )
         self.preset_combo.setAccessibleName("Preset")
-        self.preset_combo.setAccessibleDescription("Geschwindigkeits-Voreinstellung für die Kodierung")
-        self.width_spin    = QtWidgets.QSpinBox(); self.width_spin.setRange(16,7680); self.width_spin.setValue(self.settings.value("encode/width",1920,int))
+        self.preset_combo.setAccessibleDescription(
+            "Geschwindigkeits-Voreinstellung für die Kodierung"
+        )
+        self.width_spin = QtWidgets.QSpinBox()
+        self.width_spin.setRange(16, 7680)
+        self.width_spin.setValue(self.settings.value("encode/width", 1920, int))
         self.width_spin.setAccessibleName("Video-Breite")
         self.width_spin.setAccessibleDescription("Breite des Videos in Pixel")
-        self.height_spin   = QtWidgets.QSpinBox(); self.height_spin.setRange(16,4320); self.height_spin.setValue(self.settings.value("encode/height",1080,int))
+        self.height_spin = QtWidgets.QSpinBox()
+        self.height_spin.setRange(16, 4320)
+        self.height_spin.setValue(
+            self.settings.value("encode/height", 1080, int)
+        )
         self.height_spin.setAccessibleName("Video-Höhe")
         self.height_spin.setAccessibleDescription("Höhe des Videos in Pixel")
-        self.abitrate_edit = QtWidgets.QLineEdit(self.settings.value("encode/abitrate","192k",str))
+        self.abitrate_edit = QtWidgets.QLineEdit(
+            self.settings.value("encode/abitrate", "192k", str)
+        )
         self.abitrate_edit.setPlaceholderText("z.B. 192k")
         self.abitrate_edit.setAccessibleName("Audio-Bitrate")
         self.abitrate_edit.setAccessibleDescription("Audioqualität als Bitrate, zum Beispiel 192k")
@@ -1054,8 +1503,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.output_template_edit.setAccessibleDescription("Vorlage für Ausgabedateien")
         self.mode_combo   = QtWidgets.QComboBox();
         self.mode_combo.addItems(["Standard","Slideshow","Video + Audio","Mehrere Audios, 1 Bild"])
+        self.abitrate_edit.setAccessibleDescription(
+            "Audioqualität als Bitrate, zum Beispiel 192k"
+        )
+        self.mode_combo = QtWidgets.QComboBox()
+        self.mode_combo.addItems(
+            ["Standard", "Slideshow", "Video + Audio", "Mehrere Audios, 1 Bild"]
+        )
         self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
-        self.mode_combo.setCurrentText(self.settings.value("encode/mode","Standard",str))
+        self.mode_combo.setCurrentText(
+            self.settings.value("encode/mode", "Standard", str)
+        )
         self.mode_combo.setAccessibleName("Modus")
         self.mode_combo.setAccessibleDescription("Auswahl des Verarbeitungsmodus")
         max_parallel = max(1, os.cpu_count() or 4)
@@ -1069,6 +1527,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.auto_open_output = QtWidgets.QCheckBox("Ausgabeordner nach Fertigstellung öffnen")
         self.auto_open_output.setChecked(self.settings.value("ui/auto_open_output", True, bool))
         self.auto_open_output.setAccessibleName("Ausgabeordner automatisch öffnen")
+        self.mode_combo.setAccessibleDescription(
+            "Auswahl des Verarbeitungsmodus"
+        )
+        self.clear_after = QtWidgets.QCheckBox(
+            "Nach Fertigstellung Listen leeren"
+        )
+        self.clear_after.setChecked(
+            self.settings.value("ui/clear_after", False, bool)
+        )
+        self.auto_open_output = QtWidgets.QCheckBox(
+            "Ausgabeordner nach Fertigstellung öffnen"
+        )
+        self.auto_open_output.setChecked(
+            self.settings.value("ui/auto_open_output", True, bool)
+        )
+        self.auto_open_output.setAccessibleName(
+            "Ausgabeordner automatisch öffnen"
+        )
         self.auto_open_output.setAccessibleDescription(
             "Öffnet den Ausgabeordner nach Abschluss der Erstellung"
         )
@@ -1083,19 +1559,27 @@ class MainWindow(QtWidgets.QMainWindow):
             "Sichert den aktuellen Stand automatisch beim Start und Schließen"
         )
         self.clear_after.setAccessibleName("Listen automatisch leeren")
-        self.clear_after.setAccessibleDescription("Nach dem Abschluss alle Listen leeren")
+        self.clear_after.setAccessibleDescription(
+            "Nach dem Abschluss alle Listen leeren"
+        )
 
         self.font_slider = QtWidgets.QSlider(Qt.Horizontal)
         self.font_slider.setRange(8, 32)
         self.font_slider.setValue(self._font_size)
         self.font_slider.setAccessibleName("Schriftgrößen-Schieber")
-        self.font_slider.setAccessibleDescription("Schriftgröße der Oberfläche einstellen")
+        self.font_slider.setAccessibleDescription(
+            "Schriftgröße der Oberfläche einstellen"
+        )
         self.font_value_label = QtWidgets.QLabel(str(self._font_size))
         self.font_value_label.setAccessibleName("Schriftgröße Anzeige")
         self.font_slider.valueChanged.connect(self._on_font_slider_changed)
-        self.large_controls_toggle = QtWidgets.QCheckBox("Große Bedienelemente (besser klickbar)")
+        self.large_controls_toggle = QtWidgets.QCheckBox(
+            "Große Bedienelemente (besser klickbar)"
+        )
         self.large_controls_toggle.setChecked(self.large_controls)
-        self.large_controls_toggle.setToolTip("Buttons, Tabellenzeilen und Text etwas größer")
+        self.large_controls_toggle.setToolTip(
+            "Buttons, Tabellenzeilen und Text etwas größer"
+        )
         self.large_controls_toggle.toggled.connect(self._toggle_large_controls)
         self.log_level_combo = QtWidgets.QComboBox()
         self.log_level_combo.addItems(["DEBUG", "INFO", "WARNING", "ERROR"])
@@ -1137,12 +1621,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(form, "Parallelität (Jobs)", self.parallel_jobs_spin, "Anzahl paralleler Jobs")
         self._add_form(form, "Protokoll-Stufe", self.log_level_combo, "DETAILS für das Protokoll wählen")
         self._add_form(form, "Sprache", self.language_combo, "Sprachwahl vorbereiten")
+        out_wrap_layout = QtWidgets.QHBoxLayout()
+        out_wrap_layout.setContentsMargins(0, 0, 0, 0)
+        out_wrap_layout.addWidget(self.out_dir_edit)
+        out_wrap_layout.addWidget(self.btn_out_open)
+        out_wrap = QtWidgets.QWidget()
+        out_wrap.setLayout(out_wrap_layout)
+        self._add_form(form, "Ausgabeordner", out_wrap, "Zielordner für MP4s")
+        self._add_form(
+            form, "CRF", self.crf_spin, "Qualität (0=lossless, 23=Standard)"
+        )
+        self._add_form(
+            form,
+            "Preset",
+            self.preset_combo,
+            "x264 Preset (schneller = größere Datei)",
+        )
+        self._add_form(form, "Breite", self.width_spin, "Video-Breite in Pixel")
+        self._add_form(form, "Höhe", self.height_spin, "Video-Höhe in Pixel")
+        self._add_form(
+            form, "Audio-Bitrate", self.abitrate_edit, "z.B. 192k, 256k"
+        )
+        self._add_form(
+            form, "Modus", self.mode_combo, "z.B. Slideshow oder Video + Audio"
+        )
         font_row = QtWidgets.QHBoxLayout()
         font_row.setContentsMargins(0, 0, 0, 0)
         font_row.addWidget(self.font_slider)
         font_row.addWidget(self.font_value_label)
-        font_wrap = QtWidgets.QWidget(); font_wrap.setLayout(font_row)
-        self._add_form(form, "Schriftgröße", font_wrap, "Schriftgröße der Oberfläche anpassen")
+        font_wrap = QtWidgets.QWidget()
+        font_wrap.setLayout(font_row)
+        self._add_form(
+            form,
+            "Schriftgröße",
+            font_wrap,
+            "Schriftgröße der Oberfläche anpassen",
+        )
         form.addRow("", self.clear_after)
         form.addRow("", self.auto_open_output)
         form.addRow("", self.auto_save_project)
@@ -1154,17 +1668,54 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_widget = settings_box
 
         table_box = QtWidgets.QGroupBox("Paare")
-        tb_lay = QtWidgets.QVBoxLayout(table_box); tb_lay.addWidget(self.table)
+        tb_lay = QtWidgets.QVBoxLayout(table_box)
+        tb_lay.addWidget(self.table)
 
         help_box = QtWidgets.QGroupBox("Hilfe")
-        hb_lay = QtWidgets.QVBoxLayout(help_box); hb_lay.addWidget(self.help_pane)
+        hb_lay = QtWidgets.QVBoxLayout(help_box)
+        hb_lay.addWidget(self.help_pane)
         self.help_box = help_box
+
+        self.structure_tree = QtWidgets.QTreeWidget()
+        self.structure_tree.setHeaderLabels(["Pfad"])
+        self.structure_tree.setAlternatingRowColors(True)
+        self.structure_tree.setAccessibleName("Projektstruktur")
+        self.structure_tree.setAccessibleDescription("Baumansicht für Bilder, Audios und Output")
+        self.structure_filter = QtWidgets.QComboBox()
+        self.structure_filter.addItems(["Alles", "Bilder", "Audios", "Output"])
+        self.structure_filter.setAccessibleName("Struktur-Filter")
+        self.structure_filter.setAccessibleDescription("Filtert die Projektstruktur nach Bereich")
+        self.structure_search = QtWidgets.QLineEdit()
+        self.structure_search.setPlaceholderText("Pfad-Filter, z. B. /Projekt oder Ferien")
+        self.structure_search.setAccessibleName("Pfad-Filter")
+        self.structure_search.setAccessibleDescription("Filtert die Projektstruktur nach Text im Pfad")
+        self.structure_clear_btn = QtWidgets.QToolButton()
+        self.structure_clear_btn.setText("X")
+        self.structure_clear_btn.setToolTip("Pfad-Filter löschen")
+        self.structure_clear_btn.setAccessibleName("Pfad-Filter löschen")
+        self.structure_clear_btn.clicked.connect(lambda: self.structure_search.setText(""))
+
+        structure_filter_row = QtWidgets.QHBoxLayout()
+        structure_filter_row.setContentsMargins(0, 0, 0, 0)
+        structure_filter_row.addWidget(QtWidgets.QLabel("Filter"))
+        structure_filter_row.addWidget(self.structure_filter)
+        structure_filter_row.addWidget(QtWidgets.QLabel("Suche"))
+        structure_filter_row.addWidget(self.structure_search, 1)
+        structure_filter_row.addWidget(self.structure_clear_btn)
+
+        structure_box = QtWidgets.QGroupBox("Projektstruktur")
+        structure_layout = QtWidgets.QVBoxLayout(structure_box)
+        structure_layout.addLayout(structure_filter_row)
+        structure_layout.addWidget(self.structure_tree)
 
         left_tabs = QtWidgets.QTabWidget()
         left_tabs.setAccessibleName("Seitenleiste-Register")
-        left_tabs.setAccessibleDescription("Register für Dateilisten und Einstellungen")
+        left_tabs.setAccessibleDescription(
+            "Register für Dateilisten und Einstellungen"
+        )
         left_tabs.addTab(pool_box, "Dateien")
         left_tabs.addTab(self.settings_widget, "Einstellungen")
+        left_tabs.addTab(structure_box, "Struktur")
         self.sidebar.setWidget(left_tabs)
 
         panel_splitter = QtWidgets.QSplitter(Qt.Horizontal)
@@ -1173,28 +1724,39 @@ class MainWindow(QtWidgets.QMainWindow):
         panel_splitter.setStretchFactor(0, 3)
         panel_splitter.setStretchFactor(1, 1)
 
-        self.progress_total = QtWidgets.QProgressBar(); self.progress_total.setFormat("%p% gesamt")
+        self.progress_total = QtWidgets.QProgressBar()
+        self.progress_total.setFormat("%p% gesamt")
         self.progress_total.setAccessibleName("Gesamtfortschritt")
-        self.progress_total.setAccessibleDescription("Fortschritt aller Aufgaben")
+        self.progress_total.setAccessibleDescription(
+            "Fortschritt aller Aufgaben"
+        )
         self.log_path_label = QtWidgets.QLabel("Log-Pfad:")
         self.log_path_label.setAccessibleName("Log-Pfad Label")
         self.log_path_edit = QtWidgets.QLineEdit(str(LOG_DIR))
         self.log_path_edit.setReadOnly(True)
         self.log_path_edit.setAccessibleName("Log-Pfad")
-        self.log_path_edit.setAccessibleDescription("Speicherort der Logdateien")
+        self.log_path_edit.setAccessibleDescription(
+            "Speicherort der Logdateien"
+        )
         self.log_path_edit.setToolTip("Speicherort der Protokolldateien")
         self.log_path_btn = QtWidgets.QPushButton("Pfad kopieren")
-        self.log_path_btn.setToolTip("Log-Ordner in die Zwischenablage kopieren")
+        self.log_path_btn.setToolTip(
+            "Log-Ordner in die Zwischenablage kopieren"
+        )
         self.log_path_btn.clicked.connect(self._copy_log_path)
         log_path_row = QtWidgets.QHBoxLayout()
         log_path_row.addWidget(self.log_path_label)
         log_path_row.addWidget(self.log_path_edit, 1)
         log_path_row.addWidget(self.log_path_btn)
-        self.log_edit = QtWidgets.QPlainTextEdit(); self.log_edit.setReadOnly(True); self.log_edit.setMaximumBlockCount(5000)
+        self.log_edit = QtWidgets.QPlainTextEdit()
+        self.log_edit.setReadOnly(True)
+        self.log_edit.setMaximumBlockCount(5000)
         self.log_edit.setLineWrapMode(QtWidgets.QPlainTextEdit.WidgetWidth)
         self.log_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.log_edit.setAccessibleName("Protokoll")
-        self.log_edit.setAccessibleDescription("Fortlaufende Meldungen des Programms")
+        self.log_edit.setAccessibleDescription(
+            "Fortlaufende Meldungen des Programms"
+        )
 
         self.log_box = QtWidgets.QGroupBox("Protokoll")
         bl = QtWidgets.QVBoxLayout(self.log_box)
@@ -1212,14 +1774,15 @@ class MainWindow(QtWidgets.QMainWindow):
         # Buttons
         self.btn_add_images = QtWidgets.QPushButton("Bilder wählen")
         self.btn_add_audios = QtWidgets.QPushButton("Audios wählen")
-        self.btn_auto_pair  = QtWidgets.QPushButton("Auto-Paaren")
-        self.btn_clear      = QtWidgets.QPushButton("Alles löschen")
-        self.btn_undo       = QtWidgets.QPushButton("Undo")
-        self.btn_save       = QtWidgets.QPushButton("Projekt speichern")
-        self.btn_load       = QtWidgets.QPushButton("Projekt laden")
-        self.btn_encode     = QtWidgets.QPushButton("START")
-        self.btn_stop       = QtWidgets.QPushButton("Stop"); self.btn_stop.setEnabled(False)
-        self.btn_wizard     = QtWidgets.QPushButton("Geführter Start")
+        self.btn_auto_pair = QtWidgets.QPushButton("Auto-Paaren")
+        self.btn_clear = QtWidgets.QPushButton("Alles löschen")
+        self.btn_undo = QtWidgets.QPushButton("Undo")
+        self.btn_save = QtWidgets.QPushButton("Projekt speichern")
+        self.btn_load = QtWidgets.QPushButton("Projekt laden")
+        self.btn_encode = QtWidgets.QPushButton("START")
+        self.btn_stop = QtWidgets.QPushButton("Stop")
+        self.btn_stop.setEnabled(False)
+        self.btn_wizard = QtWidgets.QPushButton("Geführter Start")
 
         self.btn_add_images.setToolTip("Bilder (Fotos) auswählen")
         self.btn_add_audios.setToolTip("Audiodateien auswählen")
@@ -1232,7 +1795,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
         self.btn_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen")
 
-        self.btn_encode.setStyleSheet("font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;")
+        self.btn_encode.setStyleSheet(
+            "font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;"
+        )
 
         top_buttons = QtWidgets.QGridLayout()
         top_buttons.setSpacing(4)
@@ -1261,7 +1826,8 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout.addWidget(self.dashboard)
         central_layout.addWidget(btn_box)
         central_layout.addWidget(main_splitter)
-        central = QtWidgets.QWidget(); central.setLayout(central_layout)
+        central = QtWidgets.QWidget()
+        central.setLayout(central_layout)
         self.setCentralWidget(central)
 
         self.count_label = QtWidgets.QLabel("0 Bilder | 0 Audios | 0 Paare")
@@ -1298,6 +1864,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.auto_save_project.toggled.connect(self._toggle_auto_save_project)
         self.mode_combo.currentTextChanged.connect(self._update_default_mode)
         self.parallel_jobs_spin.valueChanged.connect(self._update_parallel_jobs)
+        self.structure_filter.currentTextChanged.connect(self._apply_structure_filter)
+        self.structure_search.textChanged.connect(self._apply_structure_filter)
+        self.out_dir_edit.editingFinished.connect(self._refresh_structure_view)
 
         self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
@@ -1312,12 +1881,17 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("F5"), self).activated.connect(
             self._start_encode
         )
+        self._refresh_structure_view()
 
     # ----- UI helpers -----
     def _build_menus(self):
         menubar = self.menuBar()
 
         m_datei = menubar.addMenu("Datei")
+        act_project_root = QAction("Projektordner wählen", self)
+        act_project_root.setToolTip("Startordner für Dialoge festlegen")
+        act_project_root.triggered.connect(self._choose_project_root)
+        m_datei.addAction(act_project_root)
         act_load = QAction("Projekt laden", self)
         act_load.setToolTip("Gespeichertes Projekt laden")
         act_load.setShortcut(QtGui.QKeySequence("Ctrl+O"))
@@ -1328,24 +1902,41 @@ class MainWindow(QtWidgets.QMainWindow):
         act_save.setShortcut(QtGui.QKeySequence("Ctrl+S"))
         act_save.triggered.connect(self._save_project)
         m_datei.addAction(act_save)
-        act_quit = QAction("Beenden", self); act_quit.setToolTip("Programm schließen"); act_quit.triggered.connect(self.close)
+        act_quit = QAction("Beenden", self)
+        act_quit.setToolTip("Programm schließen")
+        act_quit.triggered.connect(self.close)
         m_datei.addAction(act_quit)
 
         m_ansicht = menubar.addMenu("Ansicht")
-        act_font_plus  = QAction("Schrift +", self);  act_font_plus.setToolTip("Schriftgröße erhöhen"); act_font_plus.triggered.connect(lambda: self._change_font(1))
-        act_font_minus = QAction("Schrift -", self);  act_font_minus.setToolTip("Schriftgröße verkleinern"); act_font_minus.triggered.connect(lambda: self._change_font(-1))
-        act_font_reset = QAction("Schrift Reset", self); act_font_reset.setToolTip("Schriftgröße zurücksetzen"); act_font_reset.triggered.connect(lambda: self._set_font(11))
+        act_font_plus = QAction("Schrift +", self)
+        act_font_plus.setToolTip("Schriftgröße erhöhen")
+        act_font_plus.triggered.connect(lambda: self._change_font(1))
+        act_font_minus = QAction("Schrift -", self)
+        act_font_minus.setToolTip("Schriftgröße verkleinern")
+        act_font_minus.triggered.connect(lambda: self._change_font(-1))
+        act_font_reset = QAction("Schrift Reset", self)
+        act_font_reset.setToolTip("Schriftgröße zurücksetzen")
+        act_font_reset.triggered.connect(lambda: self._set_font(11))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
-        self.act_show_help = QAction("Hilfe-Bereich", self, checkable=True,
-                                     checked=self.settings.value("ui/show_help", True, bool))
+        self.act_show_help = QAction(
+            "Hilfe-Bereich",
+            self,
+            checkable=True,
+            checked=self.settings.value("ui/show_help", True, bool),
+        )
         self.act_show_help.toggled.connect(self._toggle_help)
         m_ansicht.addAction(self.act_show_help)
-        self.act_show_log = QAction("Log-Bereich", self, checkable=True,
-                                    checked=self.settings.value("ui/show_log", True, bool))
+        self.act_show_log = QAction(
+            "Log-Bereich",
+            self,
+            checkable=True,
+            checked=self.settings.value("ui/show_log", True, bool),
+        )
         self.act_show_log.toggled.connect(self._toggle_log)
         m_ansicht.addAction(self.act_show_log)
-        self.act_show_sidebar = QAction("Sidebar", self, checkable=True,
-                                        checked=self.sidebar.isVisible())
+        self.act_show_sidebar = QAction(
+            "Sidebar", self, checkable=True, checked=self.sidebar.isVisible()
+        )
         self.act_show_sidebar.toggled.connect(self._toggle_sidebar)
         m_ansicht.addAction(self.act_show_sidebar)
 
@@ -1356,33 +1947,48 @@ class MainWindow(QtWidgets.QMainWindow):
             m_theme.addAction(act)
 
         m_option = menubar.addMenu("Optionen")
-        self.act_copy_only = QAction("Dateien nur kopieren (nicht verschieben)", self, checkable=True, checked=self.copy_only)
+        self.act_copy_only = QAction(
+            "Dateien nur kopieren (nicht verschieben)",
+            self,
+            checkable=True,
+            checked=self.copy_only,
+        )
         self.act_copy_only.setToolTip("Originaldateien behalten")
         self.act_copy_only.triggered.connect(self._toggle_copy_mode)
         m_option.addAction(self.act_copy_only)
-        self.act_debug = QAction("Debug-Log", self, checkable=True, checked=self.debug_mode)
+        self.act_debug = QAction(
+            "Debug-Log", self, checkable=True, checked=self.debug_mode
+        )
         self.act_debug.setToolTip("Detailiertes Protokoll aktivieren")
         self.act_debug.triggered.connect(self._toggle_debug)
         m_option.addAction(self.act_debug)
 
         m_hilfe = menubar.addMenu("Hilfe")
-        act_doc = QAction("README öffnen", self); act_doc.setToolTip("Dokumentation anzeigen"); act_doc.triggered.connect(self._open_readme)
-        act_log = QAction("Logdatei öffnen", self); act_log.setToolTip("Letzte Meldungen anzeigen"); act_log.triggered.connect(self._open_logfile)
-        act_help = QAction("Kurzanleitung", self); act_help.setToolTip("Kurzes Hilfefenster anzeigen"); act_help.triggered.connect(self._show_help_window)
-        act_wizard = QAction("Geführter Start", self); act_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen"); act_wizard.triggered.connect(self._show_guided_wizard)
+        act_doc = QAction("README öffnen", self)
+        act_doc.setToolTip("Dokumentation anzeigen")
+        act_doc.triggered.connect(self._open_readme)
+        act_log = QAction("Logdatei öffnen", self)
+        act_log.setToolTip("Letzte Meldungen anzeigen")
+        act_log.triggered.connect(self._open_logfile)
+        act_help = QAction("Kurzanleitung", self)
+        act_help.setToolTip("Kurzes Hilfefenster anzeigen")
+        act_help.triggered.connect(self._show_help_window)
+        act_wizard = QAction("Geführter Start", self)
+        act_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen")
+        act_wizard.triggered.connect(self._show_guided_wizard)
         m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
         m_hilfe.addAction(act_help)
         m_hilfe.addAction(act_wizard)
 
-    def _change_font(self, delta:int):
+    def _change_font(self, delta: int):
         self._set_font(self._font_size + delta)
 
     def _on_font_slider_changed(self, value: int):
         self.font_value_label.setText(str(value))
         self._set_font(value)
 
-    def _set_font(self, size:int):
+    def _set_font(self, size: int):
         size = max(8, min(32, size))
         self._font_size = size
         self._apply_font()
@@ -1431,23 +2037,30 @@ class MainWindow(QtWidgets.QMainWindow):
         if not path:
             self._log("Ausgabeordner fehlt.", logging.WARNING)
             QtWidgets.QMessageBox.information(
-                self, "Ausgabeordner fehlt", "Bitte zuerst einen Ausgabeordner festlegen."
+                self,
+                "Ausgabeordner fehlt",
+                "Bitte zuerst einen Ausgabeordner festlegen.",
             )
             return
         out_path = Path(path).expanduser()
         try:
             out_path.mkdir(parents=True, exist_ok=True)
         except Exception as exc:
-            self._log(f"Ausgabeordner konnte nicht erstellt werden: {exc}", logging.ERROR)
+            self._log(
+                f"Ausgabeordner konnte nicht erstellt werden: {exc}",
+                logging.ERROR,
+            )
             QtWidgets.QMessageBox.critical(
-                self, "Ausgabeordner fehlerhaft", f"Ordner konnte nicht erstellt werden:\n{exc}"
+                self,
+                "Ausgabeordner fehlerhaft",
+                f"Ordner konnte nicht erstellt werden:\n{exc}",
             )
             return
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(out_path)))
         self._log(f"Ausgabeordner geöffnet: {out_path}")
 
     def _open_readme(self):
-        path = str(Path('README.md').resolve())
+        path = str(Path("README.md").resolve())
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(path))
         self._log("README geöffnet")
 
@@ -1525,28 +2138,45 @@ class MainWindow(QtWidgets.QMainWindow):
         dlg.exec()
         self._log("Geführter Start geöffnet")
 
-    def _add_form(self, layout: QtWidgets.QFormLayout, label: str, widget: QtWidgets.QWidget, help_text: str):
-        widget.setToolTip(help_text); widget.setStatusTip(help_text)
-        hint = QtWidgets.QLabel(f"<small>{help_text}</small>"); hint.setWordWrap(True)
-        box = QtWidgets.QVBoxLayout(); box.addWidget(widget); box.addWidget(hint)
-        wrap = QtWidgets.QWidget(); wrap.setLayout(box)
+    def _add_form(
+        self,
+        layout: QtWidgets.QFormLayout,
+        label: str,
+        widget: QtWidgets.QWidget,
+        help_text: str,
+    ):
+        widget.setToolTip(help_text)
+        widget.setStatusTip(help_text)
+        hint = QtWidgets.QLabel(f"<small>{help_text}</small>")
+        hint.setWordWrap(True)
+        box = QtWidgets.QVBoxLayout()
+        box.addWidget(widget)
+        box.addWidget(hint)
+        wrap = QtWidgets.QWidget()
+        wrap.setLayout(box)
         layout.addRow(label, wrap)
 
-    def _wrap_button(self, button: QtWidgets.QAbstractButton, help_text: str) -> QtWidgets.QWidget:
+    def _wrap_button(
+        self, button: QtWidgets.QAbstractButton, help_text: str
+    ) -> QtWidgets.QWidget:
         """Return button with help label underneath."""
         button.setToolTip(help_text)
         button.setStatusTip(help_text)
         button.setAccessibleName(button.text())
         button.setAccessibleDescription(help_text)
-        lbl = QtWidgets.QLabel(f"<small>{help_text}</small>"); lbl.setAlignment(Qt.AlignCenter)
+        lbl = QtWidgets.QLabel(f"<small>{help_text}</small>")
+        lbl.setAlignment(Qt.AlignCenter)
         button.setMaximumHeight(28)
-        box = QtWidgets.QVBoxLayout(); box.setContentsMargins(2, 0, 2, 0)
+        box = QtWidgets.QVBoxLayout()
+        box.setContentsMargins(2, 0, 2, 0)
         box.setSpacing(1)
-        box.addWidget(button); box.addWidget(lbl)
-        w = QtWidgets.QWidget(); w.setLayout(box)
+        box.addWidget(button)
+        box.addWidget(lbl)
+        w = QtWidgets.QWidget()
+        w.setLayout(box)
         return w
 
-    def _log(self, msg:str, level=logging.INFO):
+    def _log(self, msg: str, level=logging.INFO):
         if level >= logging.INFO or self.debug_mode:
             self.log_edit.appendPlainText(msg)
             self.dashboard.log(msg)
@@ -1581,7 +2211,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Audio-Vorschau gestartet: {file_path.name}")
 
     def _stop_audio_preview(self) -> None:
-        if self._audio_player.playbackState() != QtMultimedia.QMediaPlayer.StoppedState:
+        if (
+            self._audio_player.playbackState()
+            != QtMultimedia.QMediaPlayer.StoppedState
+        ):
             self._audio_player.stop()
             self._log("Audio-Vorschau gestoppt")
 
@@ -1617,7 +2250,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 return msg.replace(old, new)
         return msg
 
-    def _debug(self, msg:str):
+    def _debug(self, msg: str):
         self._log(f"DEBUG: {msg}", logging.DEBUG)
 
     def _get_last_dir(self, key: str, fallback: Path) -> str:
@@ -1626,6 +2259,9 @@ class MainWindow(QtWidgets.QMainWindow):
             stored = Path(value)
             if stored.exists():
                 return str(stored)
+        project_root = self._get_project_root()
+        if project_root:
+            return str(project_root)
         return str(fallback)
 
     def _get_project_start_dir(self) -> str:
@@ -1635,6 +2271,21 @@ class MainWindow(QtWidgets.QMainWindow):
             if stored.exists():
                 return str(stored)
         return self._get_last_dir("ui/last_project_dir", Path.cwd())
+    def _get_project_root(self) -> Optional[Path]:
+        value = self.settings.value("ui/project_root", "", str)
+        if not value:
+            return None
+        root = Path(value).expanduser()
+        if root.exists() and root.is_dir():
+            return root
+        return None
+
+    def _set_project_root(self, path: Path) -> None:
+        if not path or not path.exists() or not path.is_dir():
+            return
+        self.settings.setValue("ui/project_root", str(path))
+        self.settings.setValue("ui/last_project_root_dir", str(path))
+        self._log(f"Projektordner gesetzt: {path}")
 
     def _set_last_dir(self, key: str, path: Path | str) -> None:
         if not path:
@@ -1651,10 +2302,60 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/last_project_path", str(project_path))
         self.settings.setValue("ui/last_project_dir", str(project_path.parent))
 
+    def _choose_project_root(self) -> None:
+        start_dir = self._get_last_dir("ui/last_project_root_dir", Path.cwd())
+        chosen = QtWidgets.QFileDialog.getExistingDirectory(
+            self,
+            "Projektordner wählen",
+            start_dir,
+        )
+        if not chosen:
+            return
+        project_root = Path(chosen).expanduser()
+        if not project_root.exists() or not project_root.is_dir():
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Projektordner ungültig",
+                "Der ausgewählte Ordner ist nicht verfügbar oder ungültig.",
+            )
+            return
+        self._set_project_root(project_root)
+
+    def _make_project_relative(self, path: str) -> str:
+        if not path:
+            return path
+        project_root = self._get_project_root()
+        if not project_root:
+            return path
+        file_path = Path(path).expanduser()
+        try:
+            return str(file_path.relative_to(project_root))
+        except ValueError:
+            return str(file_path)
+
+    def _resolve_project_path(self, path: str, project_file: Optional[Path]) -> str:
+        if not path:
+            return path
+        candidate = Path(path).expanduser()
+        if candidate.is_absolute():
+            return str(candidate)
+        project_root = self._get_project_root()
+        base = project_root or (project_file.parent if project_file else None)
+        if base:
+            return str(base / candidate)
+        return str(candidate)
+
     def _project_payload(self) -> Dict[str, Any]:
         return {
             "pairs": [
-                {"image": p.image_path, "audio": p.audio_path, "output": p.output}
+                {
+                    "image": self._make_project_relative(p.image_path),
+                    "audio": self._make_project_relative(p.audio_path or ""),
+                    "output": self._make_project_relative(p.output),
+                    "image": p.image_path,
+                    "audio": p.audio_path,
+                    "output": p.output,
+                }
                 for p in self.pairs
             ],
             "settings": self._gather_settings(),
@@ -1669,35 +2370,151 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.setValue("ui/auto_save_path", auto_path)
         try:
             Path(auto_path).write_text(
-                json.dumps(self._project_payload(), indent=2, ensure_ascii=False),
+                json.dumps(
+                    self._project_payload(), indent=2, ensure_ascii=False
+                ),
                 encoding="utf-8",
             )
         except Exception as exc:
-            self._log(f"Auto-Speichern fehlgeschlagen ({reason}): {exc}", logging.ERROR)
+            self._log(
+                f"Auto-Speichern fehlgeschlagen ({reason}): {exc}",
+                logging.ERROR,
+            )
             return
         self._log(f"Auto-Speichern ok ({reason}): {auto_path}")
 
     def _push_history(self):
-        snap=[]
+        snap = []
         for p in self.pairs:
-            q=PairItem(p.image_path,p.audio_path)
-            q.duration=p.duration; q.output=p.output; q.status=p.status
-            q.progress=p.progress; q.valid=p.valid; q.validation_msg=p.validation_msg
+            q = PairItem(p.image_path, p.audio_path)
+            q.duration = p.duration
+            q.output = p.output
+            q.status = p.status
+            q.progress = p.progress
+            q.valid = p.valid
+            q.validation_msg = p.validation_msg
             snap.append(q)
         self._history.append(snap)
-        if len(self._history)>30: self._history.pop(0)
+        if len(self._history) > 30:
+            self._history.pop(0)
 
     def _update_counts(self):
         img_count = self.image_list.count()
         aud_count = self.audio_list.count()
         pair_count = sum(1 for p in self.pairs if p.image_path and p.audio_path)
-        err_count  = sum(1 for p in self.pairs if p.status == "FEHLER")
-        fin_count  = sum(1 for p in self.pairs if p.status == "FERTIG")
-        self.count_label.setText(f"{img_count} Bilder | {aud_count} Audios | {pair_count} Paare")
+        err_count = sum(1 for p in self.pairs if p.status == "FEHLER")
+        fin_count = sum(1 for p in self.pairs if p.status == "FERTIG")
+        self.count_label.setText(
+            f"{img_count} Bilder | {aud_count} Audios | {pair_count} Paare"
+        )
         self.dashboard.set_counts(pair_count, fin_count, err_count)
 
+    def _refresh_structure_view(self) -> None:
+        if not hasattr(self, "structure_tree"):
+            return
+        self.structure_tree.clear()
+
+        image_paths = [
+            self.image_list.item(i).data(Qt.UserRole)
+            for i in range(self.image_list.count())
+        ]
+        audio_paths = [
+            self.audio_list.item(i).data(Qt.UserRole)
+            for i in range(self.audio_list.count())
+        ]
+        image_seen = {path for path in image_paths if path}
+        audio_seen = {path for path in audio_paths if path}
+        for pair in self.pairs:
+            if pair.image_path and pair.image_path not in image_seen:
+                image_paths.append(pair.image_path)
+                image_seen.add(pair.image_path)
+            if pair.audio_path and pair.audio_path not in audio_seen:
+                audio_paths.append(pair.audio_path)
+                audio_seen.add(pair.audio_path)
+
+        def add_root(title: str, count: int) -> QtWidgets.QTreeWidgetItem:
+            root = QtWidgets.QTreeWidgetItem([f"{title} ({count})"])
+            root.setData(0, Qt.UserRole, title)
+            self.structure_tree.addTopLevelItem(root)
+            return root
+
+        def add_path_items(root: QtWidgets.QTreeWidgetItem, paths: List[str]) -> None:
+            for path in paths:
+                if not path:
+                    continue
+                item = QtWidgets.QTreeWidgetItem([path])
+                item.setData(0, Qt.UserRole, path)
+                root.addChild(item)
+
+        img_root = add_root("Bilder", len(image_paths))
+        add_path_items(img_root, image_paths)
+
+        aud_root = add_root("Audios", len(audio_paths))
+        add_path_items(aud_root, audio_paths)
+
+        output_root = add_root("Output", 0)
+        output_dir = self.out_dir_edit.text().strip()
+        output_files: List[str] = []
+        if output_dir:
+            out_path = Path(output_dir).expanduser()
+            output_dir_item = QtWidgets.QTreeWidgetItem([f"Ordner: {out_path}"])
+            output_dir_item.setData(0, Qt.UserRole, str(out_path))
+            output_root.addChild(output_dir_item)
+            if out_path.exists() and out_path.is_dir():
+                try:
+                    output_files = [
+                        str(p)
+                        for p in sorted(out_path.iterdir())
+                        if p.is_file() and p.suffix.lower() in OUTPUT_EXTENSIONS
+                    ]
+                except Exception as exc:
+                    error_item = QtWidgets.QTreeWidgetItem([f"Fehler beim Lesen: {exc}"])
+                    output_root.addChild(error_item)
+            else:
+                hint_item = QtWidgets.QTreeWidgetItem(["Ordner existiert noch nicht."])
+                output_root.addChild(hint_item)
+        else:
+            hint_item = QtWidgets.QTreeWidgetItem(["Kein Ausgabeordner gesetzt."])
+            output_root.addChild(hint_item)
+
+        max_outputs = 200
+        for path in output_files[:max_outputs]:
+            item = QtWidgets.QTreeWidgetItem([path])
+            item.setData(0, Qt.UserRole, path)
+            output_root.addChild(item)
+        if len(output_files) > max_outputs:
+            output_root.addChild(
+                QtWidgets.QTreeWidgetItem([f"… weitere {len(output_files) - max_outputs} Dateien"])
+            )
+        output_root.setText(0, f"Output ({len(output_files)})")
+
+        self.structure_tree.expandAll()
+        self._apply_structure_filter()
+
+    def _apply_structure_filter(self) -> None:
+        if not hasattr(self, "structure_tree"):
+            return
+        filter_text = self.structure_filter.currentText()
+        search_text = self.structure_search.text().strip().lower()
+        for i in range(self.structure_tree.topLevelItemCount()):
+            root = self.structure_tree.topLevelItem(i)
+            category = root.data(0, Qt.UserRole) or ""
+            allow_category = filter_text in ("Alles", category)
+            visible_children = 0
+            for j in range(root.childCount()):
+                child = root.child(j)
+                path_text = (child.data(0, Qt.UserRole) or child.text(0)).lower()
+                matches = (not search_text) or (search_text in path_text)
+                child_visible = allow_category and matches
+                child.setHidden(not child_visible)
+                if child_visible:
+                    visible_children += 1
+            root.setHidden(not allow_category or visible_children == 0)
+
     # ----- file actions -----
-    def _select_files(self, title: str, start_dir: str, filters: List[str]) -> List[str]:
+    def _select_files(
+        self, title: str, start_dir: str, filters: List[str]
+    ) -> List[str]:
         dialog = QtWidgets.QFileDialog(self, title, start_dir)
         dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         dialog.setViewMode(QtWidgets.QFileDialog.Detail)
@@ -1709,10 +2526,12 @@ class MainWindow(QtWidgets.QMainWindow):
         return []
 
     def _pick_images(self):
-        mode=self.mode_combo.currentText()
+        mode = self.mode_combo.currentText()
         start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
-        if mode=="Slideshow":
-            d=QtWidgets.QFileDialog.getExistingDirectory(self,"Ordner mit Bildern wählen",start_dir)
+        if mode == "Slideshow":
+            d = QtWidgets.QFileDialog.getExistingDirectory(
+                self, "Ordner mit Bildern wählen", start_dir
+            )
             if d:
                 self._set_last_dir("ui/last_image_dir", d)
                 self._on_images_added([d])
@@ -1729,6 +2548,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if files:
                 self._set_last_dir("ui/last_image_dir", Path(files[0]).parent)
                 self._on_images_added(files)
+
     def _pick_audios(self):
         start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
         files = self._select_files(
@@ -1742,30 +2562,76 @@ class MainWindow(QtWidgets.QMainWindow):
         if files:
             self._set_last_dir("ui/last_audio_dir", Path(files[0]).parent)
             self._on_audios_added(files)
+
     def _pick_image_folder(self):
-        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Bildordner wählen", str(Path.cwd()))
+        start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
+        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Bildordner wählen", start_dir)
         if not d:
             return
+        self._set_last_dir("ui/last_image_dir", d)
         files = self._collect_media_files(Path(d), (".jpg", ".jpeg", ".png", ".bmp", ".webp", ".mp4", ".mkv", ".avi", ".mov"))
+        d = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Bildordner wählen", str(Path.cwd())
+        )
+        if not d:
+            return
+        files = self._collect_media_files(
+            Path(d),
+            (
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".bmp",
+                ".webp",
+                ".mp4",
+                ".mkv",
+                ".avi",
+                ".mov",
+            ),
+        )
         if not files:
-            QtWidgets.QMessageBox.information(self, "Keine Bilder", "Im Ordner wurden keine Bilddateien gefunden.")
+            QtWidgets.QMessageBox.information(
+                self,
+                "Keine Bilder",
+                "Im Ordner wurden keine Bilddateien gefunden.",
+            )
             return
         self._on_images_added([str(f) for f in files])
 
     def _pick_audio_folder(self):
-        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Audioordner wählen", str(Path.cwd()))
+        start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
+        d = QtWidgets.QFileDialog.getExistingDirectory(self, "Audioordner wählen", start_dir)
         if not d:
             return
+        self._set_last_dir("ui/last_audio_dir", d)
         files = self._collect_media_files(Path(d), (".mp3", ".wav", ".flac", ".m4a", ".aac"))
+        d = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Audioordner wählen", str(Path.cwd())
+        )
+        if not d:
+            return
+        files = self._collect_media_files(
+            Path(d), (".mp3", ".wav", ".flac", ".m4a", ".aac")
+        )
         if not files:
-            QtWidgets.QMessageBox.information(self, "Keine Audios", "Im Ordner wurden keine Audiodateien gefunden.")
+            QtWidgets.QMessageBox.information(
+                self,
+                "Keine Audios",
+                "Im Ordner wurden keine Audiodateien gefunden.",
+            )
             return
         self._on_audios_added([str(f) for f in files])
 
-    def _collect_media_files(self, folder: Path, suffixes: Tuple[str, ...]) -> List[Path]:
+    def _collect_media_files(
+        self, folder: Path, suffixes: Tuple[str, ...]
+    ) -> List[Path]:
         if not folder.exists() or not folder.is_dir():
             return []
-        files = [p for p in folder.rglob("*") if p.is_file() and p.suffix.lower() in suffixes]
+        files = [
+            p
+            for p in folder.rglob("*")
+            if p.is_file() and p.suffix.lower() in suffixes
+        ]
         return sorted(files)
 
     def _on_images_added(self, files: List[str]):
@@ -1776,6 +2642,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._debug(f"Bild hinzugefügt: {f}")
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log(f"{len(files)} Bild(er) hinzugefügt")
 
     def _on_audios_added(self, files: List[str]):
@@ -1783,14 +2650,19 @@ class MainWindow(QtWidgets.QMainWindow):
         for f in files:
             self.audio_list.add_files([f])
             self._debug(f"Audio hinzugefügt: {f}")
-        it=iter(files)
+        it = iter(files)
         for p in self.pairs:
             if p.audio_path is None:
-                try: p.audio_path=next(it); p.update_duration(); p.validate()
-                except StopIteration: break
+                try:
+                    p.audio_path = next(it)
+                    p.update_duration()
+                    p.validate()
+                except StopIteration:
+                    break
         self.model.layoutChanged.emit()
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log(f"{len(files)} Audio(s) hinzugefügt")
 
     def _add_to_favorites(self, path: str):
@@ -1806,72 +2678,125 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _auto_pair(self):
         self._push_history()
-        imgs=[self.image_list.item(i).data(Qt.UserRole) for i in range(self.image_list.count())]
-        auds=[self.audio_list.item(i).data(Qt.UserRole) for i in range(self.audio_list.count())]
-        imgs.sort(); auds.sort()
-        self._debug(f"Auto-Pair start mit {len(imgs)} Bild(er) und {len(auds)} Audio(s)")
+        imgs = [
+            self.image_list.item(i).data(Qt.UserRole)
+            for i in range(self.image_list.count())
+        ]
+        auds = [
+            self.audio_list.item(i).data(Qt.UserRole)
+            for i in range(self.audio_list.count())
+        ]
+        imgs.sort()
+        auds.sort()
+        self._debug(
+            f"Auto-Pair start mit {len(imgs)} Bild(er) und {len(auds)} Audio(s)"
+        )
         self.model.clear()
-        new=[]
-        mode=self.mode_combo.currentText()
-        if mode=="Mehrere Audios, 1 Bild" and imgs:
+        new = []
+        mode = self.mode_combo.currentText()
+        if mode == "Mehrere Audios, 1 Bild" and imgs:
             img = imgs[0]
             for aud in auds:
-                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
-        elif mode=="Slideshow":
-            if len(imgs)==len(auds):
+                p = PairItem(img, aud)
+                p.update_duration()
+                p.validate()
+                new.append(p)
+        elif mode == "Slideshow":
+            if len(imgs) == len(auds):
                 pairs = zip(imgs, auds)
-            elif len(imgs)==1:
+            elif len(imgs) == 1:
                 pairs = ((imgs[0], a) for a in auds)
             else:
                 pairs = zip(imgs, auds)
             for img, aud in pairs:
-                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
+                p = PairItem(img, aud)
+                p.update_duration()
+                p.validate()
+                new.append(p)
         else:
             for img, aud in zip(imgs, auds):
-                p = PairItem(img, aud); p.update_duration(); p.validate(); new.append(p)
+                p = PairItem(img, aud)
+                p.update_duration()
+                p.validate()
+                new.append(p)
         self.model.add_pairs(new)
-        self._debug(f"Auto-Pair Ergebnis: {[(p.image_path, p.audio_path) for p in new][:3]} ...")
+        self._debug(
+            f"Auto-Pair Ergebnis: {[(p.image_path, p.audio_path) for p in new][:3]} ..."
+        )
         self._update_counts()
         self._resize_columns()
         self._log(f"Auto-Pair erstellt {len(new)} Paar(e)")
 
     def _clear_all(self):
-        if QtWidgets.QMessageBox.question(self,"Löschen?","Alle Paare wirklich entfernen?")!=QtWidgets.QMessageBox.Yes: return
+        if (
+            QtWidgets.QMessageBox.question(
+                self, "Löschen?", "Alle Paare wirklich entfernen?"
+            )
+            != QtWidgets.QMessageBox.Yes
+        ):
+            return
         self._push_history()
-        self.model.clear(); self.image_list.clear(); self.audio_list.clear()
-        self.log_edit.clear(); self.dashboard.mini_log.clear()
+        self.model.clear()
+        self.image_list.clear()
+        self.audio_list.clear()
+        self.log_edit.clear()
+        self.dashboard.mini_log.clear()
         self._update_counts()
+        self._refresh_structure_view()
         self._log("Listen geleert")
 
     def _undo_last(self):
-        if not self._history: return
-        last=self._history.pop()
-        self.model.clear(); self.model.add_pairs(last)
+        if not self._history:
+            return
+        last = self._history.pop()
+        self.model.clear()
+        self.model.add_pairs(last)
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log("Rückgängig ausgeführt")
 
     # ----- save / load -----
     def _save_project(self):
         start_dir = self._get_project_start_dir()
         start_path = str(Path(start_dir) / "projekt.json")
-        path,_=QtWidgets.QFileDialog.getSaveFileName(self,"Projekt speichern",start_path,"JSON (*.json)")
-        if not path: return
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Projekt speichern", start_path, "JSON (*.json)"
+        )
+        if not path:
+            return
         data = self._project_payload()
-        data={"pairs":[{"image":p.image_path,"audio":p.audio_path,"output":p.output} for p in self.pairs],
-              "settings":self._gather_settings(require_valid=False)}
+        data["settings"] = self._gather_settings(require_valid=False)
+        data = {
+            "pairs": [
+                {
+                    "image": p.image_path,
+                    "audio": p.audio_path,
+                    "output": p.output,
+                }
+                for p in self.pairs
+            ],
+            "settings": self._gather_settings(require_valid=False),
+        }
         try:
-            Path(path).write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
+            Path(path).write_text(
+                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
         except Exception as e:
             self._show_error_dialog("Fehler beim Speichern", str(e))
             self._log(f"Fehler beim Speichern: {e}")
             return
         self._set_last_project_path(path)
+        self._refresh_structure_view()
         self._log(f"Projekt gespeichert: {path}")
 
     def _load_project(self):
         start_dir = self._get_project_start_dir()
         path,_ = QtWidgets.QFileDialog.getOpenFileName(self, "Projekt laden", start_dir, "JSON (*.json)")
+        start_dir = self._get_last_dir("ui/last_project_dir", Path.cwd())
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Projekt laden", start_dir, "JSON (*.json)"
+        )
         if not path:
             return
         try:
@@ -1883,15 +2808,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self._set_last_project_path(path)
         self._push_history()
         self.model.clear()
+        project_file = Path(path).expanduser()
         new=[]
         for d in data.get("pairs",[]):
-            p=PairItem(d.get("image",""),d.get("audio"))
-            p.output=d.get("output",""); p.update_duration(); p.validate(); new.append(p)
+            image_path = self._resolve_project_path(d.get("image", ""), project_file)
+            audio_path = self._resolve_project_path(d.get("audio", ""), project_file)
+            output_path = self._resolve_project_path(d.get("output", ""), project_file)
+            p=PairItem(image_path, audio_path or None)
+            p.output=output_path; p.update_duration(); p.validate(); new.append(p)
+        new = []
+        for d in data.get("pairs", []):
+            p = PairItem(d.get("image", ""), d.get("audio"))
+            p.output = d.get("output", "")
+            p.update_duration()
+            p.validate()
+            new.append(p)
         self.model.add_pairs(new)
-        s=data.get("settings",{})
+        s = data.get("settings", {})
         self.out_dir_edit.setText(s.get("out_dir", self.out_dir_edit.text()))
         self.crf_spin.setValue(s.get("crf", self.crf_spin.value()))
-        self.preset_combo.setCurrentText(s.get("preset", self.preset_combo.currentText()))
+        self.preset_combo.setCurrentText(
+            s.get("preset", self.preset_combo.currentText())
+        )
         self.width_spin.setValue(s.get("width", self.width_spin.value()))
         self.height_spin.setValue(s.get("height", self.height_spin.value()))
         self.abitrate_edit.setText(s.get("abitrate", self.abitrate_edit.text()))
@@ -1901,13 +2839,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mode_combo.setCurrentText(s.get("mode", self.mode_combo.currentText()))
         self.parallel_jobs_spin.setValue(
             s.get("parallel_jobs", self.parallel_jobs_spin.value())
+        self.mode_combo.setCurrentText(
+            s.get("mode", self.mode_combo.currentText())
         )
         self._update_counts()
         self._resize_columns()
+        self._refresh_structure_view()
         self._log(f"Projekt geladen: {path}")
 
     # ----- encode -----
-    def _gather_settings(self, require_valid: bool = True) -> Optional[Dict[str, Any]]:
+    def _gather_settings(
+        self, require_valid: bool = True
+    ) -> Optional[Dict[str, Any]]:
         abitrate = self.abitrate_edit.text().strip() or "192k"
         if not re.match(r"^\d+(k|M)$", abitrate):
             msg = (
@@ -1915,10 +2858,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 "Die Zahl ist die Datenmenge pro Sekunde, k=Kilobit, M=Megabit."
             )
             if require_valid:
-                QtWidgets.QMessageBox.warning(self, "Ungültige Audiobitrate", msg)
+                QtWidgets.QMessageBox.warning(
+                    self, "Ungültige Audiobitrate", msg
+                )
                 self._log("Abbruch: Audiobitrate ist ungültig.")
                 return None
-            self._log("Hinweis: Ungültige Audiobitrate erkannt, setze Standard 192k.")
+            self._log(
+                "Hinweis: Ungültige Audiobitrate erkannt, setze Standard 192k."
+            )
             abitrate = "192k"
         output_template = self.output_template_edit.text().strip() or "{audio_stem}_{stamp}.mp4"
         try:
@@ -1948,7 +2895,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _dir_has_slideshow_images(self, path: Path) -> bool:
         try:
             for entry in path.iterdir():
-                if entry.is_file() and entry.suffix.lower() in SLIDESHOW_IMAGE_EXTENSIONS:
+                if (
+                    entry.is_file()
+                    and entry.suffix.lower() in SLIDESHOW_IMAGE_EXTENSIONS
+                ):
                     return True
         except Exception:
             return False
@@ -1963,7 +2913,7 @@ class MainWindow(QtWidgets.QMainWindow):
             left = self.model.index(row, 0)
             right = self.model.index(row, self.model.columnCount() - 1)
             self.model.dataChanged.emit(left, right)
-        self._log(f"Fehler in Zeile {row+1}: {msg}")
+        self._log(f"Fehler in Zeile {row + 1}: {msg}")
         self._update_counts()
 
     def _start_encode(self):
@@ -1990,8 +2940,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 "Bitte Audio hinzufügen oder Modus ändern.",
                 QtWidgets.QMessageBox.Warning,
             )
-            QtWidgets.QMessageBox.warning(self, "Fehlende Audios", "Nicht alle Bilder haben ein Audio.")
-            self._log("Encoding abgebrochen: nicht alle Bilder haben ein Audio.")
+            QtWidgets.QMessageBox.warning(
+                self, "Fehlende Audios", "Nicht alle Bilder haben ein Audio."
+            )
+            self._log(
+                "Encoding abgebrochen: nicht alle Bilder haben ein Audio."
+            )
             return
         mode = settings.get("mode", "Standard")
         if mode == "Mehrere Audios, 1 Bild":
@@ -2001,18 +2955,24 @@ class MainWindow(QtWidgets.QMainWindow):
                     "Bild fehlt",
                     "Für diesen Modus wird mindestens ein Bild benötigt.",
                 )
-                self._log("Encoding abgebrochen: kein Bild für 'Mehrere Audios, 1 Bild'.")
+                self._log(
+                    "Encoding abgebrochen: kein Bild für 'Mehrere Audios, 1 Bild'."
+                )
                 return
         if mode == "Slideshow":
             invalid_rows = False
             for idx, p in enumerate(self.pairs):
                 img_path = Path(p.image_path) if p.image_path else None
                 if not img_path or not img_path.is_dir():
-                    self._flag_row_error(idx, "Slideshow benötigt einen Ordner mit Bildern.")
+                    self._flag_row_error(
+                        idx, "Slideshow benötigt einen Ordner mit Bildern."
+                    )
                     invalid_rows = True
                     continue
                 if not self._dir_has_slideshow_images(img_path):
-                    self._flag_row_error(idx, "Im Bildordner sind keine Bilddateien vorhanden.")
+                    self._flag_row_error(
+                        idx, "Im Bildordner sind keine Bilddateien vorhanden."
+                    )
                     invalid_rows = True
             if invalid_rows:
                 QtWidgets.QMessageBox.warning(
@@ -2027,15 +2987,31 @@ class MainWindow(QtWidgets.QMainWindow):
         if invalid:
             row, first_item = invalid[0]
             idx = self.model.index(row, 0)
+            first_row, first_item = invalid[0]
+            idx = self.model.index(first_row, 0)
             sel = self.table.selectionModel()
             if sel is not None:
-                sel.select(idx, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows)
+                sel.select(
+                    idx,
+                    QtCore.QItemSelectionModel.ClearAndSelect
+                    | QtCore.QItemSelectionModel.Rows,
+                )
                 self.table.setCurrentIndex(idx)
-            self.table.scrollTo(idx, QtWidgets.QAbstractItemView.PositionAtCenter)
+            self.table.scrollTo(
+                idx, QtWidgets.QAbstractItemView.PositionAtCenter
+            )
             self.table.setFocus()
             self._show_error_dialog("Validierungsfehler", first_item.validation_msg)
             for row, item in invalid:
                 self._flag_row_error(row, item.validation_msg)
+            self._show_error_dialog(
+                "Validierungsfehler", first_item.validation_msg
+            )
+            for row, item in invalid:
+                self._flag_row_error(row, item.validation_msg)
+            QtWidgets.QMessageBox.critical(
+                self, "Validierungsfehler", first_item.validation_msg
+            )
             return
         out_dir_value = settings.get("out_dir", "").strip()
         if not out_dir_value:
@@ -2049,15 +3025,18 @@ class MainWindow(QtWidgets.QMainWindow):
         out_dir = Path(out_dir_value)
         try:
             out_dir.mkdir(parents=True, exist_ok=True)
-            test_file = out_dir/".write_test"
+            test_file = out_dir / ".write_test"
             test_file.touch()
             test_file.unlink()
         except Exception as e:
             self._show_error_dialog("Ordnerproblem", str(e))
             self._log(f"Encoding abgebrochen: Ordnerproblem ({e})")
             return
-        self.btn_encode.setEnabled(False); self.btn_stop.setEnabled(True)
-        self.progress_total.setValue(0); self.dashboard.set_progress(0); self._log("Starte Encoding …")
+        self.btn_encode.setEnabled(False)
+        self.btn_stop.setEnabled(True)
+        self.progress_total.setValue(0)
+        self.dashboard.set_progress(0)
+        self._log("Starte Encoding …")
         self.worker = EncodeWorker(self.pairs, settings, self.copy_only)
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread)
@@ -2073,9 +3052,15 @@ class MainWindow(QtWidgets.QMainWindow):
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle("Bilder fehlen")
         msg.setText("Bitte zuerst Bilder auswählen.")
-        msg.setInformativeText("Tipp: Du kannst einzelne Dateien oder einen Ordner wählen.")
-        btn_files = msg.addButton("Bilder wählen", QtWidgets.QMessageBox.AcceptRole)
-        btn_folder = msg.addButton("Bildordner wählen", QtWidgets.QMessageBox.ActionRole)
+        msg.setInformativeText(
+            "Tipp: Du kannst einzelne Dateien oder einen Ordner wählen."
+        )
+        btn_files = msg.addButton(
+            "Bilder wählen", QtWidgets.QMessageBox.AcceptRole
+        )
+        btn_folder = msg.addButton(
+            "Bildordner wählen", QtWidgets.QMessageBox.ActionRole
+        )
         msg.addButton("Abbrechen", QtWidgets.QMessageBox.RejectRole)
         msg.exec()
         if msg.clickedButton() == btn_files:
@@ -2087,9 +3072,15 @@ class MainWindow(QtWidgets.QMainWindow):
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle("Audios fehlen")
         msg.setText("Bitte Audiodateien auswählen.")
-        msg.setInformativeText("Tipp: Ein Audio pro Bild, oder nutze den Modus 'Mehrere Audios, 1 Bild'.")
-        btn_files = msg.addButton("Audios wählen", QtWidgets.QMessageBox.AcceptRole)
-        btn_folder = msg.addButton("Audioordner wählen", QtWidgets.QMessageBox.ActionRole)
+        msg.setInformativeText(
+            "Tipp: Ein Audio pro Bild, oder nutze den Modus 'Mehrere Audios, 1 Bild'."
+        )
+        btn_files = msg.addButton(
+            "Audios wählen", QtWidgets.QMessageBox.AcceptRole
+        )
+        btn_folder = msg.addButton(
+            "Audioordner wählen", QtWidgets.QMessageBox.ActionRole
+        )
         msg.addButton("Abbrechen", QtWidgets.QMessageBox.RejectRole)
         msg.exec()
         if msg.clickedButton() == btn_files:
@@ -2098,36 +3089,47 @@ class MainWindow(QtWidgets.QMainWindow):
             self._pick_audio_folder()
 
     def _stop_encode(self):
-        if self.worker: self.worker.stop()
+        if self.worker:
+            self.worker.stop()
         self.btn_stop.setEnabled(False)
         self._log("Encoding gestoppt")
 
-    def _on_row_progress(self,row:int,perc:float):
-        if 0<=row<len(self.pairs):
-            self.pairs[row].progress=perc
-            idx=self.model.index(row,6); self.model.dataChanged.emit(idx,idx)
+    def _on_row_progress(self, row: int, perc: float):
+        if 0 <= row < len(self.pairs):
+            self.pairs[row].progress = perc
+            idx = self.model.index(row, 6)
+            self.model.dataChanged.emit(idx, idx)
 
-    def _on_overall_progress(self,perc:float):
-        v=int(perc); self.progress_total.setValue(v); self.dashboard.set_progress(v)
+    def _on_overall_progress(self, perc: float):
+        v = int(perc)
+        self.progress_total.setValue(v)
+        self.dashboard.set_progress(v)
 
-    def _on_row_error(self,row:int,msg:str):
+    def _on_row_error(self, row: int, msg: str):
         msg = self._normalize_error_message(msg)
-        self._log(f"Fehler in Zeile {row+1}: {msg}")
-        if 0<=row<len(self.pairs):
-            self.pairs[row].status="FEHLER"
-            idx=self.model.index(row,7); self.model.dataChanged.emit(idx,idx)
-            self.table.scrollTo(idx, QtWidgets.QAbstractItemView.PositionAtCenter)
+        self._log(f"Fehler in Zeile {row + 1}: {msg}")
+        if 0 <= row < len(self.pairs):
+            self.pairs[row].status = "FEHLER"
+            idx = self.model.index(row, 7)
+            self.model.dataChanged.emit(idx, idx)
+            self.table.scrollTo(
+                idx, QtWidgets.QAbstractItemView.PositionAtCenter
+            )
         self._show_error_dialog("Fehler in Zeile", msg)
         self._update_counts()
         self._flag_row_error(row, msg)
 
     def _encode_finished(self):
-        self.btn_encode.setEnabled(True); self.btn_stop.setEnabled(False)
-        self.progress_total.setValue(100); self.dashboard.set_progress(100)
+        self.btn_encode.setEnabled(True)
+        self.btn_stop.setEnabled(False)
+        self.progress_total.setValue(100)
+        self.dashboard.set_progress(100)
         self._log("Alle Jobs abgeschlossen.")
         if self.thread:
-            self.thread.quit(); self.thread.wait()
-        self.thread=None; self.worker=None
+            self.thread.quit()
+            self.thread.wait()
+        self.thread = None
+        self.worker = None
         self._update_counts()
         if self.auto_open_output.isChecked():
             self._open_out_dir()
@@ -2136,8 +3138,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ----- misc -----
     def _toggle_copy_mode(self, checked: bool):
-        self.copy_only=checked
-        self._log(f"Archivmodus: Dateien werden {'kopiert' if checked else 'verschoben'}.")
+        self.copy_only = checked
+        self._log(
+            f"Archivmodus: Dateien werden {'kopiert' if checked else 'verschoben'}."
+        )
 
     def _toggle_help(self, checked: bool):
         self.help_box.setVisible(checked)
@@ -2190,15 +3194,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.large_controls = checked
         self.settings.setValue("ui/large_controls", checked)
         self._apply_large_controls(checked)
-        self._log(f"Große Bedienelemente {'aktiviert' if checked else 'deaktiviert'}")
+        self._log(
+            f"Große Bedienelemente {'aktiviert' if checked else 'deaktiviert'}"
+        )
 
     def _apply_large_controls(self, enabled: bool):
         height = 40 if enabled else 28
         font_size = self._font_size + (2 if enabled else 0)
         buttons = [
-            self.btn_add_images, self.btn_add_audios, self.btn_auto_pair, self.btn_clear,
-            self.btn_undo, self.btn_save, self.btn_load, self.btn_encode, self.btn_stop,
-            self.btn_wizard, self.btn_out_open,
+            self.btn_add_images,
+            self.btn_add_audios,
+            self.btn_auto_pair,
+            self.btn_clear,
+            self.btn_undo,
+            self.btn_save,
+            self.btn_load,
+            self.btn_encode,
+            self.btn_stop,
+            self.btn_wizard,
+            self.btn_out_open,
         ]
         for btn in buttons:
             btn.setMinimumHeight(height)
@@ -2208,9 +3222,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _global_exception(self, etype, value, tb):
         import traceback
+
         msg = "".join(traceback.format_exception(etype, value, tb))
         self._log(msg, logging.ERROR)
-        short = msg if len(msg) < 1000 else msg[:1000] + "\n...\nSiehe Logdatei für Details."
+        short = (
+            msg
+            if len(msg) < 1000
+            else msg[:1000] + "\n...\nSiehe Logdatei für Details."
+        )
         self._show_error_dialog("Unerwarteter Fehler", short)
 
     def _resize_columns(self):
@@ -2249,12 +3268,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.model.remove_rows([row])
             self._update_counts()
             self._resize_columns()
-            self._log(f"Zeile {row+1} gelöscht")
+            self._log(f"Zeile {row + 1} gelöscht")
 
     def _show_statusbar_path(self, index: QtCore.QModelIndex):
-        if not index.isValid(): return
-        if index.column() in (2,3,5):
-            self.statusBar().showMessage(self.model.data(index, Qt.DisplayRole), 5000)
+        if not index.isValid():
+            return
+        if index.column() in (2, 3, 5):
+            self.statusBar().showMessage(
+                self.model.data(index, Qt.DisplayRole), 5000
+            )
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         self.settings.setValue("ui/geometry", self.saveGeometry())
@@ -2262,6 +3284,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/clear_after", self.clear_after.isChecked())
         self.settings.setValue("ui/auto_open_output", self.auto_open_output.isChecked())
         self.settings.setValue("ui/auto_save_project", self.auto_save_project.isChecked())
+        self.settings.setValue(
+            "ui/auto_open_output", self.auto_open_output.isChecked()
+        )
+        self.settings.setValue(
+            "ui/auto_save_project", self.auto_save_project.isChecked()
+        )
+        s = self._gather_settings(require_valid=False)
         self.settings.setValue("ui/large_controls", self.large_controls)
         self.settings.setValue("project/default_dir", self.project_dir_edit.text().strip())
         self.settings.setValue("log/level", self.log_level)
@@ -2282,6 +3311,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._stop_audio_preview()
         super().closeEvent(event)
 
+
 # ---- Public
 def run_gui():
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
@@ -2289,6 +3319,7 @@ def run_gui():
     w.show()
     if QtWidgets.QApplication.instance() is app:
         sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     run_gui()
