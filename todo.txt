@@ -30,3 +30,4 @@
 - [ ] Autostart-Checkliste um laienfreundliche Abhängigkeits-Erklärung erweitern
 - [ ] Konfigurations- und Nutzerdaten konsequent in separaten Datenordner auslagern
 - [ ] Einheitliche Validierung/Fehlermeldungen für alle Eingaben dokumentieren und prüfen
+- [x] Audio-Vorschau, Sortieroptionen in Dateilisten und Dialog-Optimierung umgesetzt

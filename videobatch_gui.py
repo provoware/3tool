@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets, QtMultimedia
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
@@ -400,6 +400,43 @@ class DropListWidget(QtWidgets.QListWidget):
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setToolTip(title); self.setStatusTip(title)
         self.itemDoubleClicked.connect(self._open_item)
+    def _sort_value(self, path: str, mode: str):
+        file_path = Path(path)
+        if mode == "name":
+            return file_path.name.lower()
+        if mode == "path":
+            return str(file_path).lower()
+        if mode == "mtime":
+            try:
+                return file_path.stat().st_mtime
+            except FileNotFoundError:
+                return 0
+        if mode == "size":
+            try:
+                return file_path.stat().st_size
+            except FileNotFoundError:
+                return 0
+        return str(file_path).lower()
+    def _sort_items(self, mode: str, reverse: bool = False) -> None:
+        items = [self.item(i) for i in range(self.count())]
+        items.sort(
+            key=lambda item: self._sort_value(item.data(Qt.UserRole) or "", mode),
+            reverse=reverse,
+        )
+        self.clear()
+        for item in items:
+            self.addItem(item)
+    def _add_sort_menu(self, menu: QtWidgets.QMenu) -> Dict[QAction, Tuple[str, bool]]:
+        sort_menu = menu.addMenu("Sortieren")
+        actions: Dict[QAction, Tuple[str, bool]] = {}
+        actions[sort_menu.addAction("Name A → Z")] = ("name", False)
+        actions[sort_menu.addAction("Name Z → A")] = ("name", True)
+        actions[sort_menu.addAction("Datum neu → alt")] = ("mtime", True)
+        actions[sort_menu.addAction("Datum alt → neu")] = ("mtime", False)
+        actions[sort_menu.addAction("Größe groß → klein")] = ("size", True)
+        actions[sort_menu.addAction("Größe klein → groß")] = ("size", False)
+        actions[sort_menu.addAction("Pfad A → Z")] = ("path", False)
+        return actions
     def dragEnterEvent(self,e):
         if e.mimeData().hasUrls(): e.acceptProposedAction()
         else: super().dragEnterEvent(e)
@@ -434,6 +471,7 @@ class DropListWidget(QtWidgets.QListWidget):
         act_open=menu.addAction("Im Ordner zeigen")
         act_copy=menu.addAction("Pfad kopieren")
         act_remove=menu.addAction("Entfernen")
+        sort_actions = self._add_sort_menu(menu)
         act=menu.exec(e.globalPos())
         if act==act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
@@ -444,6 +482,12 @@ class DropListWidget(QtWidgets.QListWidget):
         elif act==act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
+        elif act in sort_actions:
+            mode, reverse = sort_actions[act]
+            self._sort_items(mode, reverse=reverse)
+            wnd = self.window()
+            if hasattr(wnd, "_log"):
+                wnd._log("Liste sortiert")
         e.accept()
     def _open_item(self,item:QtWidgets.QListWidgetItem):
         path=item.data(Qt.UserRole)
@@ -465,6 +509,7 @@ class ImageListWidget(DropListWidget):
         act_copy=menu.addAction("Pfad kopieren")
         act_fav=menu.addAction("Zu Favoriten")
         act_remove=menu.addAction("Entfernen")
+        sort_actions = self._add_sort_menu(menu)
         act=menu.exec(e.globalPos())
         if act==act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
@@ -478,7 +523,52 @@ class ImageListWidget(DropListWidget):
         elif act==act_fav:
             self.add_to_fav.emit(path)
             self.window()._log(f"Zu Favoriten: {path}")
+        elif act in sort_actions:
+            mode, reverse = sort_actions[act]
+            self._sort_items(mode, reverse=reverse)
+            self.window()._log("Liste sortiert")
         e.accept()
+
+class AudioListWidget(DropListWidget):
+    def contextMenuEvent(self, e: QtGui.QContextMenuEvent):
+        item = self.itemAt(e.pos())
+        if not item:
+            return
+        path = item.data(Qt.UserRole)
+        menu = QtWidgets.QMenu(self)
+        act_preview = menu.addAction("Vorschau abspielen")
+        act_stop = menu.addAction("Vorschau stoppen")
+        act_open = menu.addAction("Im Ordner zeigen")
+        act_copy = menu.addAction("Pfad kopieren")
+        act_remove = menu.addAction("Entfernen")
+        sort_actions = self._add_sort_menu(menu)
+        act = menu.exec(e.globalPos())
+        wnd = self.window()
+        if act == act_preview and hasattr(wnd, "_play_audio_preview"):
+            wnd._play_audio_preview(path)
+        elif act == act_stop and hasattr(wnd, "_stop_audio_preview"):
+            wnd._stop_audio_preview()
+        elif act == act_open:
+            QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
+            wnd._log(f"Im Ordner gezeigt: {path}")
+        elif act == act_copy:
+            QtWidgets.QApplication.clipboard().setText(str(path))
+            wnd._log(f"Pfad kopiert: {path}")
+        elif act == act_remove:
+            self.takeItem(self.row(item))
+            wnd._log(f"Eintrag entfernt: {path}")
+        elif act in sort_actions:
+            mode, reverse = sort_actions[act]
+            self._sort_items(mode, reverse=reverse)
+            wnd._log("Liste sortiert")
+        e.accept()
+    def _open_item(self, item: QtWidgets.QListWidgetItem):
+        path = item.data(Qt.UserRole)
+        wnd = self.window()
+        if path and hasattr(wnd, "_play_audio_preview"):
+            wnd._play_audio_preview(path)
+        else:
+            super()._open_item(item)
 
 class FavoriteListWidget(DropListWidget):
     use_fav = Signal(str)
@@ -493,6 +583,7 @@ class FavoriteListWidget(DropListWidget):
         act_copy=menu.addAction("Pfad kopieren")
         act_use=menu.addAction("Zum Arbeitsbereich")
         act_remove=menu.addAction("Entfernen")
+        sort_actions = self._add_sort_menu(menu)
         act=menu.exec(e.globalPos())
         if act==act_open:
             QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(path)))
@@ -507,6 +598,10 @@ class FavoriteListWidget(DropListWidget):
             self.removed.emit(path)
             self.takeItem(self.row(item))
             self.window()._log(f"Favorit entfernt: {path}")
+        elif act in sort_actions:
+            mode, reverse = sort_actions[act]
+            self._sort_items(mode, reverse=reverse)
+            self.window()._log("Liste sortiert")
         e.accept()
 
 
@@ -730,6 +825,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.debug_mode = self.settings.value("ui/debug", False, bool)
         self.large_controls = self.settings.value("ui/large_controls", False, bool)
         logger.setLevel(logging.DEBUG if self.debug_mode else logging.INFO)
+        self._audio_player = QtMultimedia.QMediaPlayer(self)
+        self._audio_output = QtMultimedia.QAudioOutput(self)
+        self._audio_player.setAudioOutput(self._audio_output)
+        self._audio_output.setVolume(self.settings.value("ui/audio_preview_volume", 0.8, float))
+        self._audio_player.errorOccurred.connect(self._on_audio_preview_error)
+
+        self._restore_window_state()
 
         sys.excepthook = self._global_exception
 
@@ -746,7 +848,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
         self.image_list = ImageListWidget("Bilder", (".jpg",".jpeg",".png",".bmp",".webp"))
-        self.audio_list = DropListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
+        self.audio_list = AudioListWidget("Audios", (".mp3",".wav",".flac",".m4a",".aac"))
         self.favorite_list = FavoriteListWidget("Favoriten", (".jpg",".jpeg",".png",".bmp",".webp"))
         self.image_list.add_to_fav.connect(self._add_to_favorites)
         self.favorite_list.use_fav.connect(self._use_favorite)
@@ -1216,6 +1318,44 @@ class MainWindow(QtWidgets.QMainWindow):
             text = "... (gekürzt)\n" + text[-max_chars:]
         return f"Logdatei: {LOG_FILE}\n\n{text}"
 
+    def _on_audio_preview_error(self, error, error_string) -> None:
+        if error:
+            self._log(f"Audio-Vorschau Fehler: {error_string}", logging.ERROR)
+
+    def _play_audio_preview(self, path: str) -> None:
+        if not path:
+            return
+        file_path = Path(path)
+        if not file_path.exists():
+            self._show_error_dialog(
+                "Audio fehlt",
+                f"Die Audiodatei wurde nicht gefunden: {file_path}",
+                QtWidgets.QMessageBox.Warning,
+            )
+            return
+        self._audio_player.setSource(QtCore.QUrl.fromLocalFile(str(file_path)))
+        self._audio_player.play()
+        self._log(f"Audio-Vorschau gestartet: {file_path.name}")
+
+    def _stop_audio_preview(self) -> None:
+        if self._audio_player.playbackState() != QtMultimedia.QMediaPlayer.StoppedState:
+            self._audio_player.stop()
+            self._log("Audio-Vorschau gestoppt")
+
+    def _restore_window_state(self) -> None:
+        geometry = self.settings.value("ui/window_geometry")
+        if geometry:
+            self.restoreGeometry(geometry)
+        state = self.settings.value("ui/window_state")
+        if state:
+            self.restoreState(state)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        self.settings.setValue("ui/window_geometry", self.saveGeometry())
+        self.settings.setValue("ui/window_state", self.saveState())
+        self._stop_audio_preview()
+        super().closeEvent(event)
+
     def _show_error_dialog(
         self,
         title: str,
@@ -1312,6 +1452,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dashboard.set_counts(pair_count, fin_count, err_count)
 
     # ----- file actions -----
+    def _select_files(self, title: str, start_dir: str, filters: List[str]) -> List[str]:
+        dialog = QtWidgets.QFileDialog(self, title, start_dir)
+        dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
+        dialog.setViewMode(QtWidgets.QFileDialog.Detail)
+        dialog.setOption(QtWidgets.QFileDialog.ReadOnly, True)
+        dialog.setNameFilters(filters)
+        dialog.selectNameFilter(filters[0])
+        if dialog.exec():
+            return dialog.selectedFiles()
+        return []
+
     def _pick_images(self):
         mode=self.mode_combo.currentText()
         start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
@@ -1321,19 +1472,31 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._set_last_dir("ui/last_image_dir", d)
                 self._on_images_added([d])
         else:
-            files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Bilder wählen",start_dir,
-                                                          "Bilder (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mkv *.avi *.mov)")
+            files = self._select_files(
+                "Bilder wählen",
+                start_dir,
+                [
+                    "Alle Medien (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mkv *.avi *.mov)",
+                    "Bilder (*.jpg *.jpeg *.png *.bmp *.webp)",
+                    "Videos (*.mp4 *.mkv *.avi *.mov)",
+                ],
+            )
             if files:
                 self._set_last_dir("ui/last_image_dir", Path(files[0]).parent)
                 self._on_images_added(files)
     def _pick_audios(self):
         start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
-        files,_=QtWidgets.QFileDialog.getOpenFileNames(self,"Audios wählen",start_dir,
-                                                       "Audio (*.mp3 *.wav *.flac *.m4a *.aac)")
+        files = self._select_files(
+            "Audios wählen",
+            start_dir,
+            [
+                "Audios (*.mp3 *.wav *.flac *.m4a *.aac)",
+                "Alle Dateien (*.*)",
+            ],
+        )
         if files:
             self._set_last_dir("ui/last_audio_dir", Path(files[0]).parent)
             self._on_audios_added(files)
-        if files: self._on_audios_added(files)
     def _pick_image_folder(self):
         d = QtWidgets.QFileDialog.getExistingDirectory(self, "Bildordner wählen", str(Path.cwd()))
         if not d:

@@ -283,6 +283,65 @@ def main():
                 self.setPalette(palette)
             else:
                 self.setPalette(self.style().standardPalette())
+            if self.worker and self.worker.isRunning():
+                return
+            self._set_busy(True)
+            self.progress.setValue(0)
+            self.status_label.setText("Installation laeuft…")
+            self.worker = FixWorker(self.py, self.missing_pkgs, self.ffmpeg_ok)
+            self.worker.progress.connect(self._on_progress)
+            self.worker.finished.connect(self._on_fix_finished)
+            self.worker.start()
+
+        def _on_progress(self, value: int, text: str) -> None:
+            self.progress.setValue(max(0, min(100, value)))
+            self.status_label.setText(text)
+
+        def _show_error(
+            self,
+            title: str,
+            message: str,
+            details: str,
+            permission: bool,
+        ) -> None:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setWindowTitle(title)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setText(message)
+            details_btn = None
+            if permission:
+                details_btn = msg.addButton(
+                    "Details anzeigen",
+                    QtWidgets.QMessageBox.ActionRole,
+                )
+                msg.addButton(QtWidgets.QMessageBox.Ok)
+            else:
+                msg.setDetailedText(details)
+                msg.addButton(QtWidgets.QMessageBox.Ok)
+            msg.exec()
+            if (
+                permission
+                and details_btn is not None
+                and msg.clickedButton() == details_btn
+            ):
+                QtWidgets.QMessageBox.information(
+                    self,
+                    "Details",
+                    details,
+                )
+
+        def _on_fix_finished(self, result: dict) -> None:
+            self.missing_pkgs = result.get("missing_pkgs", [])
+            self.ffmpeg_ok = result.get("ffmpeg_ok", False)
+            for err in result.get("errors", []):
+                self._show_error(
+                    err.get("title", "Fehler"),
+                    err.get("message", "Es ist ein Fehler aufgetreten."),
+                    err.get("details", ""),
+                    bool(err.get("permission", False)),
+                )
+            self._set_busy(False)
+            self._check()
 
     setup_logging(os.environ.get("VT_DEBUG") == "1")
     app = QtWidgets.QApplication(sys.argv)
@@ -305,6 +364,7 @@ def main():
         if hasattr(gui, "LOG_FILE"):
             print("Details stehen in", gui.LOG_FILE)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
