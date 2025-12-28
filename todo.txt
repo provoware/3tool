@@ -1,4 +1,5 @@
 # Aufgabenliste
+- [x] Bedienhilfe-Beispiele und Begriffserklärungen ergänzen
 - [x] Typpruefung mit mypy einbinden
 - [x] CI-Pipeline fuer automatisches Testen anlegen
 - [x] Dokumentation pruefen und aktualisieren
