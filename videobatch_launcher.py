@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 import logging
+import shutil
+import subprocess as sp
 import sys
 import os
 import shutil
@@ -81,14 +83,8 @@ def bootstrap_console():
         launcher_checks.pip_install(py, ["PySide6"])
 
 
-def main():
-    bootstrap_console()
-
-    try:
-        from PySide6 import QtCore, QtGui, QtWidgets
-    except Exception as e:
-        print("Qt konnte nicht geladen werden:", e)
-        sys.exit(1)
+def build_wizard():
+    from PySide6 import QtCore, QtGui, QtWidgets
 
     class CheckWorker(QtCore.QThread):
         results_ready = QtCore.Signal(list)
@@ -525,6 +521,18 @@ def main():
                 )
             self._set_busy(False)
             self._check()
+
+    return Wizard, QtWidgets, QtCore, QtGui
+
+
+def main():
+    bootstrap_console()
+
+    try:
+        Wizard, QtWidgets, _, _ = build_wizard()
+    except Exception as e:
+        print("Qt konnte nicht geladen werden:", e)
+        sys.exit(1)
 
     setup_logging(os.environ.get("VT_DEBUG") == "1")
     app = QtWidgets.QApplication(sys.argv)
