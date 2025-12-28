@@ -1,67 +1,147 @@
-from pathlib import Path
+#!/usr/bin/env bash
+# 0000-testall: Installiert Prueftools, zeigt Versionen, fuehrt Lint, Tests und Format aus.
 
-# Pfad zum Schreiben in den Vorlagen-Ordner des Nutzers
-templates_dir = Path.home() / "Vorlagen"
-templates_dir.mkdir(exist_ok=True)
+set -euo pipefail
+IFS=$'\n\t'
 
-script_path = templates_dir / "0000-testall"
-script_content = """#!/bin/bash
-# 0000-testall: Installiert Tools, zeigt Versionen, führt Lint & Format aus
-
-set -e
-echo "🧙 Starte 0000-testall..."
-
-# 1. Ins Projektverzeichnis wechseln
-cd ~/Projekte/WIZZARDTOOL-MODUL
-
-# 2. Virtuelle Umgebung erstellen/aktivieren
-if [ ! -d ".venv" ]; then
-  echo "🔧 Erzeuge virtuelle Umgebung..."
-  python3 -m venv .venv
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
+  PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+else
+  PROJECT_ROOT="$SCRIPT_DIR"
 fi
-source .venv/bin/activate
 
-# 3. Installation der Prüftools
-echo "📦 Installiere/aktualisiere Tools..."
-pip install --upgrade pip > /dev/null
-pip install flake8 mypy ruff black isort autoflake > /dev/null
+LOG_DIR="${LOG_DIR:-$PROJECT_ROOT/var/log}"
+LOG_FILE="$LOG_DIR/0000-testall.log"
+VENV_DIR="${VENV_DIR:-$PROJECT_ROOT/.venv}"
+DEBUG_MODE=0
 
-# 4. Version-Check
-echo -e "\\n🔍 Versionen:"
-flake8 --version
-mypy --version
-ruff --version
-black --version
-isort --version
-autoflake --version
+usage() {
+  cat <<'USAGE'
+Nutzung (Usage): 0000-testall [--debug] [--no-format] [--no-tests]
 
-# 5. Validierung
-echo -e "\\n🔎 Starte Validierung:"
-flake8 .
-mypy .
-ruff check .
+Optionen:
+  --debug      Debug-Modus (Fehlersuche) aktivieren.
+  --no-format  Formatierung (Code-Format) ueberspringen.
+  --no-tests   Tests (automatische Pruefung) ueberspringen.
+USAGE
+}
 
-# 6. Auto-Fixes
-echo -e "\\n✨ Wende Auto-Fixes an:"
-black .
-isort .
-autoflake --in-place --remove-unused-variables -r .
+log_info() {
+  printf "[%s] %s\n" "$(date +'%Y-%m-%d %H:%M:%S')" "$1"
+}
 
-echo -e "\\n✅ Alle Prüfungen und Fixes abgeschlossen."
-"""
+log_warn() {
+  printf "[%s] WARNUNG: %s\n" "$(date +'%Y-%m-%d %H:%M:%S')" "$1"
+}
 
-# Datei erstellen und ausführbar machen
-script_path.write_text(script_content)
-script_path.chmod(0o755)
+log_error() {
+  printf "[%s] FEHLER: %s\n" "$(date +'%Y-%m-%d %H:%M:%S')" "$1" >&2
+}
 
-# Alias-Vorschlag
-alias_snippet = "alias testall='bash ~/Vorlagen/0000-testall'"
+NO_FORMAT=0
+NO_TESTS=0
 
-# Ausgabe für den Nutzer
-import ace_tools as tools
-import pandas as pd
-df = pd.DataFrame({
-    "Item": ["Skript erstellt", "Alias-Zeile"],
-    "Eintrag": [str(script_path), alias_snippet]
-})
-tools.display_dataframe_to_user(name="Vorlagen-Skript & Alias", dataframe=df)
+for arg in "$@"; do
+  case "$arg" in
+    --debug)
+      DEBUG_MODE=1
+      ;;
+    --no-format)
+      NO_FORMAT=1
+      ;;
+    --no-tests)
+      NO_TESTS=1
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      log_error "Unbekannte Option: $arg"
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [ "$DEBUG_MODE" -eq 1 ]; then
+  set -x
+fi
+
+mkdir -p "$LOG_DIR"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+log_info "🧙 Starte 0000-testall im Projektordner: $PROJECT_ROOT"
+
+if [ ! -w "$PROJECT_ROOT" ]; then
+  log_error "Projektordner ist nicht beschreibbar. Bitte Rechte pruefen."
+  exit 1
+fi
+
+cd "$PROJECT_ROOT"
+
+if ! command -v python3 >/dev/null 2>&1; then
+  log_error "python3 fehlt. Bitte Python 3.10+ installieren."
+  exit 1
+fi
+
+if [ ! -d "$VENV_DIR" ]; then
+  log_info "🔧 Virtuelle Umgebung (venv) wird erstellt: $VENV_DIR"
+  python3 -m venv "$VENV_DIR"
+fi
+
+# shellcheck disable=SC1091
+source "$VENV_DIR/bin/activate"
+
+log_info "📦 Abhaengigkeiten (Dependencies) werden installiert/aktualisiert..."
+python -m pip install --upgrade pip > /dev/null
+
+if [ -f "requirements.txt" ]; then
+  python -m pip install -r requirements.txt
+else
+  log_warn "requirements.txt nicht gefunden. Grundpakete werden uebersprungen."
+fi
+
+if [ -f "requirements-dev.txt" ]; then
+  python -m pip install -r requirements-dev.txt
+else
+  log_warn "requirements-dev.txt nicht gefunden. Prueftools werden einzeln installiert."
+  python -m pip install flake8 mypy ruff black isort autoflake pytest
+fi
+
+log_info "\n🔍 Versionen der Prueftools:"
+python -m flake8 --version || log_warn "flake8 nicht verfuegbar."
+python -m mypy --version || log_warn "mypy nicht verfuegbar."
+python -m ruff --version || log_warn "ruff nicht verfuegbar."
+python -m black --version || log_warn "black nicht verfuegbar."
+python -m isort --version || log_warn "isort nicht verfuegbar."
+python -m autoflake --version || log_warn "autoflake nicht verfuegbar."
+python -m pytest --version || log_warn "pytest nicht verfuegbar."
+
+log_info "\n🔎 Starte Validierung (Linting)..."
+python -m flake8 .
+python -m mypy .
+python -m ruff check .
+
+if [ "$NO_TESTS" -eq 0 ]; then
+  if [ -d "tests" ]; then
+    log_info "\n🧪 Starte Tests (pytest)..."
+    python -m pytest
+  else
+    log_warn "tests/ nicht gefunden. Tests werden uebersprungen."
+  fi
+else
+  log_warn "Tests wurden per --no-tests uebersprungen."
+fi
+
+if [ "$NO_FORMAT" -eq 0 ]; then
+  log_info "\n✨ Wende Auto-Fixes (Formatierung) an..."
+  python -m black .
+  python -m isort .
+  python -m autoflake --in-place --remove-unused-variables -r .
+else
+  log_warn "Formatierung wurde per --no-format uebersprungen."
+fi
+
+log_info "\n✅ Alle Pruefungen und Fixes abgeschlossen. Logdatei: $LOG_FILE"

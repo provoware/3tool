@@ -1,4 +1,6 @@
 # Aufgabenliste
+- [x] 0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt
+- [x] CI um Pytest-Schritt und Dev-Abhaengigkeiten bereinigt (mypy verschoben, pytest ergaenzt)
 - [x] Farbschema-Bezeichnungen vereinheitlicht und Dokumentation sprachlich bereinigt
 - [x] Barrierefreie Launcher-Shortcuts, Tab-Reihenfolge und Beschreibungen im Wizard ergänzt
 - [x] Bedienhilfe-Beispiele und Begriffserklärungen ergänzen
