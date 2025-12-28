@@ -19,6 +19,13 @@ LOGGER = logging.getLogger("videobatch_launcher")
 
 
 @dataclass(frozen=True)
+class PackageManagerInfo:
+    name: str
+    update_cmd: list[str] | None
+    install_cmd: list[str]
+
+
+@dataclass(frozen=True)
 class CheckResult:
     key: str
     title: str
@@ -108,6 +115,84 @@ def has_internet(timeout: float = 2.0) -> bool:
     return True
 
 
+def parse_os_release(path: Path = Path("/etc/os-release")) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    data: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        value = value.strip().strip('"')
+        data[key] = value
+    return data
+
+
+def detect_linux_distribution() -> dict[str, str]:
+    data = parse_os_release()
+    return {
+        "id": data.get("ID", ""),
+        "name": data.get("NAME", ""),
+        "like": data.get("ID_LIKE", ""),
+    }
+
+
+def linux_package_manager() -> PackageManagerInfo | None:
+    info = detect_linux_distribution()
+    distro_id = info["id"].lower()
+    distro_like = info["like"].lower().split()
+    candidates = [distro_id] + distro_like
+    if any(value in candidates for value in ["debian", "ubuntu"]):
+        return PackageManagerInfo(
+            name="apt (Paketmanager/Software-Verwalter)",
+            update_cmd=["sudo", "apt", "update"],
+            install_cmd=["sudo", "apt", "install", "-y", "ffmpeg"],
+        )
+    if "fedora" in candidates:
+        return PackageManagerInfo(
+            name="dnf (Paketmanager/Software-Verwalter)",
+            update_cmd=None,
+            install_cmd=["sudo", "dnf", "install", "-y", "ffmpeg"],
+        )
+    if "arch" in candidates:
+        return PackageManagerInfo(
+            name="pacman (Paketmanager/Software-Verwalter)",
+            update_cmd=None,
+            install_cmd=["sudo", "pacman", "-S", "--noconfirm", "ffmpeg"],
+        )
+    if any(value in candidates for value in ["suse", "opensuse"]):
+        return PackageManagerInfo(
+            name="zypper (Paketmanager/Software-Verwalter)",
+            update_cmd=None,
+            install_cmd=["sudo", "zypper", "install", "-y", "ffmpeg"],
+        )
+    return None
+
+
+def format_command(command: list[str]) -> str:
+    return " ".join(command)
+
+
+def ffmpeg_install_hint() -> str:
+    if not sys.platform.startswith("linux"):
+        return "Bitte ffmpeg manuell installieren."
+    manager = linux_package_manager()
+    if not manager:
+        return (
+            "Linux-Distribution nicht erkannt. Bitte ffmpeg manuell "
+            "installieren."
+        )
+    if manager.update_cmd:
+        combined = (
+            f"{format_command(manager.update_cmd)} && "
+            f"{format_command(manager.install_cmd)}"
+        )
+    else:
+        combined = format_command(manager.install_cmd)
+    return f"Befehl ({manager.name}): {combined}"
+
+
 def write_permissions_ok(target_dir: Path) -> bool:
     try:
         with tempfile.NamedTemporaryFile(dir=target_dir, delete=True):
@@ -186,7 +271,7 @@ def check_packages(py: str) -> CheckResult:
 def check_ffmpeg() -> CheckResult:
     ok = bool(shutil.which("ffmpeg") and shutil.which("ffprobe"))
     detail = "ffmpeg und ffprobe gefunden." if ok else "ffmpeg/ffprobe fehlen."
-    hint = "Befehl (Linux): sudo apt install ffmpeg"
+    hint = ffmpeg_install_hint()
     return CheckResult(
         key="ffmpeg",
         title="ffmpeg/ffprobe (Video-Werkzeuge)",
@@ -337,31 +422,48 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
             )
         )
     elif sys.platform.startswith("linux"):
-        try:
-            subprocess.check_call(["sudo", "apt", "update"])
-            subprocess.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
-            ffmpeg_ok = bool(shutil.which("ffmpeg") and shutil.which("ffprobe"))
-            results.append(
-                RepairResult(
-                    "ffmpeg",
-                    "ffmpeg/ffprobe",
-                    ffmpeg_ok,
-                    (
-                        "ffmpeg installiert."
-                        if ffmpeg_ok
-                        else "ffmpeg Installation fehlte."
-                    ),
-                )
-            )
-        except subprocess.SubprocessError as exc:
+        manager = linux_package_manager()
+        if not manager:
             results.append(
                 RepairResult(
                     "ffmpeg",
                     "ffmpeg/ffprobe",
                     False,
-                    f"ffmpeg Installation fehlgeschlagen: {exc}",
+                    (
+                        "Linux-Distribution nicht erkannt. Bitte ffmpeg "
+                        "manuell installieren."
+                    ),
                 )
             )
+        else:
+            try:
+                if manager.update_cmd:
+                    subprocess.check_call(manager.update_cmd)
+                subprocess.check_call(manager.install_cmd)
+                ffmpeg_ok = bool(
+                    shutil.which("ffmpeg") and shutil.which("ffprobe")
+                )
+                results.append(
+                    RepairResult(
+                        "ffmpeg",
+                        "ffmpeg/ffprobe",
+                        ffmpeg_ok,
+                        (
+                            "ffmpeg installiert."
+                            if ffmpeg_ok
+                            else "ffmpeg Installation fehlte."
+                        ),
+                    )
+                )
+            except subprocess.SubprocessError as exc:
+                results.append(
+                    RepairResult(
+                        "ffmpeg",
+                        "ffmpeg/ffprobe",
+                        False,
+                        f"ffmpeg Installation fehlgeschlagen: {exc}",
+                    )
+                )
     else:
         results.append(
             RepairResult(
