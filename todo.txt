@@ -40,3 +40,4 @@
 - [x] Doppelte FixWorker-Definition und QtCore-Imports im Launcher bereinigt
 - [x] Projektordner-Auswahl, Startpfade und relative Projektpfade in der GUI ergänzt
 - [x] Formatter-Zeilenlaenge auf 80 gesetzt und Formatierung ausgefuehrt
+- [x] Themes ausgelagert, Duplikat-Check und Kontrastwarnung ergänzt
