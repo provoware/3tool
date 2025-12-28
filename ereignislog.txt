@@ -160,3 +160,6 @@
 [2025-12-28] Konfigurations- und Nutzerdaten in zentralem Datenordner gebuendelt (Aufgabe "Konfigurations- und Nutzerdaten konsequent in separaten Datenordner auslagern" erledigt)
 [2025-12-28] Einheitliche Validierung und Fehlermeldungen dokumentiert und geprueft (Aufgabe "Einheitliche Validierung/Fehlermeldungen für alle Eingaben dokumentieren und prüfen" erledigt)
 [2025-12-29] Launcher verwendet Paketmanager-Helper und klare Hinweise bei fehlenden Rechten (Aufgabe "Launcher verwendet Paketmanager-Helper und klare Hinweise bei fehlenden Rechten" erledigt)
+
+[2025-12-28] Themes ausgelagert, Duplikat-Check und Kontrastwarnung ergänzt (Aufgabe "Themes ausgelagert, Duplikat-Check und Kontrastwarnung ergänzt" erledigt)
+[2025-12-28] Launcher-Installationspruefung konsolidiert, Modulpfade und Imports bereinigt (Aufgabe "Launcher-Installationspruefung konsolidiert (Modulpfade/Imports bereinigt)" erledigt)

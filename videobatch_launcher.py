@@ -12,6 +12,8 @@ import os
 import shutil
 import subprocess as sp
 from pathlib import Path
+import shutil
+import subprocess
 
 from core import launcher_checks
 from core.paths import log_dir, user_data_dir
@@ -154,6 +156,14 @@ def main():
             if not self.ffmpeg_ok and sys.platform.startswith("linux"):
                 manager = launcher_checks.linux_package_manager()
                 if not manager:
+                self.progress.emit(
+                    60,
+                    "ffmpeg wird installiert (Administratorrechte erforderlich)…",
+                )
+                try:
+                    subprocess.check_call(["sudo", "apt", "update"])
+                    subprocess.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
+                except Exception as e:
                     errors.append(
                         {
                             "title": "Kein Paketmanager erkannt",
@@ -213,6 +223,7 @@ def main():
             missing_after = [
                 p
                 for p in launcher_checks.REQ_PKGS
+                p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
             ffmpeg_after = bool(
@@ -306,6 +317,7 @@ def main():
             self.missing_pkgs = [
                 p
                 for p in launcher_checks.REQ_PKGS
+                p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
             self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
