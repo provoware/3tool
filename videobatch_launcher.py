@@ -79,8 +79,21 @@ def bootstrap_console():
         reboot_into_venv()
 
     py = str(launcher_checks.venv_python())
-    if not launcher_checks.pip_show(py, "PySide6"):
-        launcher_checks.pip_install(py, ["PySide6"])
+    missing_pkgs = [
+        pkg
+        for pkg in launcher_checks.REQ_PKGS
+        if not launcher_checks.pip_show(py, pkg)
+    ]
+    if missing_pkgs:
+        try:
+            launcher_checks.pip_install(py, missing_pkgs)
+        except Exception as exc:
+            print(
+                "Fehler bei der automatischen Paket-Installation.",
+                "Hinweis: Bitte Internetverbindung und Schreibrechte prüfen.",
+                f"Details im Log: {LOG_FILE}",
+            )
+            raise exc
 
 
 def build_wizard():
