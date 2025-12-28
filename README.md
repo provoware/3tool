@@ -158,6 +158,10 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
    ```
 2. **Automatische Tests ausführen**:
    ```bash
+   python3 -m pytest
+   ```
+   Optionaler Zusatztest:
+   ```bash
    python3 videobatch_extra.py --selftest
    ```
 3. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):

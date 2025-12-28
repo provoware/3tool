@@ -7,6 +7,8 @@
 
 from __future__ import annotations
 import logging
+import shutil
+import subprocess as sp
 import sys
 import os
 from pathlib import Path
@@ -77,14 +79,8 @@ def bootstrap_console():
         launcher_checks.pip_install(py, ["PySide6"])
 
 
-def main():
-    bootstrap_console()
-
-    try:
-        from PySide6 import QtCore, QtGui, QtWidgets
-    except Exception as e:
-        print("Qt konnte nicht geladen werden:", e)
-        sys.exit(1)
+def build_wizard():
+    from PySide6 import QtCore, QtGui, QtWidgets
 
     class CheckWorker(QtCore.QThread):
         results_ready = QtCore.Signal(list)
@@ -131,7 +127,7 @@ def main():
             if self.missing_pkgs:
                 self.progress.emit(15, "Python-Pakete werden installiert…")
                 try:
-                    pip_install(self.py, self.missing_pkgs)
+                    launcher_checks.pip_install(self.py, self.missing_pkgs)
                 except Exception as e:
                     errors.append(
                         {
@@ -173,7 +169,11 @@ def main():
                     )
 
             self.progress.emit(85, "Abschlusspruefung laeuft…")
-            missing_after = [p for p in REQ_PKGS if not pip_show(self.py, p)]
+            missing_after = [
+                p
+                for p in launcher_checks.REQ_PKGS
+                if not launcher_checks.pip_show(self.py, p)
+            ]
             ffmpeg_after = bool(
                 shutil.which("ffmpeg") and shutil.which("ffprobe")
             )
@@ -263,7 +263,9 @@ def main():
 
         def _check(self):
             self.missing_pkgs = [
-                p for p in REQ_PKGS if not pip_show(self.py, p)
+                p
+                for p in launcher_checks.REQ_PKGS
+                if not launcher_checks.pip_show(self.py, p)
             ]
             self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
 
@@ -435,6 +437,18 @@ def main():
                 )
             self._set_busy(False)
             self._check()
+
+    return Wizard, QtWidgets, QtCore, QtGui
+
+
+def main():
+    bootstrap_console()
+
+    try:
+        Wizard, QtWidgets, _, _ = build_wizard()
+    except Exception as e:
+        print("Qt konnte nicht geladen werden:", e)
+        sys.exit(1)
 
     setup_logging(os.environ.get("VT_DEBUG") == "1")
     app = QtWidgets.QApplication(sys.argv)
