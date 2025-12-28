@@ -51,3 +51,4 @@
 - [x] Einrueckungen in Kontextmenues und Launcher-ffmpeg-Check repariert
 - [x] Changelog erstellt und Release-Hinweis in der README ergänzt
 - [x] Launcher-Start nutzt REQ_PKGS und installiert fehlende Pakete gesammelt
+- [x] ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt
