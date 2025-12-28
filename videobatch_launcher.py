@@ -152,25 +152,27 @@ def build_wizard():
             if not self.ffmpeg_ok and sys.platform.startswith("linux"):
                 manager = launcher_checks.linux_package_manager()
                 if not manager:
-                self.progress.emit(
-                    60,
-                    "ffmpeg wird installiert (Administratorrechte erforderlich)…",
-                )
-                try:
-                    subprocess.check_call(["sudo", "apt", "update"])
-                    subprocess.check_call(["sudo", "apt", "install", "-y", "ffmpeg"])
-                except Exception as e:
-                    errors.append(
-                        {
-                            "title": "Kein Paketmanager erkannt",
-                            "message": (
-                                "Deine Linux-Distribution wurde nicht erkannt. "
-                                "Bitte installiere ffmpeg manuell."
-                            ),
-                            "details": launcher_checks.ffmpeg_install_hint(),
-                            "permission": False,
-                        }
+                    self.progress.emit(
+                        60,
+                        "ffmpeg wird installiert (Administratorrechte erforderlich)…",
                     )
+                    try:
+                        subprocess.check_call(["sudo", "apt", "update"])
+                        subprocess.check_call(
+                            ["sudo", "apt", "install", "-y", "ffmpeg"]
+                        )
+                    except Exception:
+                        errors.append(
+                            {
+                                "title": "Kein Paketmanager erkannt",
+                                "message": (
+                                    "Deine Linux-Distribution wurde nicht "
+                                    "erkannt. Bitte installiere ffmpeg manuell."
+                                ),
+                                "details": launcher_checks.ffmpeg_install_hint(),
+                                "permission": False,
+                            }
+                        )
                 else:
                     self.progress.emit(
                         60,
@@ -219,7 +221,6 @@ def build_wizard():
             missing_after = [
                 p
                 for p in launcher_checks.REQ_PKGS
-                p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
             ffmpeg_after = bool(
@@ -348,7 +349,6 @@ def build_wizard():
             self.missing_pkgs = [
                 p
                 for p in launcher_checks.REQ_PKGS
-                p for p in launcher_checks.REQ_PKGS
                 if not launcher_checks.pip_show(self.py, p)
             ]
             self.ffmpeg_ok = shutil.which("ffmpeg") and shutil.which("ffprobe")
@@ -467,7 +467,9 @@ def build_wizard():
             self._set_busy(True)
             self.progress.setValue(0)
             self.status_label.setText("Installation laeuft…")
-            self.worker = InstallWorker(self.py, self.missing_pkgs, self.ffmpeg_ok)
+            self.worker = InstallWorker(
+                self.py, self.missing_pkgs, self.ffmpeg_ok
+            )
             self.worker.progress.connect(self._on_progress)
             self.worker.finished.connect(self._on_fix_finished)
             self.worker.start()
