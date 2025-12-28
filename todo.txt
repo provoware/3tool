@@ -13,6 +13,7 @@
 - [x] Zusätzliche FFmpeg-Optionen für Slideshows dokumentieren
 - [x] Slideshow um Seed, Profil- und Normalisierungsoptionen erweitern
 - [x] Dokumentation zu Slideshow-Profilen und Streaming-Datenraten aktualisieren
+- [x] Doppelte Favoriten-Handler in videobatch_gui.py entfernt
 - [x] Fehlerdialoge mit Log-Details erweitern und Validierungszeile markieren
 - [x] Hochkontrast-Themes, Fokus-Stil, Shortcuts und Barrierefreiheit in der GUI ergänzen
 - [x] Launcher-Installation asynchron mit Fortschritt und Rechte-Feedback umsetzen

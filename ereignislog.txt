@@ -135,6 +135,7 @@
 [2025-09-17] Slideshow-Bildreihenfolge verbessert, Shuffle/Cover ergänzt und Dokumentation erweitert (Aufgaben "Slideshow-Bildreihenfolge verbessern und Optionen erweitern" und "Slideshow-Dokumentation um neue Komfortfunktionen ergaenzen" erledigt)
 [2025-09-17] Slideshow-Validierungen ausgebaut, Nutzerfeedback ergänzt und neue Codec-Optionen dokumentiert (Aufgaben "Slideshow-Validierungen erweitern und Nutzerfeedback verbessern" und "Zusätzliche FFmpeg-Optionen für Slideshows dokumentieren" erledigt)
 [2025-09-18] Slideshow um Seed, Profil-, Normalisierungs- und Streaming-Optionen erweitert; Dokumentation angepasst (Aufgaben "Slideshow um Seed, Profil- und Normalisierungsoptionen erweitern" und "Dokumentation zu Slideshow-Profilen und Streaming-Datenraten aktualisieren" erledigt)
+[2025-09-19] Doppelte Favoriten-Handler entfernt (Aufgabe "Doppelte Favoriten-Handler in videobatch_gui.py entfernt" erledigt)
 [2025-12-28] Fehlerdialoge mit Log-Details erweitert und Validierungszeile markiert (Aufgabe "Fehlerdialoge mit Log-Details erweitern und Validierungszeile markieren" erledigt)
 [2025-09-18] Hochkontrast-Themes, Fokus-Stil, Shortcuts und Barrierefreiheit in der GUI ergänzt (Aufgabe "Hochkontrast-Themes, Fokus-Stil, Shortcuts und Barrierefreiheit in der GUI ergänzen" erledigt)
 [2025-12-28] Launcher-Installation asynchron umgesetzt, Fortschritt und Rechte-Feedback ergänzt (Aufgabe "Launcher-Installation asynchron mit Fortschritt und Rechte-Feedback umsetzen" erledigt)

@@ -1274,17 +1274,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._on_images_added([path])
         self._log(f"Favorit genutzt: {path}")
 
-    def _add_to_favorites(self, path: str):
-        for i in range(self.favorite_list.count()):
-            if self.favorite_list.item(i).data(Qt.UserRole) == path:
-                return
-        self.favorite_list.add_files([path])
-        self._log(f"Favorit hinzugefügt: {path}")
-
-    def _use_favorite(self, path: str):
-        self._on_images_added([path])
-        self._log(f"Favorit genutzt: {path}")
-
     def _auto_pair(self):
         self._push_history()
         imgs=[self.image_list.item(i).data(Qt.UserRole) for i in range(self.image_list.count())]
