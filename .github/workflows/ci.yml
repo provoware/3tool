@@ -18,5 +18,7 @@ jobs:
         run: python -m ruff check .
       - name: Typpruefung
         run: mypy .
+      - name: Tests
+        run: python -m pytest
       - name: Selftest
         run: python3 videobatch_extra.py --selftest
