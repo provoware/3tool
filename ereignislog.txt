@@ -146,3 +146,4 @@
 [2025-12-28] Slideshow-Listenpfade escapen und Temp-Dateien sicher geloescht (Aufgabe "Slideshow-Listenpfade escapen und Temp-Dateien sicher loeschen" erledigt)
 [2025-12-28] Eingabevalidierungen in GUI und PairItem erweitert (Aufgabe "Eingabevalidierungen in GUI und PairItem erweitern" erledigt)
 [2025-12-28] Gefuehrter Start, Hochkontrast-Themes, grosse Bedienelemente und bessere Fehlervorschlaege umgesetzt (Aufgaben "Gefuehrten Start (Wizard) und Bild-Hilfe im GUI ergaenzen", "Hochkontrast-Themes und Modus fuer grosse Bedienelemente umsetzen", "Fehlermeldungen mit Vorschlaegen fuer fehlende Medien verbessern" erledigt)
+[2025-12-28] Launcher-Setup stabilisiert, Reparatur-Workflow korrigiert und Theme-Wechsel entkoppelt (Aufgabe "Launcher-Setup stabilisieren (Reparatur-Workflow korrigieren, Theme-Wechsel entkoppeln)" erledigt)
