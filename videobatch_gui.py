@@ -29,6 +29,7 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
 from core.paths import config_dir, log_dir, user_data_dir
+from core.themes import load_themes
 from core.utils import build_out_name, human_time, probe_duration
 
 # ---------- Paths ----------
@@ -52,83 +53,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("VideoBatchTool")
 
-# ---------- Themes ----------
-# Drei augenschonende Darstellungsstile
-FOCUS_STYLE = (
-    "QWidget:focus{outline:2px solid #ffbf00;outline-offset:1px;} "
-    "QLineEdit:focus,QComboBox:focus,QSpinBox:focus,"
-    "QAbstractItemView:focus,QPushButton:focus,QTabBar::tab:focus{"
-    "outline:2px solid #ffbf00;outline-offset:1px;}"
-)
-THEMES = {
-    "Modern": (
-        "QWidget{background-color:#f6f7fb;color:#1e1e1e;} "
-        "QPushButton{background-color:#e6e8f0;color:#1e1e1e;border-radius:4px;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#ffffff;color:#1e1e1e;} "
-        "QWidget:focus{outline:2px solid #1a73e8;}"
-    ),
-    "Hell": (
-        "QWidget{background-color:#ffffff;color:#202020;} "
-        "QPushButton{background-color:#e0e0e0;color:#202020;}" + FOCUS_STYLE
-    ),
-    "Dunkel": (
-        "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
-        "QPushButton{background-color:#444;color:#e0e0e0;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#3a3a3a;color:#f0f0f0;} "
-        "QWidget:focus{outline:2px solid #90caf9;}"
-    ),
-    "Sepia": (
-        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
-        "QPushButton{background-color:#d6c3a0;color:#5b4636;} "
-        "QWidget:focus{outline:2px solid #8d6e63;}"
-        "QPushButton{background-color:#444;color:#e0e0e0;}" + FOCUS_STYLE
-    ),
-    "Sepia": (
-        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
-        "QPushButton{background-color:#d6c3a0;color:#5b4636;}" + FOCUS_STYLE
-    ),
-    "Hochkontrast Hell": (
-        "QWidget{background-color:#ffffff;color:#000000;} "
-        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;}"
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#ffffff;color:#000000;border:2px solid #000000;}"
-        "QHeaderView::section{background-color:#000000;color:#ffffff;}"
-        + FOCUS_STYLE
-    ),
-    "Hochkontrast Dunkel": (
-        "QWidget{background-color:#000000;color:#ffffff;} "
-        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
-        "QHeaderView::section{background-color:#ffffff;color:#000000;}"
-        + FOCUS_STYLE
-        + "QPushButton{background-color:#e0e0e0;color:#202020;} "
-        "QWidget:focus{outline:2px solid #1a73e8;}"
-    ),
-    "Dunkel": (
-        "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
-        "QPushButton{background-color:#444;color:#e0e0e0;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#3a3a3a;color:#f0f0f0;} "
-        "QWidget:focus{outline:2px solid #90caf9;}"
-    ),
-    "Sepia": (
-        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
-        "QPushButton{background-color:#d6c3a0;color:#5b4636;} "
-        "QWidget:focus{outline:2px solid #8d6e63;}"
-    ),
-    "Hochkontrast Hell": (
-        "QWidget{background-color:#ffffff;color:#000000;} "
-        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#ffffff;color:#000000;border:2px solid #000000;} "
-        "QWidget:focus{outline:3px solid #ffbf00;}"
-    ),
-    "Hochkontrast Dunkel": (
-        "QWidget{background-color:#000000;color:#ffffff;} "
-        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{background-color:#000000;color:#ffffff;border:2px solid #ffffff;} "
-        "QWidget:focus{outline:3px solid #ffbf00;}"
-    ),
-}
+THEMES = load_themes(logger)
 
 # ---------- Helpers ----------
 IMAGE_EXTENSIONS = (
@@ -3164,6 +3089,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 # ---- Public
 def run_gui():
+    global THEMES
+    THEMES = load_themes(logger)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
     w = MainWindow()
     w.show()
