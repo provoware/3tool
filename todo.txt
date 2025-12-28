@@ -13,3 +13,4 @@
 - [x] Zusätzliche FFmpeg-Optionen für Slideshows dokumentieren
 - [x] Slideshow um Seed, Profil- und Normalisierungsoptionen erweitern
 - [x] Dokumentation zu Slideshow-Profilen und Streaming-Datenraten aktualisieren
+- [x] Launcher-Checkliste mit Auto-Reparatur, Offline-Hinweis und Themes erweitern
