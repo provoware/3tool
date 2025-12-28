@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 88
+skip-string-normalization = false
+
+[tool.ruff]
+line-length = 88
+extend-exclude = [".venv", "dist", "build"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]

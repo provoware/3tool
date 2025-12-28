@@ -135,3 +135,4 @@
 [2025-09-17] Slideshow-Bildreihenfolge verbessert, Shuffle/Cover ergänzt und Dokumentation erweitert (Aufgaben "Slideshow-Bildreihenfolge verbessern und Optionen erweitern" und "Slideshow-Dokumentation um neue Komfortfunktionen ergaenzen" erledigt)
 [2025-09-17] Slideshow-Validierungen ausgebaut, Nutzerfeedback ergänzt und neue Codec-Optionen dokumentiert (Aufgaben "Slideshow-Validierungen erweitern und Nutzerfeedback verbessern" und "Zusätzliche FFmpeg-Optionen für Slideshows dokumentieren" erledigt)
 [2025-09-18] Slideshow um Seed, Profil-, Normalisierungs- und Streaming-Optionen erweitert; Dokumentation angepasst (Aufgaben "Slideshow um Seed, Profil- und Normalisierungsoptionen erweitern" und "Dokumentation zu Slideshow-Profilen und Streaming-Datenraten aktualisieren" erledigt)
+[2025-12-28] Qualitaets-Setup mit pyproject, QA-Skript und Smoke-Test ergaenzt (Aufgabe "Qualitaets-Setup mit pyproject, QA-Skript und Smoke-Test ergaenzen" erledigt)
