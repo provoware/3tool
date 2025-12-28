@@ -832,8 +832,7 @@ class ImageListWidget(DropListWidget):
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
             self._notify_structure_update()
-        elif act==act_fav:
-        elif act == act_fav:
+       elif act == act_fav:
             self.add_to_fav.emit(path)
             self.window()._log(f"Zu Favoriten: {path}")
         elif act in sort_actions:
