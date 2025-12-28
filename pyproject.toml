@@ -1,9 +1,9 @@
 [tool.black]
-line-length = 88
+line-length = 80
 skip-string-normalization = false
 
 [tool.ruff]
-line-length = 88
+line-length = 80
 extend-exclude = [".venv", "dist", "build"]
 
 [tool.pytest.ini_options]
