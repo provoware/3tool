@@ -175,3 +175,4 @@
 [2025-12-28] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert (Aufgabe "Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert" erledigt)
 2026-02-12 05:14 - Aufgabe erledigt: mehr Optionen/Lebarkeit/Übersichtlichkeit umgesetzt (start_gui.py, videobatch_extra_improved.py, videobatch_professional.py, README_PRO.md).
 [2026-02-12] Profi-Interface mit zentralen UI-Profilen (Standard/Profi), einheitlichen Größen/Abständen und Tests umgesetzt (Aufgabe "Profi-Interface - Maximal Konfigurabel und perfekt einheitliche größen und abstände, verbessere codequalität." erledigt)
+[2026-02-12] Fortschrittsanzeige mit erledigten Aufgaben erweitert und zentrale Eingabevalidierung fuer Audiobitrate/Template mit Tests umgesetzt (Aufgabe "Fortschrittsanzeige erweitert und intelligente Eingabevalidierung zentralisiert" erledigt)
