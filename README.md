@@ -125,6 +125,8 @@ Diese Tipps erleichtern die Bedienung für alle Nutzenden:
 * In `0000-testall` liegt ein Bash-Skript, das Prueftools installiert und Lint,
   Tests sowie Formatierung startet. Mit `./0000-testall --help` siehst du die Optionen.
 * Ereignisse und Aenderungen werden in `ereignislog.txt` festgehalten.
+* Entwickler-Standards und QA-Ablauf stehen in `ENTWICKLERDOKU.md`.
+* Ein versioniertes Datei-Manifest mit SHA256-Pruefsummen liegt in `data/manifest/v1/project_files.json` und wird per `python -m core.file_manifest --verify` geprueft.
 
 * Neue Beispiele für Fade und Weichzeichnen stehen in `ANLEITUNG_WEITERE_TIPPS.md`.
 * Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.

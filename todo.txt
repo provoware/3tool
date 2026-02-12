@@ -65,3 +65,4 @@
 
 
 - [x] Dateiauswahl modernisiert: Vorschau/Zoom (Strg+Mausrad), Checkbox-Mehrfachauswahl, Sortierung, Downloads-Startpfad und Auto-Pair nach Auswahlreihenfolge ergänzt
+- [x] Versioniertes JSON-Datei-Manifest mit SHA256-Pruefung eingefuehrt und QA-Workflow erweitert
