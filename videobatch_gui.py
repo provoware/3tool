@@ -16,24 +16,21 @@ import sys
 import tempfile
 import threading
 import urllib.parse
-from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from PySide6 import QtCore, QtGui, QtWidgets, QtMultimedia
-from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, Signal
+from PySide6 import QtCore, QtGui, QtMultimedia, QtWidgets
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
 from core.paths import config_dir, log_dir, user_data_dir
 from core.themes import load_themes
+from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
-from core.ui_profiles import (
-    resolve_interface_profile,
-    resolve_spacing_profile,
-)
 from core.utils import build_out_name, human_time, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
 
@@ -1504,7 +1501,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings(
             str(SETTINGS_FILE), QtCore.QSettings.IniFormat
         )
-        self._font_size = self.settings.value("ui/font_size", 11, int)
+        self._font_size = self.settings.value("ui/font_size", 13, int)
         self.debug_mode = self.settings.value("ui/debug", False, bool)
         self.log_level = self.settings.value("log/level", "", str).upper()
         if not self.log_level:
@@ -1762,7 +1759,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         self.font_slider = QtWidgets.QSlider(Qt.Horizontal)
-        self.font_slider.setRange(8, 32)
+        self.font_slider.setRange(10, 36)
         self.font_slider.setValue(self._font_size)
         self.font_slider.setAccessibleName("Schriftgrößen-Schieber")
         self.font_slider.setAccessibleDescription(
@@ -1970,8 +1967,10 @@ class MainWindow(QtWidgets.QMainWindow):
         panel_splitter = QtWidgets.QSplitter(Qt.Horizontal)
         panel_splitter.addWidget(table_box)
         panel_splitter.addWidget(help_box)
-        panel_splitter.setStretchFactor(0, 3)
+        panel_splitter.setStretchFactor(0, 1)
         panel_splitter.setStretchFactor(1, 1)
+        panel_splitter.setSizes([1, 1])
+        self.panel_splitter = panel_splitter
 
         self.progress_total = QtWidgets.QProgressBar()
         self.progress_total.setFormat("%p% gesamt")
@@ -2017,8 +2016,10 @@ class MainWindow(QtWidgets.QMainWindow):
         main_splitter = QtWidgets.QSplitter(Qt.Vertical)
         main_splitter.addWidget(panel_splitter)
         main_splitter.addWidget(self.log_box)
-        main_splitter.setStretchFactor(0, 4)
+        main_splitter.setStretchFactor(0, 1)
         main_splitter.setStretchFactor(1, 1)
+        main_splitter.setSizes([1, 1])
+        self.main_splitter = main_splitter
 
         # Buttons
         self.btn_add_images = QtWidgets.QPushButton("Bilder wählen")
@@ -2081,6 +2082,12 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(self.dashboard)
         central_layout.addWidget(btn_box)
+        self.focus_hint_label = QtWidgets.QLabel(
+            "Tipp: Klicken Sie in einen Bereich. Der aktive Bereich wird farbig hervorgehoben."
+        )
+        self.focus_hint_label.setAccessibleName("Hinweis aktiver Bereich")
+        self.focus_hint_label.setWordWrap(True)
+        central_layout.addWidget(self.focus_hint_label)
         central_layout.addWidget(main_splitter)
         self.central_layout = central_layout
         central = QtWidgets.QWidget()
@@ -2164,6 +2171,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self._start_encode
         )
         self._refresh_structure_view()
+        self._section_boxes = {
+            "Paare": table_box,
+            "Hilfe": help_box,
+            "Protokoll": self.log_box,
+            "Einstellungen": settings_box,
+            "Projektstruktur": structure_box,
+        }
+        QtWidgets.QApplication.instance().focusChanged.connect(
+            self._on_focus_changed
+        )
+        self._on_focus_changed(None, self.table)
 
     # ----- UI helpers -----
     def _build_menus(self):
@@ -2198,7 +2216,7 @@ class MainWindow(QtWidgets.QMainWindow):
         act_font_minus.triggered.connect(lambda: self._change_font(-1))
         act_font_reset = QAction("Schrift Reset", self)
         act_font_reset.setToolTip("Schriftgröße zurücksetzen")
-        act_font_reset.triggered.connect(lambda: self._set_font(11))
+        act_font_reset.triggered.connect(lambda: self._set_font(13))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
         self.act_show_help = QAction(
             "Hilfe-Bereich",
@@ -2271,7 +2289,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._set_font(value)
 
     def _set_font(self, size: int):
-        size = max(8, min(32, size))
+        size = max(10, min(36, size))
         self._font_size = size
         self._apply_font()
         if hasattr(self, "font_slider") and self.font_slider.value() != size:
@@ -2290,6 +2308,25 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().setStyleSheet(css)
         self.settings.setValue("ui/theme", name)
         self._log(f"Farbschema gewechselt: {name}")
+
+    def _on_focus_changed(
+        self,
+        _old: Optional[QtWidgets.QWidget],
+        now: Optional[QtWidgets.QWidget],
+    ) -> None:
+        active_name = ""
+        for name, box in self._section_boxes.items():
+            is_active = bool(now and box.isAncestorOf(now))
+            box.setProperty("activeSection", is_active)
+            box.style().unpolish(box)
+            box.style().polish(box)
+            box.update()
+            if is_active:
+                active_name = name
+        if active_name:
+            self.focus_hint_label.setText(
+                f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, dann den nächsten Schritt starten."
+            )
 
     def _apply_log_level(self, level_name: str) -> None:
         level_name = (level_name or "INFO").upper()
