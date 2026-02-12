@@ -174,4 +174,3 @@
 [2025-12-28] ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt (Aufgabe "ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt" erledigt)
 [2025-12-28] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert (Aufgabe "Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert" erledigt)
 2026-02-12 05:14 - Aufgabe erledigt: mehr Optionen/Lebarkeit/Übersichtlichkeit umgesetzt (start_gui.py, videobatch_extra_improved.py, videobatch_professional.py, README_PRO.md).
-2026-02-12 05:24 - Aufgabe erledigt: Profi-Interface-Abstände/Struktur und Codequalität optimiert (Spacing-Profil, Duplikate im GUI-Setup entfernt, robustere Startordner-Prüfung).

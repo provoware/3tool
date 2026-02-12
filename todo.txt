@@ -53,5 +53,5 @@
 - [x] Launcher-Start nutzt REQ_PKGS und installiert fehlende Pakete gesammelt
 - [x] ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt
 - [x] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert
-- [x] Profi-Interface - Maximal Konfigurabel und perfekt einheitliche größen und abstände, verbessere codequalität.
+- [ ] Profi-Interface - Maximal Konfigurabel und perfekt einheitliche größen und abstände, verbessere codequalität.
 - [x] mehr Optionen und bessere Lesbarkeit und Übersichtlichkeit. Intuitive Toolführung.
