@@ -58,3 +58,5 @@
 
 - [x] Infoanzeigen fuer Auswahlmengen modernisiert und UI-Texte in versioniertes JSON-Archiv ausgelagert
 - [x] Fortschrittsanzeige erweitert und intelligente Eingabevalidierung zentralisiert
+- [x] Launcher-Debug-Logging, Ordner-Validierung und automatische Tests für Start-Routine ergänzt
+

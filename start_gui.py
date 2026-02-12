@@ -52,22 +52,29 @@ def _import_module(name: str):
         )
 
 
-def _prepare_runtime_dirs() -> None:
-    required_dirs = (user_data_dir, config_dir, log_dir, work_dir, cache_dir)
-    for dir_func in required_dirs:
-        target = dir_func()
+def _prepare_runtime_dirs() -> dict[str, Path]:
+    required_dirs = {
+        "Nutzerdaten": user_data_dir(),
+        "Konfiguration": config_dir(),
+        "Protokolle": log_dir(),
+        "Arbeitsdaten": work_dir(),
+        "Cache": cache_dir(),
+    }
+    for name, target in required_dirs.items():
         target.mkdir(parents=True, exist_ok=True)
         if not launcher_checks.write_permissions_ok(target):
             _fail(
-                f"Keine Schreibrechte in {target}. "
+                f"Keine Schreibrechte in {target} ({name}). "
                 "Bitte Ordnerrechte prüfen oder anderen Benutzerordner nutzen."
             )
+    return required_dirs
 
 
 def _print_beginner_tips() -> None:
     print("\nLaien-Tipps (einfach):")
     print(" - Bei Problemen zuerst: python3 start_gui.py --auto-repair")
     print(" - Für schwächere Geräte: python3 start_gui.py --simple-mode")
+    print(" - Details/Fehlerbericht: python3 start_gui.py --debug")
     print(" - Selbsttest für CLI: python3 videobatch_extra.py --selftest")
 
 
@@ -85,11 +92,20 @@ def _all_blocking_ok(results: list[launcher_checks.CheckResult]) -> bool:
     return all(result.ok for result in results if result.blocking)
 
 
-def _run_repairs(py: str, target_dir: Path) -> None:
+def _run_repairs(
+    py: str, target_dir: Path
+) -> list[launcher_checks.RepairResult]:
     repairs = launcher_checks.run_repairs(py, target_dir)
     for repair in repairs:
         marker = "✅" if repair.ok else "❌"
         print(f"  {marker} {repair.title}: {repair.detail}")
+        launcher_checks.LOGGER.info(
+            "Repair %s (%s): %s",
+            "ok" if repair.ok else "failed",
+            repair.key,
+            repair.detail,
+        )
+    return repairs
 
 
 def _start_gui(start_func: Callable[[], None]) -> None:
@@ -134,7 +150,10 @@ def main() -> int:
     _ok("Projektdateien vollständig")
 
     _status(2, steps, "Laufzeitordner vorbereiten")
-    _prepare_runtime_dirs()
+    runtime_dirs = _prepare_runtime_dirs()
+    launcher_log = runtime_dirs["Protokolle"] / "launcher.log"
+    launcher_checks.configure_logging(launcher_log, args.debug)
+    launcher_checks.LOGGER.info("Launcher gestartet (debug=%s)", args.debug)
     _ok("Daten-, Config-, Log-, Work- und Cache-Ordner bereit")
 
     _status(3, steps, "Launcher-Umgebung vorbereiten")
@@ -143,14 +162,14 @@ def main() -> int:
     _ok(f"Python-Umgebung bereit: {py}")
 
     _status(4, steps, "System-Checks ausführen")
-    results = _run_checks(py, user_data_dir())
+    results = _run_checks(py, runtime_dirs["Nutzerdaten"])
 
     if not _all_blocking_ok(results):
         if args.auto_repair:
             _status(5, steps, "Self-Repair ausführen")
-            _run_repairs(py, user_data_dir())
+            _run_repairs(py, runtime_dirs["Nutzerdaten"])
             _status(6, steps, "Checks nach Reparatur wiederholen")
-            results = _run_checks(py, user_data_dir())
+            results = _run_checks(py, runtime_dirs["Nutzerdaten"])
         else:
             _warn("Blockierende Probleme gefunden. Starte mit --auto-repair.")
 
