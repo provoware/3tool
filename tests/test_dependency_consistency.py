@@ -21,7 +21,9 @@ def test_dependency_check_ok(tmp_path: Path) -> None:
     assert result.details == []
 
 
-def test_dependency_check_reports_missing_and_duplicates(tmp_path: Path) -> None:
+def test_dependency_check_reports_missing_and_duplicates(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "requirements.txt").write_text("PySide6\n", encoding="utf-8")
     (tmp_path / "requirements-dev.txt").write_text(
         "black==24.8.0\nblack==24.8.0\n",
