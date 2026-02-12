@@ -40,3 +40,27 @@ python3 videobatch_professional.py --manifest jobs.json --out ./out --threads 4 
 - Batch-Workflows
 - Parallelisierung über Threads
 - JSON-Metadaten-Export
+
+
+## 4) Profi-Interface: einheitliche Größen und Abstände
+
+In der GUI gibt es unter **Einstellungen → Abstände** jetzt drei Profile:
+
+- `Kompakt` (weniger Abstand, mehr Inhalt sichtbar)
+- `Standard` (ausgewogen)
+- `Großzügig` (mehr Luft, besser lesbar)
+
+Die Auswahl wird dauerhaft gespeichert.
+
+## 5) Laien-Befehle (einfach)
+
+```bash
+# Alles automatisch prüfen und reparieren
+python3 start_gui.py --auto-repair
+
+# Für langsamere Geräte mit sparsamen Standardwerten
+python3 start_gui.py --auto-repair --simple-mode
+
+# Selbsttest für CLI-Funktionen
+python3 videobatch_extra.py --selftest
+```

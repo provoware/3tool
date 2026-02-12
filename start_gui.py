@@ -7,7 +7,7 @@ from typing import Callable
 
 from core import launcher_checks
 from core.config import apply_simple_mode_defaults, cfg
-from core.paths import user_data_dir
+from core.paths import cache_dir, config_dir, log_dir, user_data_dir, work_dir
 
 REQUIRED_FILES = ("videobatch_gui.py", "videobatch_extra.py")
 
@@ -50,6 +50,25 @@ def _import_module(name: str):
             f"Modul '{name}' konnte nicht geladen werden: {exc}. "
             "Bitte Self-Repair ausführen oder Abhängigkeiten prüfen."
         )
+
+
+def _prepare_runtime_dirs() -> None:
+    required_dirs = (user_data_dir, config_dir, log_dir, work_dir, cache_dir)
+    for dir_func in required_dirs:
+        target = dir_func()
+        target.mkdir(parents=True, exist_ok=True)
+        if not launcher_checks.write_permissions_ok(target):
+            _fail(
+                f"Keine Schreibrechte in {target}. "
+                "Bitte Ordnerrechte prüfen oder anderen Benutzerordner nutzen."
+            )
+
+
+def _print_beginner_tips() -> None:
+    print("\nLaien-Tipps (einfach):")
+    print(" - Bei Problemen zuerst: python3 start_gui.py --auto-repair")
+    print(" - Für schwächere Geräte: python3 start_gui.py --simple-mode")
+    print(" - Selbsttest für CLI: python3 videobatch_extra.py --selftest")
 
 
 def _run_checks(py: str, target_dir: Path) -> list[launcher_checks.CheckResult]:
@@ -109,24 +128,28 @@ def main() -> int:
     args = parse_args()
     cfg.debug = args.debug
 
-    steps = 6
+    steps = 7
     _status(1, steps, "Projektdateien prüfen")
     _ensure_files()
     _ok("Projektdateien vollständig")
 
-    _status(2, steps, "Launcher-Umgebung vorbereiten")
+    _status(2, steps, "Laufzeitordner vorbereiten")
+    _prepare_runtime_dirs()
+    _ok("Daten-, Config-, Log-, Work- und Cache-Ordner bereit")
+
+    _status(3, steps, "Launcher-Umgebung vorbereiten")
     launcher_checks.ensure_venv()
     py = str(launcher_checks.venv_python())
     _ok(f"Python-Umgebung bereit: {py}")
 
-    _status(3, steps, "System-Checks ausführen")
+    _status(4, steps, "System-Checks ausführen")
     results = _run_checks(py, user_data_dir())
 
     if not _all_blocking_ok(results):
         if args.auto_repair:
-            _status(4, steps, "Self-Repair ausführen")
+            _status(5, steps, "Self-Repair ausführen")
             _run_repairs(py, user_data_dir())
-            _status(5, steps, "Checks nach Reparatur wiederholen")
+            _status(6, steps, "Checks nach Reparatur wiederholen")
             results = _run_checks(py, user_data_dir())
         else:
             _warn("Blockierende Probleme gefunden. Starte mit --auto-repair.")
@@ -138,9 +161,11 @@ def main() -> int:
         )
 
     if args.simple_mode:
-        _status(4, steps, "Simple-Modus aktivieren")
+        _status(6, steps, "Simple-Modus aktivieren")
         apply_simple_mode_defaults()
         _ok("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
+
+    _print_beginner_tips()
 
     _status(steps, steps, "GUI starten")
     gui = _import_module("videobatch_gui")

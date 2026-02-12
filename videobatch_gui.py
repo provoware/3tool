@@ -1243,12 +1243,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.crf_spin = QtWidgets.QSpinBox()
         self.crf_spin.setRange(0, 51)
         self.crf_spin.setValue(self.settings.value("encode/crf", 23, int))
-        self.btn_out_open.setAccessibleDescription(
-            "Ordner im Dateimanager anzeigen"
-        )
-        self.crf_spin = QtWidgets.QSpinBox()
-        self.crf_spin.setRange(0, 51)
-        self.crf_spin.setValue(self.settings.value("encode/crf", 23, int))
         self.crf_spin.setAccessibleName("CRF Qualität")
         self.crf_spin.setAccessibleDescription(
             "Qualität für das Video (0 bis 51)"
@@ -1308,13 +1302,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mode_combo.addItems(
             ["Standard", "Slideshow", "Video + Audio", "Mehrere Audios, 1 Bild"]
         )
-        self.abitrate_edit.setAccessibleDescription(
-            "Audioqualität als Bitrate, zum Beispiel 192k"
-        )
-        self.mode_combo = QtWidgets.QComboBox()
-        self.mode_combo.addItems(
-            ["Standard", "Slideshow", "Video + Audio", "Mehrere Audios, 1 Bild"]
-        )
         self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
         self.mode_combo.setCurrentText(
             self.settings.value("encode/mode", "Standard", str)
@@ -1350,21 +1337,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.mode_combo.setAccessibleDescription(
             "Auswahl des Verarbeitungsmodus"
-        )
-        self.clear_after = QtWidgets.QCheckBox(
-            "Nach Fertigstellung Listen leeren"
-        )
-        self.clear_after.setChecked(
-            self.settings.value("ui/clear_after", False, bool)
-        )
-        self.auto_open_output = QtWidgets.QCheckBox(
-            "Ausgabeordner nach Fertigstellung öffnen"
-        )
-        self.auto_open_output.setChecked(
-            self.settings.value("ui/auto_open_output", True, bool)
-        )
-        self.auto_open_output.setAccessibleName(
-            "Ausgabeordner automatisch öffnen"
         )
         self.auto_open_output.setAccessibleDescription(
             "Öffnet den Ausgabeordner nach Abschluss der Erstellung"
@@ -1418,6 +1390,15 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.language_combo.setAccessibleName("Sprache")
         self.language_combo.setAccessibleDescription("Sprache vorbereiten")
+        self.spacing_combo = QtWidgets.QComboBox()
+        self.spacing_combo.addItems(["Kompakt", "Standard", "Großzügig"])
+        self.spacing_combo.setCurrentText(
+            self.settings.value("ui/spacing_profile", "Standard", str)
+        )
+        self.spacing_combo.setAccessibleName("Abstände")
+        self.spacing_combo.setAccessibleDescription(
+            "Abstand zwischen Feldern und Schaltflächen"
+        )
 
         form = QtWidgets.QFormLayout()
         out_wrap_layout = QtWidgets.QHBoxLayout()
@@ -1477,29 +1458,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(
             form, "Sprache", self.language_combo, "Sprachwahl vorbereiten"
         )
-        out_wrap_layout = QtWidgets.QHBoxLayout()
-        out_wrap_layout.setContentsMargins(0, 0, 0, 0)
-        out_wrap_layout.addWidget(self.out_dir_edit)
-        out_wrap_layout.addWidget(self.btn_out_open)
-        out_wrap = QtWidgets.QWidget()
-        out_wrap.setLayout(out_wrap_layout)
-        self._add_form(form, "Ausgabeordner", out_wrap, "Zielordner für MP4s")
-        self._add_form(
-            form, "CRF", self.crf_spin, "Qualität (0=lossless, 23=Standard)"
-        )
         self._add_form(
             form,
-            "Preset",
-            self.preset_combo,
-            "x264 Preset (schneller = größere Datei)",
-        )
-        self._add_form(form, "Breite", self.width_spin, "Video-Breite in Pixel")
-        self._add_form(form, "Höhe", self.height_spin, "Video-Höhe in Pixel")
-        self._add_form(
-            form, "Audio-Bitrate", self.abitrate_edit, "z.B. 192k, 256k"
-        )
-        self._add_form(
-            form, "Modus", self.mode_combo, "z.B. Slideshow oder Video + Audio"
+            "Abstände",
+            self.spacing_combo,
+            "Kompakt, Standard oder großzügig",
         )
         font_row = QtWidgets.QHBoxLayout()
         font_row.setContentsMargins(0, 0, 0, 0)
@@ -1668,6 +1631,7 @@ class MainWindow(QtWidgets.QMainWindow):
         top_buttons = QtWidgets.QGridLayout()
         top_buttons.setSpacing(4)
         top_buttons.setContentsMargins(4, 4, 4, 4)
+        self.top_buttons_layout = top_buttons
         btn_defs = [
             (self.btn_add_images, "Bilder oder Ordner auswählen"),
             (self.btn_add_audios, "Audiodateien hinzufügen"),
@@ -1692,6 +1656,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout.addWidget(self.dashboard)
         central_layout.addWidget(btn_box)
         central_layout.addWidget(main_splitter)
+        self.central_layout = central_layout
         central = QtWidgets.QWidget()
         central.setLayout(central_layout)
         self.setCentralWidget(central)
@@ -1730,6 +1695,9 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.log_level_combo.currentTextChanged.connect(self._update_log_level)
         self.language_combo.currentTextChanged.connect(self._update_language)
+        self.spacing_combo.currentTextChanged.connect(
+            self._update_spacing_profile
+        )
         self.auto_open_output.toggled.connect(self._toggle_auto_open_output)
         self.auto_save_project.toggled.connect(self._toggle_auto_save_project)
         self.mode_combo.currentTextChanged.connect(self._update_default_mode)
@@ -1743,6 +1711,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self._apply_large_controls(self.large_controls)
+        self._apply_spacing_profile(self.spacing_combo.currentText())
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
         QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
@@ -3101,6 +3070,29 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_language(self, language: str) -> None:
         self.settings.setValue("ui/language", language)
         self._log(f"Sprache vorbereitet: {language}")
+
+    def _update_spacing_profile(self, profile: str) -> None:
+        self.settings.setValue("ui/spacing_profile", profile)
+        self._apply_spacing_profile(profile)
+        self._log(f"Abstandsprofil gesetzt: {profile}")
+
+    def _apply_spacing_profile(self, profile: str) -> None:
+        spacing_map = {
+            "Kompakt": {"grid": 2, "margins": 2, "main": 4},
+            "Standard": {"grid": 4, "margins": 4, "main": 6},
+            "Großzügig": {"grid": 8, "margins": 8, "main": 10},
+        }
+        values = spacing_map.get(profile, spacing_map["Standard"])
+        if hasattr(self, "top_buttons_layout"):
+            self.top_buttons_layout.setSpacing(values["grid"])
+            self.top_buttons_layout.setContentsMargins(
+                values["margins"],
+                values["margins"],
+                values["margins"],
+                values["margins"],
+            )
+        if hasattr(self, "central_layout"):
+            self.central_layout.setSpacing(values["main"])
 
     def _toggle_large_controls(self, checked: bool):
         self.large_controls = checked
