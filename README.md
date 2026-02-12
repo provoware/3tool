@@ -152,23 +152,27 @@ Sieh außerdem in `CHANGELOG.md` (Änderungsprotokoll: Liste der wichtigsten Än
 ob die aktuelle Version enthalten ist.
 Für das finale Paket empfiehlt sich folgendes Vorgehen:
 
-1. **Abhängigkeiten ("Dependencies") prüfen**:
+1. **Abhängigkeiten ("Dependencies") installieren**:
    ```bash
    pip install -r requirements.txt -r requirements-dev.txt
    ```
-2. **Syntax-Check ("Syntax check")**:
+2. **Abhängigkeitskonsistenz prüfen**:
+   ```bash
+   python -m core.dependency_consistency --project-root .
+   ```
+3. **Syntax-Check ("Syntax check")**:
    ```bash
    python -m compileall -q .
    ```
-3. **Linting ("Stil- und Regelprüfung")**:
+4. **Linting ("Stil- und Regelprüfung")**:
    ```bash
    python -m ruff check .
    ```
-4. **Typprüfung ("Type check")**:
+5. **Typprüfung ("Type check")**:
    ```bash
    mypy .
    ```
-5. **Automatische Tests ausführen**:
+6. **Automatische Tests ausführen**:
    ```bash
    python3 -m pytest
    ```
@@ -176,11 +180,11 @@ Für das finale Paket empfiehlt sich folgendes Vorgehen:
    ```bash
    python3 videobatch_extra.py --selftest
    ```
-6. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
+7. **Projekt sauber verpacken** (zum Beispiel als ZIP-Datei):
    ```bash
    zip -r videobatchtool.zip .
    ```
-7. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
+8. **Ereignislog sichern**: Die Datei `ereignislog.txt` dokumentiert alle Änderungen.
 
 ## Backup erstellen
 
