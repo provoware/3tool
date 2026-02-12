@@ -1,7 +1,6 @@
 import unittest
 from pathlib import Path
 
-import pytest
 
 from core import launcher_checks
 
@@ -50,7 +49,9 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
     monkeypatch.setattr(
         launcher_checks.shutil,
         "which",
-        lambda name: "/usr/bin/ffmpeg" if name in {"ffmpeg", "ffprobe"} else None,
+        lambda name: (
+            "/usr/bin/ffmpeg" if name in {"ffmpeg", "ffprobe"} else None
+        ),
     )
     monkeypatch.setattr(launcher_checks, "write_permissions_ok", lambda _: True)
     installed = []
@@ -66,6 +67,7 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
     assert packages.ok
     assert "Pakete installiert" in packages.detail
     assert set(installed) == set(launcher_checks.REQ_PKGS)
+
 
 if __name__ == "__main__":
     unittest.main()

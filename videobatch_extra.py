@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 from core import __version__
-from core.config import cfg
+from core.config import apply_simple_mode_defaults, cfg
 from core.utils import build_out_name, human_time, probe_duration, run_ffmpeg
 
 
@@ -579,6 +579,14 @@ def main() -> None:
     )
     parser.add_argument("--selftest", action="store_true")
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument(
+        "--verbose", action="store_true", help="zeigt mehr Diagnose-Ausgaben"
+    )
+    parser.add_argument(
+        "--simple-mode",
+        action="store_true",
+        help="nutzt ressourcenschonende Standardwerte",
+    )
     parser.add_argument("--img", nargs="+")
     parser.add_argument("--aud", nargs="+")
     parser.add_argument("--out", default=".")
@@ -587,10 +595,10 @@ def main() -> None:
         choices=["single", "slideshow", "video", "multi-audio"],
         default="single",
     )
-    parser.add_argument("--width", type=int, default=1920)
-    parser.add_argument("--height", type=int, default=1080)
-    parser.add_argument("--crf", type=int, default=23)
-    parser.add_argument("--preset", default="ultrafast")
+    parser.add_argument("--width", type=int, default=cfg.default_width)
+    parser.add_argument("--height", type=int, default=cfg.default_height)
+    parser.add_argument("--crf", type=int, default=cfg.default_crf)
+    parser.add_argument("--preset", default=cfg.default_preset)
     parser.add_argument("--abitrate", default="192k")
     parser.add_argument(
         "--audio-bitrate", dest="abitrate", default=argparse.SUPPRESS
@@ -636,7 +644,21 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    cfg.debug = args.debug
+    cfg.debug = args.debug or args.verbose
+    if args.simple_mode:
+        apply_simple_mode_defaults()
+        if args.width == 1920:
+            args.width = cfg.default_width
+        if args.height == 1080:
+            args.height = cfg.default_height
+        if args.crf == 23:
+            args.crf = cfg.default_crf
+        if args.preset == "ultrafast":
+            args.preset = cfg.default_preset
+        print("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
+
+    if cfg.debug:
+        print("Diagnose-Modus aktiv (verbose/debug).")
 
     if args.selftest:
         sys.exit(run_selftests())

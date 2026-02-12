@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 FOCUS_STYLE = (
     "QWidget:focus{outline:2px solid #ffbf00;outline-offset:1px;} "

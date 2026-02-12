@@ -13,3 +13,11 @@ def config_dir() -> Path:
 
 def log_dir() -> Path:
     return user_data_dir() / "logs"
+
+
+def work_dir() -> Path:
+    return user_data_dir() / "work"
+
+
+def cache_dir() -> Path:
+    return user_data_dir() / "cache"
