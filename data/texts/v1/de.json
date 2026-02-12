@@ -1,0 +1,25 @@
+{
+  "dashboard": {
+    "summary": "Datei-Übersicht",
+    "selection": "Auswahl: {selected_images} Bilder, {selected_audios} Audios",
+    "counts": {
+      "total": "Gesamt",
+      "done": "Fertig",
+      "errors": "Fehler",
+      "progress": "Fortschritt"
+    },
+    "status": {
+      "ffmpeg_ok": "ffmpeg: OK",
+      "ffmpeg_missing": "ffmpeg: FEHLT",
+      "env_ok": "Umgebung: OK",
+      "env_missing": "Umgebung: FEHLT"
+    }
+  },
+  "statusbar": {
+    "counts": "{images} Bilder | {audios} Audios | {pairs} Paare | Auswahl: {selected_images}B/{selected_audios}A"
+  },
+  "messages": {
+    "selection_images": "{count} Bild(er) ausgewählt",
+    "selection_audios": "{count} Audio(s) ausgewählt"
+  }
+}

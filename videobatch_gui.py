@@ -29,6 +29,7 @@ from PySide6.QtWidgets import QHeaderView
 
 from core.paths import config_dir, log_dir, user_data_dir
 from core.themes import load_themes
+from core.ui_texts import load_ui_texts, text_with_fallback
 from core.ui_profiles import (
     resolve_interface_profile,
     resolve_spacing_profile,
@@ -58,6 +59,7 @@ logging.basicConfig(
 logger = logging.getLogger("VideoBatchTool")
 
 THEMES = load_themes(logger)
+UI_TEXTS = load_ui_texts(logger)
 
 # ---------- Helpers ----------
 IMAGE_EXTENSIONS = (
@@ -1029,35 +1031,83 @@ class GuidedWizard(QtWidgets.QDialog):
 
 
 class InfoDashboard(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, texts: Optional[Dict[str, str]] = None):
         super().__init__()
+        self.texts = texts or {}
         self.total_label = QtWidgets.QLabel("0")
         self.total_label.setAccessibleName("Gesamtzahl")
         self.done_label = QtWidgets.QLabel("0")
         self.done_label.setAccessibleName("Fertig")
         self.err_label = QtWidgets.QLabel("0")
         self.err_label.setAccessibleName("Fehler")
+        self.selected_images_label = QtWidgets.QLabel("0")
+        self.selected_images_label.setAccessibleName("Ausgewählte Bilder")
+        self.selected_audios_label = QtWidgets.QLabel("0")
+        self.selected_audios_label.setAccessibleName("Ausgewählte Audios")
         self.ffmpeg_lbl = QtWidgets.QLabel("ffmpeg: ?")
         self.ffmpeg_lbl.setAccessibleName("FFmpeg Status")
         self.env_lbl = QtWidgets.QLabel("Env: OK")
         self.env_lbl.setAccessibleName("Umgebung")
         self.progress = QtWidgets.QProgressBar()
-        self.progress.setMaximumWidth(240)
+        self.progress.setMaximumWidth(260)
         self.progress.setAccessibleName("Fortschritt gesamt")
+        self.progress.setFormat("%p%")
         self.mini_log = QtWidgets.QPlainTextEdit()
         self.mini_log.setReadOnly(True)
         self.mini_log.setMaximumBlockCount(300)
         self.mini_log.setFixedHeight(90)
         self.mini_log.setAccessibleName("Kurzprotokoll")
+
+        summary = QtWidgets.QLabel(
+            text_with_fallback(
+                self.texts,
+                "dashboard.summary",
+                "Datei-Übersicht",
+            )
+        )
+        summary.setObjectName("DashboardSummary")
+        summary.setStyleSheet("font-weight: 600;")
+
+        self.selection_label = QtWidgets.QLabel()
+        self.selection_label.setAccessibleName("Auswahlstatus")
+
         row = QtWidgets.QHBoxLayout()
         for w in (
-            QtWidgets.QLabel("Gesamt:"),
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self.texts,
+                    "dashboard.counts.total",
+                    "Gesamt",
+                )
+                + ":"
+            ),
             self.total_label,
-            QtWidgets.QLabel("Fertig:"),
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self.texts,
+                    "dashboard.counts.done",
+                    "Fertig",
+                )
+                + ":"
+            ),
             self.done_label,
-            QtWidgets.QLabel("Fehler:"),
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self.texts,
+                    "dashboard.counts.errors",
+                    "Fehler",
+                )
+                + ":"
+            ),
             self.err_label,
-            QtWidgets.QLabel("Progress:"),
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self.texts,
+                    "dashboard.counts.progress",
+                    "Fortschritt",
+                )
+                + ":"
+            ),
             self.progress,
             self.ffmpeg_lbl,
             self.env_lbl,
@@ -1065,20 +1115,58 @@ class InfoDashboard(QtWidgets.QWidget):
             row.addWidget(w)
         row.addStretch(1)
         lay = QtWidgets.QVBoxLayout(self)
+        lay.addWidget(summary)
+        lay.addWidget(self.selection_label)
         lay.addLayout(row)
         lay.addWidget(self.mini_log)
+        self.set_selection_counts(0, 0)
 
     def set_counts(self, t, d, e):
         self.total_label.setText(str(t))
         self.done_label.setText(str(d))
         self.err_label.setText(str(e))
 
+    def set_selection_counts(self, selected_images: int, selected_audios: int):
+        self.selected_images_label.setText(str(selected_images))
+        self.selected_audios_label.setText(str(selected_audios))
+        template = text_with_fallback(
+            self.texts,
+            "dashboard.selection",
+            "Auswahl: {selected_images} Bilder, {selected_audios} Audios",
+        )
+        self.selection_label.setText(
+            template.format(
+                selected_images=selected_images,
+                selected_audios=selected_audios,
+            )
+        )
+
     def set_progress(self, v):
         self.progress.setValue(v)
 
     def set_env(self, ff_ok, imp_ok=True):
-        self.ffmpeg_lbl.setText(f"ffmpeg: {'OK' if ff_ok else 'FEHLT'}")
-        self.env_lbl.setText(f"Env: {'OK' if imp_ok else 'FEHLT'}")
+        self.ffmpeg_lbl.setText(
+            text_with_fallback(
+                self.texts,
+                (
+                    "dashboard.status.ffmpeg_ok"
+                    if ff_ok
+                    else "dashboard.status.ffmpeg_missing"
+                ),
+                "ffmpeg: OK" if ff_ok else "ffmpeg: FEHLT",
+            )
+        )
+        self.env_lbl.setText(
+            text_with_fallback(
+                self.texts,
+                (
+                    "dashboard.status.env_ok"
+                    if imp_ok
+                    else "dashboard.status.env_missing"
+                ),
+                "Umgebung: OK" if imp_ok else "Umgebung: FEHLT",
+            )
+        )
 
     def log(self, msg):
         self.mini_log.appendPlainText(msg)
@@ -1134,7 +1222,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model = PairTableModel(self.pairs)
 
         ff_ok = check_ffmpeg()
-        self.dashboard = InfoDashboard()
+        self.dashboard = InfoDashboard(UI_TEXTS)
         self.dashboard.set_env(ff_ok, True)
         if not ff_ok:
             self._show_error_dialog(
@@ -1159,6 +1247,8 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.image_list.files_dropped.connect(self._on_images_added)
         self.audio_list.files_dropped.connect(self._on_audios_added)
+        self.image_list.itemSelectionChanged.connect(self._update_counts)
+        self.audio_list.itemSelectionChanged.connect(self._update_counts)
 
         pool_tabs = QtWidgets.QTabWidget()
         pool_tabs.setAccessibleName("Datei-Register")
@@ -1680,7 +1770,19 @@ class MainWindow(QtWidgets.QMainWindow):
         central.setLayout(central_layout)
         self.setCentralWidget(central)
 
-        self.count_label = QtWidgets.QLabel("0 Bilder | 0 Audios | 0 Paare")
+        self.count_label = QtWidgets.QLabel(
+            text_with_fallback(
+                UI_TEXTS,
+                "statusbar.counts",
+                "{images} Bilder | {audios} Audios | {pairs} Paare | Auswahl: {selected_images}B/{selected_audios}A",
+            ).format(
+                images=0,
+                audios=0,
+                pairs=0,
+                selected_images=0,
+                selected_audios=0,
+            )
+        )
         self.statusBar().addPermanentWidget(self.count_label)
 
         self.copy_only = False
@@ -2267,13 +2369,27 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_counts(self):
         img_count = self.image_list.count()
         aud_count = self.audio_list.count()
+        selected_images = len(self.image_list.selectedItems())
+        selected_audios = len(self.audio_list.selectedItems())
         pair_count = sum(1 for p in self.pairs if p.image_path and p.audio_path)
         err_count = sum(1 for p in self.pairs if p.status == "FEHLER")
         fin_count = sum(1 for p in self.pairs if p.status == "FERTIG")
+        status_template = text_with_fallback(
+            UI_TEXTS,
+            "statusbar.counts",
+            "{images} Bilder | {audios} Audios | {pairs} Paare | Auswahl: {selected_images}B/{selected_audios}A",
+        )
         self.count_label.setText(
-            f"{img_count} Bilder | {aud_count} Audios | {pair_count} Paare"
+            status_template.format(
+                images=img_count,
+                audios=aud_count,
+                pairs=pair_count,
+                selected_images=selected_images,
+                selected_audios=selected_audios,
+            )
         )
         self.dashboard.set_counts(pair_count, fin_count, err_count)
+        self.dashboard.set_selection_counts(selected_images, selected_audios)
 
     def _refresh_structure_view(self) -> None:
         if not hasattr(self, "structure_tree"):
@@ -3254,8 +3370,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 # ---- Public
 def run_gui():
-    global THEMES
+    global THEMES, UI_TEXTS
     THEMES = load_themes(logger)
+    UI_TEXTS = load_ui_texts(logger)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
     w = MainWindow()
     w.show()

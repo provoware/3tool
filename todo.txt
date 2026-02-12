@@ -55,4 +55,6 @@
 - [x] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert
 - [x] Profi-Interface - Maximal Konfigurabel und perfekt einheitliche größen und abstände, verbessere codequalität.
 - [x] mehr Optionen und bessere Lesbarkeit und Übersichtlichkeit. Intuitive Toolführung.
+
+- [x] Infoanzeigen fuer Auswahlmengen modernisiert und UI-Texte in versioniertes JSON-Archiv ausgelagert
 - [x] Fortschrittsanzeige erweitert und intelligente Eingabevalidierung zentralisiert
