@@ -18,6 +18,29 @@ MIN_PYTHON = (3, 8)
 LOGGER = logging.getLogger("videobatch_launcher")
 
 
+def configure_logging(log_file: Path, debug: bool = False) -> None:
+    """Configure launcher logging to file and console output."""
+    level = logging.DEBUG if debug else logging.INFO
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    LOGGER.handlers.clear()
+    LOGGER.setLevel(level)
+    formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    file_handler = logging.FileHandler(log_file, encoding="utf-8")
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(level)
+    stream_handler.setFormatter(formatter)
+
+    LOGGER.addHandler(file_handler)
+    LOGGER.addHandler(stream_handler)
+
+
 @dataclass(frozen=True)
 class PackageManagerInfo:
     name: str
