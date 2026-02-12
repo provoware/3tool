@@ -2232,9 +2232,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     "image": self._make_project_relative(p.image_path),
                     "audio": self._make_project_relative(p.audio_path or ""),
                     "output": self._make_project_relative(p.output),
-                    "image": p.image_path,
-                    "audio": p.audio_path,
-                    "output": p.output,
                 }
                 for p in self.pairs
             ],

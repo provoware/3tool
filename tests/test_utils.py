@@ -20,4 +20,6 @@ def test_build_out_name_template_renders() -> None:
 
 def test_build_out_name_rejects_unknown_placeholder() -> None:
     with pytest.raises(ValueError):
-        build_out_name("musik.mp3", Path("/tmp/out"), template="{unbekannt}.mp4")
+        build_out_name(
+            "musik.mp3", Path("/tmp/out"), template="{unbekannt}.mp4"
+        )

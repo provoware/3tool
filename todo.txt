@@ -54,4 +54,4 @@
 - [x] ZIEL-TODO-AGENTS bereinigt und Abschlussstatus Fix/Release-Perfektion ergänzt
 - [x] Launcher-Theme-Wechsel entkoppelt und versehentliche Installationslaeufe verhindert
 - [ ] Profi-Interface - Maximal Konfigurabel und perfekt einheitliche größen und abstände, verbessere codequalität.
-- [ ] mehr Optionen und bessere Lesbarkeit und Übersichtlichkeit. Intuitive Toolführung.
+- [x] mehr Optionen und bessere Lesbarkeit und Übersichtlichkeit. Intuitive Toolführung.
