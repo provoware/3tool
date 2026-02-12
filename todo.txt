@@ -71,3 +71,6 @@
 
 - [x] GUI-Bereiche gleich groß gemacht, Fokus-Hervorhebung ergänzt, Standardschrift vergrößert und Theme-Kontrast für Felder vereinheitlicht
 - [x] AGENTS.md um Sicherheits- und Disziplin-Standards erweitert sowie persistente Fallback-Medien und erweitertes Dashboard umgesetzt
+
+- [x] Metadaten-Template fuer Linux-konforme Dateinamen (Videolaenge/Zeitstempel/Qualitaet/Abmasse/Form+Audio) eingefuehrt
+- [x] Plugin-Hook-System, _benutzt-Suffix-Ablage und sichere Listen-Leerung mit Detail-Logging umgesetzt

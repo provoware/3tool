@@ -185,3 +185,6 @@
 [2026-02-12] Launcher-Check-Zusammenfassung ergänzt und zwei neue Kontrast-Themes mit Tests umgesetzt (Aufgabe "Launcher-Check-Zusammenfassung und zwei neue Kontrast-Themes mit automatischen Tests ergänzt" erledigt)
 2026-02-12 07:22:51 | Aufgabe erledigt: GUI-Bereiche vereinheitlicht, Fokus-Markierung verbessert, Schriftgröße-Standard erhöht, Eingabefeld-Kontrast in Themes abgesichert.
 2026-02-12 07:37:46 | Aufgabe erledigt: AGENTS.md Sicherheits-/Disziplin-Standards erweitert, persistente Fallback-Medien + großes Dashboard implementiert.
+2026-02-12 07:55:00 | Ist-Analyse: GUI hat bereits Vorschau/Sortierung/Validierung, aber Dateinamen-Metadaten, Plugin-Hooks, persistente Detail-Logs und _benutzt-Suffix fehlen. Risiken: Template-Kompatibilität, potenzielle UI-Regression, Performance bei Vorschau-Cache. Plan(5): 1) Core-Template erweitern 2) Archivierung/_benutzt-Suffix härten 3) Plugin-Hooks integrieren 4) Doku+todoliste+ereignislog ergänzen 5) QA-Skripte+pytest ausführen.
+2026-02-12 07:57:08 | Aufgabe erledigt: Metadaten-Template fuer Linux-konforme Dateinamen (Videolaenge/Zeitstempel/Qualitaet/Abmasse/Form+Audio) eingefuehrt.
+2026-02-12 07:57:08 | Aufgabe erledigt: Plugin-Hook-System, _benutzt-Suffix-Ablage und sichere Listen-Leerung mit Detail-Logging umgesetzt.
