@@ -1,19 +1,24 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
 import os
-from pathlib import Path
 import shutil
 import socket
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Iterable
 
 from core.dependency_consistency import RUNTIME_PACKAGES
 
 REQ_PKGS = list(RUNTIME_PACKAGES)
+PACKAGE_IMPORT_NAMES = {
+    "PySide6": "PySide6",
+    "Pillow": "PIL",
+    "ffmpeg-python": "ffmpeg",
+}
 ENV_DIR = Path(".videotool_env").resolve()
 MIN_PYTHON = (3, 8)
 
@@ -108,6 +113,28 @@ def pip_show(py: str, pkg: str) -> bool:
         ).returncode
         == 0
     )
+
+
+def module_import_ok(py: str, module_name: str) -> bool:
+    return (
+        subprocess.run(
+            [py, "-c", f"import {module_name}"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode
+        == 0
+    )
+
+
+def missing_runtime_packages(py: str) -> list[str]:
+    missing: list[str] = []
+    for package_name in REQ_PKGS:
+        import_name = PACKAGE_IMPORT_NAMES.get(package_name, package_name)
+        if not pip_show(py, package_name) or not module_import_ok(
+            py, import_name
+        ):
+            missing.append(package_name)
+    return missing
 
 
 def ensure_pip(py: str) -> bool:
@@ -272,7 +299,7 @@ def check_pip(py: str) -> CheckResult:
 
 
 def check_packages(py: str) -> CheckResult:
-    missing = [pkg for pkg in REQ_PKGS if not pip_show(py, pkg)]
+    missing = missing_runtime_packages(py)
     ok = not missing
     detail = (
         "Alle benötigten Python-Pakete sind installiert."
@@ -385,7 +412,7 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
     )
 
     if online:
-        missing = [pkg for pkg in REQ_PKGS if not pip_show(py, pkg)]
+        missing = missing_runtime_packages(py)
         if missing and pip_ready:
             try:
                 pip_install(py, missing)
