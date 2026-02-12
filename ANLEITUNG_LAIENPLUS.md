@@ -782,3 +782,56 @@ python3 videobatch_gui.py
 ```
 - Öffne das Menü **Farbschema**.
 - Wähle **Sepia** für warme Brauntöne (*Sepia* = altes Foto-Farbschema), angenehm bei langer Arbeit.
+
+## 121. Modernes, uebersichtliches Layout (Praxis-Checkliste)
+```bash
+python3 start_gui.py --auto-repair
+```
+- Nutze **Karten-Bereiche** (Card-Layout = klar getrennte Inhaltsboxen) fuer Eingabe, Vorschau, Fortschritt und Ergebnis.
+- Zeige oben eine **Schnellleiste** mit 3-5 Kernaktionen: *Dateien waehlen*, *Pruefen*, *Starten*, *Stopp*, *Log oeffnen*.
+- Halte Abstaende und Groessen einheitlich (gleiche Feldhoehen, gleiche Button-Breiten, klare Gruppentitel).
+- Verwende **progressive Offenlegung** (Details erst bei Bedarf): Standardansicht einfach, Profi-Optionen einklappbar.
+- Blende zu jedem kritischen Feld eine kurze Hilfe ein: *Was ist das?*, *Typischer Wert*, *Sicherer Standardwert*.
+
+## 122. Hilfselemente fuer Laien (mit Barrierefreiheit)
+```bash
+python3 videobatch_gui.py
+```
+- **Kontext-Hilfe** direkt am Feld (Tooltip = kurzer Erklaer-Text beim Ueberfahren/Tab-Fokus).
+- **Assistent-Modus** (Wizard = gefuehrter Ablauf) fuer Erstnutzer mit Schritt-fuer-Schritt-Pruefung.
+- **Fehlerkarten statt Popup-Flut**: ein Fehlerblock mit Ursache, Loesung und einem Klick auf *Automatisch beheben*.
+- **Tastatur-Bedienung**: sichtbare Fokusmarkierung, sinnvolle Tab-Reihenfolge, klare Shortcut-Hinweise.
+- **Kontrast-Themes**: Hell, Dunkel, Hochkontrast Hell, Hochkontrast Dunkel; Text nie unter WCAG-Kontrast.
+
+## 123. Sinnvolle Statistik-Anzeigen im Dashboard
+```bash
+python3 videobatch_professional.py --manifest jobs.json --out ./out --threads 4
+```
+Empfehlung fuer sichtbar eingeblendete Kennzahlen (KPI = Messwert):
+- **Durchsatz pro Minute** (wie viele Dateien/Min bearbeitet werden).
+- **Erfolgsquote** (Anteil erfolgreicher Jobs in %).
+- **Durchschnittliche Dauer je Job** und **Restzeit-Prognose** (ETA = geschaetzte verbleibende Zeit).
+- **Fehlerarten-Haeufigkeit** (z. B. fehlende Datei, Codec-Problem, Rechteproblem).
+- **Wiederholungsrate** (wie oft automatische Reparatur noetig war).
+- **Top 5 Eingabeformate** und **Top 5 Ausgabeeinstellungen** (hilft bei sinnvollen Standardwerten).
+- **Qualitaetsvergleich**: mittlere Dateigroesse vorher/nachher, mittlere Bitrate, durchschnittliche Aufloesung.
+- **Nutzerhilfe-Wirksamkeit**: wie oft Hilfe geoeffnet wurde und ob danach Fehlerquote sinkt.
+
+## 124. Gute Reihenfolge fuer eine moderne Startseite
+```bash
+python3 start_gui.py --auto-repair --simple-mode
+```
+1. **Systemstatus** (Abhaengigkeiten, FFmpeg, Schreibrechte, Ordnerzugriff).
+2. **Projektstatus** (Dateien gefunden, Paarbildung, fehlende Medien, Warnungen).
+3. **Aktionen** (Start, Testlauf, Auto-Reparatur, Export).
+4. **Live-Fortschritt** (Balken, erledigt/gesamt, Restzeit, aktueller Schritt).
+5. **Ergebnis + naechster Schritt** (Datei oeffnen, Log ansehen, Empfehlungen).
+
+## 125. Vollautomatische Pruefung und Reparatur (Startroutine)
+```bash
+python3 start_gui.py --auto-repair --debug
+```
+- Prueft automatisch Python, Pakete, FFmpeg, Schreibrechte, Projektordner und Basisdateien.
+- Meldet Probleme in einfacher Sprache mit einem **direkten Loesungsvorschlag**.
+- Nutzt zuerst sichere Auto-Reparaturpfade, danach klare manuelle Schritte.
+- Schreibt alle Ergebnisse in ein Log (inkl. *Erfolg*, *Warnung*, *Fehler* und *naechster Schritt*).
