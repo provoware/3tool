@@ -10,7 +10,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +35,7 @@ from core.ui_profiles import (
     resolve_spacing_profile,
 )
 from core.utils import build_out_name, human_time, probe_duration
+from core.validation import normalize_audio_bitrate, validate_output_template
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -2076,21 +2076,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Log-Pfad kopiert: {LOG_DIR}")
 
     def _validate_output_template(self):
-        template = self.output_template_edit.text().strip()
-        if not template:
-            template = "{audio_stem}_{stamp}.mp4"
-            self.output_template_edit.setText(template)
-        try:
-            build_out_name("beispiel.mp3", Path.cwd(), template)
-        except ValueError as exc:
+        result = validate_output_template(self.output_template_edit.text())
+        template = result.value
+        self.output_template_edit.setText(template)
+        if not result.is_valid:
             QtWidgets.QMessageBox.warning(
                 self,
                 "Template ungültig",
-                f"{exc}\nErlaubt sind: {{audio_stem}}, {{date}}, {{time}}, {{stamp}}.",
+                result.message,
             )
-            self._log(f"Dateinamen-Template ungültig: {exc}", logging.ERROR)
-            template = "{audio_stem}_{stamp}.mp4"
-            self.output_template_edit.setText(template)
+            self._log(
+                f"Dateinamen-Template ungültig: {result.message}",
+                logging.ERROR,
+            )
         self.settings.setValue("encode/output_template", template)
         self._log("Dateinamen-Template gespeichert.")
 
@@ -2866,36 +2864,33 @@ class MainWindow(QtWidgets.QMainWindow):
     def _gather_settings(
         self, require_valid: bool = True
     ) -> Optional[Dict[str, Any]]:
-        abitrate = self.abitrate_edit.text().strip() or "192k"
-        if not re.match(r"^\d+(k|M)$", abitrate):
-            msg = (
-                "Bitte eine Audiobitrate wie 192k oder 2M eingeben. "
-                "Die Zahl ist die Datenmenge pro Sekunde, k=Kilobit, M=Megabit."
+        bitrate_result = normalize_audio_bitrate(self.abitrate_edit.text())
+        abitrate = bitrate_result.value
+        self.abitrate_edit.setText(abitrate)
+        if bitrate_result.message and bitrate_result.is_valid:
+            self._log(bitrate_result.message)
+        if require_valid and not bitrate_result.is_valid:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Ungültige Audiobitrate",
+                bitrate_result.message,
             )
-            if require_valid:
-                QtWidgets.QMessageBox.warning(
-                    self, "Ungültige Audiobitrate", msg
-                )
-                self._log("Abbruch: Audiobitrate ist ungültig.")
-                return None
-            self._log(
-                "Hinweis: Ungültige Audiobitrate erkannt, setze Standard 192k."
+            self._log("Abbruch: Audiobitrate ist ungültig.")
+            return None
+
+        template_result = validate_output_template(self.output_template_edit.text())
+        output_template = template_result.value
+        self.output_template_edit.setText(output_template)
+        if require_valid and not template_result.is_valid:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Ungültiges Template",
+                template_result.message,
             )
-            abitrate = "192k"
-        output_template = (
-            self.output_template_edit.text().strip()
-            or "{audio_stem}_{stamp}.mp4"
-        )
-        try:
-            build_out_name("beispiel.mp3", Path.cwd(), output_template)
-        except ValueError as exc:
-            msg = f"{exc}\nErlaubt sind: {{audio_stem}}, {{date}}, {{time}}, {{stamp}}."
-            if require_valid:
-                QtWidgets.QMessageBox.warning(self, "Ungültiges Template", msg)
-                self._log("Abbruch: Dateinamen-Template ist ungültig.")
-                return None
+            self._log("Abbruch: Dateinamen-Template ist ungültig.")
+            return None
+        if not template_result.is_valid:
             self._log("Hinweis: Template ungültig, setze Standard.")
-            output_template = "{audio_stem}_{stamp}.mp4"
         return {
             "out_dir": self.out_dir_edit.text().strip(),
             "crf": self.crf_spin.value(),
@@ -3120,6 +3115,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _on_overall_progress(self, perc: float):
         v = int(perc)
+        processed = sum(
+            1
+            for pair in self.pairs
+            if pair.status in {"FERTIG", "FEHLER", "ABGEBROCHEN"}
+        )
+        total = max(1, len(self.pairs))
+        self.progress_total.setFormat(f"%p% gesamt ({processed}/{total} erledigt)")
         self.progress_total.setValue(v)
         self.dashboard.set_progress(v)
 
