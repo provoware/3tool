@@ -60,3 +60,4 @@
 - [x] Fortschrittsanzeige erweitert und intelligente Eingabevalidierung zentralisiert
 - [x] Launcher-Debug-Logging, Ordner-Validierung und automatische Tests für Start-Routine ergänzt
 
+- [x] Abhaengigkeitskonsistenz zentral validiert, Dev-Tools gepinnt und 0000-testall auf konsistente QA-Checks aktualisiert

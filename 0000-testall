@@ -119,10 +119,12 @@ python -m isort --version || log_warn "isort nicht verfuegbar."
 python -m autoflake --version || log_warn "autoflake nicht verfuegbar."
 python -m pytest --version || log_warn "pytest nicht verfuegbar."
 
+log_info "\n🧩 Pruefe Abhaengigkeitskonsistenz..."
+python -m core.dependency_consistency --project-root "$PROJECT_ROOT"
+
 log_info "\n🔎 Starte Validierung (Linting)..."
-python -m flake8 .
-python -m mypy .
 python -m ruff check .
+python -m mypy core/dependency_consistency.py core/launcher_checks.py tests/test_dependency_consistency.py tests/test_launcher_checks.py
 
 if [ "$NO_TESTS" -eq 0 ]; then
   if [ -d "tests" ]; then

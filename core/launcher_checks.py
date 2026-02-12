@@ -11,7 +11,9 @@ import sys
 import tempfile
 from typing import Iterable
 
-REQ_PKGS = ["PySide6", "Pillow", "ffmpeg-python"]
+from core.dependency_consistency import RUNTIME_PACKAGES
+
+REQ_PKGS = list(RUNTIME_PACKAGES)
 ENV_DIR = Path(".videotool_env").resolve()
 MIN_PYTHON = (3, 8)
 
@@ -71,7 +73,7 @@ def in_venv() -> bool:
     return (
         hasattr(sys, "real_prefix")
         or getattr(sys, "base_prefix", sys.prefix) != sys.prefix
-        or os.environ.get("VIRTUAL_ENV")
+        or bool(os.environ.get("VIRTUAL_ENV"))
     )
 
 
