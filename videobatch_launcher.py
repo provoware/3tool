@@ -295,16 +295,25 @@ def build_wizard():
                 f"<li>{'✅' if r.ok else '❌'} {r.title}: {r.detail}</li>"
                 for r in results
             ]
+            recovery_hints = launcher_checks.beginner_recovery_hints(results)
             offline_note = (
                 "<p><strong>Kein Internet, Installation übersprungen.</strong></p>"
                 if offline_skips
                 else ""
             )
+            hints_html = ""
+            if recovery_hints:
+                hints_html = (
+                    "<h4>Naechste Schritte (einfach erklaert)</h4><ul>"
+                    + "".join(f"<li>{hint}</li>" for hint in recovery_hints)
+                    + "</ul>"
+                )
             self.info.setHtml(
                 "<h3>Reparatur-Ergebnis</h3><ul>"
                 + "".join(detail_lines)
                 + "</ul>"
                 + offline_note
+                + hints_html
             )
             self.setEnabled(True)
             self._start_check()
