@@ -64,3 +64,26 @@ def test_print_check_summary_reports_counts(capsys) -> None:
 
     assert "1/2 ok" in output
     assert "1 blockierend" in output
+
+
+def test_print_release_readiness_outputs_warning(capsys, monkeypatch) -> None:
+    checks = [
+        start_gui.launcher_checks.ReleaseReadinessResult(
+            key="todo",
+            title="Todo",
+            ok=False,
+            detail="Noch offen",
+            recommendation="Bitte schließen",
+        )
+    ]
+    monkeypatch.setattr(
+        start_gui.launcher_checks,
+        "evaluate_release_readiness",
+        lambda project_root: checks,
+    )
+
+    ok = start_gui._print_release_readiness(start_gui.Path.cwd())
+    output = capsys.readouterr().out
+
+    assert not ok
+    assert "Release noch nicht bereit" in output
