@@ -68,3 +68,5 @@
 - [x] Versioniertes JSON-Datei-Manifest mit SHA256-Pruefung eingefuehrt und QA-Workflow erweitert
 
 - [x] Launcher-Check-Zusammenfassung und zwei neue Kontrast-Themes mit automatischen Tests ergänzt
+
+- [x] GUI-Bereiche gleich groß gemacht, Fokus-Hervorhebung ergänzt, Standardschrift vergrößert und Theme-Kontrast für Felder vereinheitlicht

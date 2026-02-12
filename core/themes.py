@@ -11,32 +11,46 @@ FOCUS_STYLE = (
     "outline:2px solid #ffbf00;outline-offset:1px;}"
 )
 
+ACTIVE_SECTION_STYLE = (
+    "QGroupBox{border:2px solid transparent;border-radius:8px;margin-top:10px;padding-top:8px;}"
+    "QGroupBox::title{subcontrol-origin:margin;left:10px;padding:0 4px;}"
+    "QGroupBox[activeSection='true']{border:3px solid #ffbf00;}"
+)
+
 THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
     (
         "Modern",
         "QWidget{background-color:#f6f7fb;color:#1e1e1e;} "
         "QPushButton{background-color:#e6e8f0;color:#1e1e1e;border-radius:4px;} "
         "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
-        "background-color:#ffffff;color:#1e1e1e;} "
-        "QWidget:focus{outline:2px solid #1a73e8;}",
+        "background-color:#ffffff;color:#1e1e1e;border:1px solid #6b7280;} "
+        "QWidget:focus{outline:2px solid #1a73e8;}" + ACTIVE_SECTION_STYLE,
     ),
     (
         "Hell",
         "QWidget{background-color:#ffffff;color:#202020;} "
-        "QPushButton{background-color:#e0e0e0;color:#202020;}" + FOCUS_STYLE,
+        "QPushButton{background-color:#e0e0e0;color:#202020;}"
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
+        "background-color:#f7f7f7;color:#111111;border:1px solid #5f6368;}"
+        + FOCUS_STYLE
+        + ACTIVE_SECTION_STYLE,
     ),
     (
         "Dunkel",
         "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
         "QPushButton{background-color:#444;color:#e0e0e0;} "
         "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
-        "background-color:#3a3a3a;color:#f0f0f0;} "
-        "QWidget:focus{outline:2px solid #90caf9;}",
+        "background-color:#3a3a3a;color:#f0f0f0;border:1px solid #9aa0a6;} "
+        "QWidget:focus{outline:2px solid #90caf9;}" + ACTIVE_SECTION_STYLE,
     ),
     (
         "Sepia",
         "QWidget{background-color:#f4ecd8;color:#5b4636;} "
-        "QPushButton{background-color:#d6c3a0;color:#5b4636;}" + FOCUS_STYLE,
+        "QPushButton{background-color:#d6c3a0;color:#5b4636;}"
+        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
+        "background-color:#fffaf0;color:#3e3024;border:1px solid #8b6f47;}"
+        + FOCUS_STYLE
+        + ACTIVE_SECTION_STYLE,
     ),
     (
         "Hochkontrast Hell",
@@ -45,7 +59,8 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
         "background-color:#ffffff;color:#000000;border:2px solid #000000;}"
         "QHeaderView::section{background-color:#000000;color:#ffffff;}"
-        + FOCUS_STYLE,
+        + FOCUS_STYLE
+        + ACTIVE_SECTION_STYLE,
     ),
     (
         "Blau Kontrast",
@@ -56,7 +71,8 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         "background-color:#102942;color:#f4f8ff;border:2px solid #7fc8ff;} "
         "QHeaderView::section{background-color:#f4f8ff;color:#0b1f33;} "
         "QTableView::item:selected,QListView::item:selected{background-color:#7fc8ff;color:#001425;}"
-        + FOCUS_STYLE,
+        + FOCUS_STYLE
+        + ACTIVE_SECTION_STYLE,
     ),
     (
         "Gruen Kontrast",
@@ -67,7 +83,8 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         "background-color:#173121;color:#effff2;border:2px solid #8bf0b2;} "
         "QHeaderView::section{background-color:#effff2;color:#102015;} "
         "QTableView::item:selected,QListView::item:selected{background-color:#8bf0b2;color:#0d1d13;}"
-        + FOCUS_STYLE,
+        + FOCUS_STYLE
+        + ACTIVE_SECTION_STYLE,
     ),
     (
         "Hochkontrast Dunkel",
@@ -76,7 +93,8 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
         "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
         "QHeaderView::section{background-color:#ffffff;color:#000000;}"
-        + FOCUS_STYLE,
+        + FOCUS_STYLE
+        + ACTIVE_SECTION_STYLE,
     ),
 )
 
