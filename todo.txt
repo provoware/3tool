@@ -61,3 +61,5 @@
 - [x] Launcher-Debug-Logging, Ordner-Validierung und automatische Tests für Start-Routine ergänzt
 
 - [x] Abhaengigkeitskonsistenz zentral validiert, Dev-Tools gepinnt und 0000-testall auf konsistente QA-Checks aktualisiert
+- [x] Startroutine prüft Abhängigkeiten per Paket- und Importtest und repariert fehlende Laufzeitpakete automatisch
+

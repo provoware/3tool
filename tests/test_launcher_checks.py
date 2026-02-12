@@ -1,7 +1,6 @@
 import unittest
 from pathlib import Path
 
-
 from core import launcher_checks
 
 
@@ -25,6 +24,9 @@ def test_run_repairs_offline_skips_install(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher_checks, "ensure_venv", lambda: None)
     monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
     monkeypatch.setattr(launcher_checks, "pip_show", lambda py, pkg: False)
+    monkeypatch.setattr(
+        launcher_checks, "module_import_ok", lambda py, name: False
+    )
     monkeypatch.setattr(launcher_checks.shutil, "which", lambda _: None)
     monkeypatch.setattr(launcher_checks, "write_permissions_ok", lambda _: True)
 
@@ -47,6 +49,9 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
     monkeypatch.setattr(launcher_checks, "pip_show", lambda py, pkg: False)
     monkeypatch.setattr(
+        launcher_checks, "module_import_ok", lambda py, name: False
+    )
+    monkeypatch.setattr(
         launcher_checks.shutil,
         "which",
         lambda name: (
@@ -67,6 +72,37 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
     assert packages.ok
     assert "Pakete installiert" in packages.detail
     assert set(installed) == set(launcher_checks.REQ_PKGS)
+
+
+def test_missing_runtime_packages_checks_pip_and_import(monkeypatch):
+    state = {
+        "PySide6": (True, True),
+        "Pillow": (True, False),
+        "ffmpeg-python": (False, False),
+    }
+
+    monkeypatch.setattr(
+        launcher_checks,
+        "pip_show",
+        lambda py, pkg: state[pkg][0],
+    )
+    monkeypatch.setattr(
+        launcher_checks,
+        "module_import_ok",
+        lambda py, module: (
+            state[
+                next(
+                    key
+                    for key, value in launcher_checks.PACKAGE_IMPORT_NAMES.items()
+                    if value == module
+                )
+            ][1]
+        ),
+    )
+
+    missing = launcher_checks.missing_runtime_packages("python")
+
+    assert missing == ["Pillow", "ffmpeg-python"]
 
 
 if __name__ == "__main__":
