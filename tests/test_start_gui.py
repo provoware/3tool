@@ -1,5 +1,5 @@
-from core.config import apply_simple_mode_defaults, cfg
 import start_gui
+from core.config import apply_simple_mode_defaults, cfg
 
 
 def test_simple_mode_defaults_applied() -> None:
@@ -41,3 +41,26 @@ def test_prepare_runtime_dirs_uses_all_path_functions(
 
     for name in ("data", "config", "logs", "work", "cache"):
         assert (base / name).exists()
+
+
+def test_print_check_summary_reports_counts(capsys) -> None:
+    ok_result = start_gui.launcher_checks.CheckResult(
+        key="ok",
+        title="OK",
+        ok=True,
+        detail="ok",
+        blocking=True,
+    )
+    fail_result = start_gui.launcher_checks.CheckResult(
+        key="fail",
+        title="FAIL",
+        ok=False,
+        detail="fail",
+        blocking=True,
+    )
+
+    start_gui._print_check_summary([ok_result, fail_result])
+    output = capsys.readouterr().out
+
+    assert "1/2 ok" in output
+    assert "1 blockierend" in output

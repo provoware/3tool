@@ -6,8 +6,6 @@ festgehalten.
 Das Format orientiert sich an
 [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
-## [Unreleased]
-- Noch keine Änderungen dokumentiert.
 
 ## [1.2.0] - 2025-12-29
 ### Hinzugefügt (Added)

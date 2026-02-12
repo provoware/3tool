@@ -48,6 +48,28 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         + FOCUS_STYLE,
     ),
     (
+        "Blau Kontrast",
+        "QWidget{background-color:#0b1f33;color:#f4f8ff;} "
+        "QPushButton{background-color:#f4f8ff;color:#0b1f33;border:2px solid #f4f8ff;border-radius:5px;} "
+        "QPushButton:disabled{background-color:#9db2c7;color:#1b2a39;border-color:#9db2c7;} "
+        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
+        "background-color:#102942;color:#f4f8ff;border:2px solid #7fc8ff;} "
+        "QHeaderView::section{background-color:#f4f8ff;color:#0b1f33;} "
+        "QTableView::item:selected,QListView::item:selected{background-color:#7fc8ff;color:#001425;}"
+        + FOCUS_STYLE,
+    ),
+    (
+        "Gruen Kontrast",
+        "QWidget{background-color:#102015;color:#effff2;} "
+        "QPushButton{background-color:#effff2;color:#102015;border:2px solid #effff2;border-radius:5px;} "
+        "QPushButton:disabled{background-color:#9fbba7;color:#1f2f24;border-color:#9fbba7;} "
+        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
+        "background-color:#173121;color:#effff2;border:2px solid #8bf0b2;} "
+        "QHeaderView::section{background-color:#effff2;color:#102015;} "
+        "QTableView::item:selected,QListView::item:selected{background-color:#8bf0b2;color:#0d1d13;}"
+        + FOCUS_STYLE,
+    ),
+    (
         "Hochkontrast Dunkel",
         "QWidget{background-color:#000000;color:#ffffff;} "
         "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
@@ -127,7 +149,8 @@ def _extract_widget_colors(css: str) -> Optional[Tuple[str, str]]:
 
 def _find_hex_color(block: str, property_name: str) -> Optional[str]:
     match = re.search(
-        rf"{re.escape(property_name)}\s*:\s*(#[0-9a-fA-F]{{3,6}})",
+        rf"(?:^|[;\s]){re.escape(property_name)}\s*:\s*"
+        rf"(#[0-9a-fA-F]{{3,6}})(?:;|$)",
         block,
     )
     if not match:
