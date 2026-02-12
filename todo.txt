@@ -63,3 +63,5 @@
 - [x] Abhaengigkeitskonsistenz zentral validiert, Dev-Tools gepinnt und 0000-testall auf konsistente QA-Checks aktualisiert
 - [x] Startroutine prüft Abhängigkeiten per Paket- und Importtest und repariert fehlende Laufzeitpakete automatisch
 
+
+- [x] Dateiauswahl modernisiert: Vorschau/Zoom (Strg+Mausrad), Checkbox-Mehrfachauswahl, Sortierung, Downloads-Startpfad und Auto-Pair nach Auswahlreihenfolge ergänzt

@@ -98,6 +98,11 @@ def default_project_dir() -> Path:
     return Path.home() / "VideoBatchTool_Projekte"
 
 
+def default_downloads_dir() -> Path:
+    downloads = Path.home() / "Downloads"
+    return downloads if downloads.exists() else Path.home()
+
+
 def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
     dst_dir.mkdir(parents=True, exist_ok=True)
     tgt = dst_dir / src.name
@@ -137,6 +142,312 @@ def make_thumb(path: str, size: Tuple[int, int] = (160, 90)) -> QtGui.QPixmap:
         pix = QtGui.QPixmap(size[0], size[1])
         pix.fill(Qt.gray)
         return pix
+
+
+class PreviewLabel(QtWidgets.QLabel):
+    zoom_changed = Signal(float)
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        if event.modifiers() & Qt.ControlModifier:
+            step = 0.1 if event.angleDelta().y() > 0 else -0.1
+            self.zoom_changed.emit(step)
+            event.accept()
+            return
+        super().wheelEvent(event)
+
+
+class FilePickerDialog(QtWidgets.QDialog):
+    def __init__(
+        self,
+        parent: QtWidgets.QWidget,
+        title: str,
+        start_dir: Path,
+        suffixes: Tuple[str, ...],
+        mode: str,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.resize(1100, 700)
+        self.setModal(True)
+        self._suffixes = tuple(s.lower() for s in suffixes)
+        self._mode = mode
+        self._selection_order: List[str] = []
+        self._zoom = 1.0
+        self._audio_probe_cache: Dict[str, float] = {}
+        self._image_preview_cache: Dict[str, QtGui.QPixmap] = {}
+
+        self.current_dir = start_dir if start_dir.exists() else Path.home()
+
+        root = QtWidgets.QVBoxLayout(self)
+        header = QtWidgets.QHBoxLayout()
+        self.path_edit = QtWidgets.QLineEdit(str(self.current_dir))
+        self.path_edit.setAccessibleName("Pfad für Dateiauswahl")
+        btn_browse = QtWidgets.QPushButton("Ordner wechseln")
+        btn_browse.clicked.connect(self._choose_directory)
+        header.addWidget(QtWidgets.QLabel("Ordner:"))
+        header.addWidget(self.path_edit, 1)
+        header.addWidget(btn_browse)
+
+        controls = QtWidgets.QHBoxLayout()
+        self.sort_combo = QtWidgets.QComboBox()
+        self.sort_combo.addItems(
+            [
+                "Auswahlreihenfolge",
+                "Name A → Z",
+                "Name Z → A",
+                "Neueste zuerst",
+                "Älteste zuerst",
+                "Größte zuerst",
+                "Kleinste zuerst",
+            ]
+        )
+        self.sort_combo.currentTextChanged.connect(self._apply_sort)
+        self.search_edit = QtWidgets.QLineEdit()
+        self.search_edit.setPlaceholderText("Filter (Dateiname)")
+        self.search_edit.textChanged.connect(self._apply_filter)
+        self.zoom_slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.zoom_slider.setRange(50, 250)
+        self.zoom_slider.setValue(100)
+        self.zoom_slider.valueChanged.connect(self._set_zoom_from_slider)
+        controls.addWidget(QtWidgets.QLabel("Sortieren:"))
+        controls.addWidget(self.sort_combo)
+        controls.addWidget(QtWidgets.QLabel("Suche:"))
+        controls.addWidget(self.search_edit, 1)
+        controls.addWidget(QtWidgets.QLabel("Zoom:"))
+        controls.addWidget(self.zoom_slider)
+
+        splitter = QtWidgets.QSplitter(Qt.Horizontal)
+        self.file_list = QtWidgets.QTreeWidget()
+        self.file_list.setHeaderLabels(["Auswahl", "Datei", "Größe"])
+        self.file_list.setRootIsDecorated(False)
+        self.file_list.setAlternatingRowColors(True)
+        self.file_list.setUniformRowHeights(True)
+        self.file_list.setSelectionMode(
+            QtWidgets.QAbstractItemView.SingleSelection
+        )
+        self.file_list.itemChanged.connect(self._on_item_changed)
+        self.file_list.currentItemChanged.connect(self._update_preview)
+        self.file_list.installEventFilter(self)
+
+        preview_wrap = QtWidgets.QWidget()
+        preview_layout = QtWidgets.QVBoxLayout(preview_wrap)
+        self.preview_label = PreviewLabel("Vorschau")
+        self.preview_label.setMinimumHeight(280)
+        self.preview_label.setAlignment(Qt.AlignCenter)
+        self.preview_label.setStyleSheet(
+            "border:1px solid #7A7A7A; border-radius:8px; background:#111;"
+        )
+        self.preview_label.zoom_changed.connect(self._adjust_zoom)
+        self.preview_info = QtWidgets.QPlainTextEdit()
+        self.preview_info.setReadOnly(True)
+        self.preview_info.setMaximumHeight(220)
+        preview_layout.addWidget(self.preview_label, 1)
+        preview_layout.addWidget(self.preview_info)
+
+        splitter.addWidget(self.file_list)
+        splitter.addWidget(preview_wrap)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 2)
+
+        footer = QtWidgets.QHBoxLayout()
+        self.selected_label = QtWidgets.QLabel("0 ausgewählt")
+        self.ok_button = QtWidgets.QPushButton("Auswahl übernehmen")
+        self.ok_button.setEnabled(False)
+        self.ok_button.clicked.connect(self.accept)
+        cancel_button = QtWidgets.QPushButton("Abbrechen")
+        cancel_button.clicked.connect(self.reject)
+        footer.addWidget(self.selected_label)
+        footer.addStretch(1)
+        footer.addWidget(self.ok_button)
+        footer.addWidget(cancel_button)
+
+        root.addLayout(header)
+        root.addLayout(controls)
+        root.addWidget(splitter, 1)
+        root.addLayout(footer)
+
+        self._blink_timer = QtCore.QTimer(self)
+        self._blink_timer.setInterval(550)
+        self._blink_timer.timeout.connect(self._toggle_ok_blink)
+        self._blink_on = False
+
+        self._load_files()
+
+    def eventFilter(self, obj: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if obj is self.file_list and event.type() == QtCore.QEvent.KeyPress:
+            key_event = event
+            if (
+                isinstance(key_event, QtGui.QKeyEvent)
+                and key_event.key() == Qt.Key_Space
+            ):
+                item = self.file_list.currentItem()
+                if item:
+                    checked = item.checkState(0) == Qt.Checked
+                    item.setCheckState(
+                        0, Qt.Unchecked if checked else Qt.Checked
+                    )
+                    return True
+        return super().eventFilter(obj, event)
+
+    def _toggle_ok_blink(self) -> None:
+        if not self.ok_button.isEnabled():
+            self.ok_button.setStyleSheet("")
+            return
+        self._blink_on = not self._blink_on
+        if self._blink_on:
+            self.ok_button.setStyleSheet(
+                "background:#24B04A;color:white;font-weight:700;"
+            )
+        else:
+            self.ok_button.setStyleSheet(
+                "background:#1E8E3E;color:white;font-weight:700;"
+            )
+
+    def _choose_directory(self) -> None:
+        selected = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Ordner wählen", self.path_edit.text().strip()
+        )
+        if not selected:
+            return
+        self.current_dir = Path(selected)
+        self.path_edit.setText(selected)
+        self._load_files()
+
+    def _load_files(self) -> None:
+        entered = Path(self.path_edit.text().strip())
+        if entered.exists() and entered.is_dir():
+            self.current_dir = entered
+        self.file_list.blockSignals(True)
+        self.file_list.clear()
+        for path in sorted(
+            self.current_dir.iterdir(), key=lambda p: p.name.lower()
+        ):
+            if not path.is_file() or path.suffix.lower() not in self._suffixes:
+                continue
+            item = QtWidgets.QTreeWidgetItem(
+                ["", path.name, self._human_size(path)]
+            )
+            item.setData(0, Qt.UserRole, str(path))
+            item.setCheckState(0, Qt.Unchecked)
+            self.file_list.addTopLevelItem(item)
+        self.file_list.blockSignals(False)
+        self._apply_filter()
+        self._apply_sort()
+
+    def _human_size(self, path: Path) -> str:
+        try:
+            size = path.stat().st_size
+        except OSError:
+            return "?"
+        units = ["B", "KB", "MB", "GB"]
+        idx = 0
+        value = float(size)
+        while value >= 1024 and idx < len(units) - 1:
+            value /= 1024
+            idx += 1
+        return f"{value:.1f} {units[idx]}"
+
+    def _apply_filter(self) -> None:
+        query = self.search_edit.text().strip().lower()
+        for i in range(self.file_list.topLevelItemCount()):
+            item = self.file_list.topLevelItem(i)
+            item.setHidden(query not in item.text(1).lower())
+
+    def _apply_sort(self) -> None:
+        mode = self.sort_combo.currentText()
+        rows = [
+            self.file_list.takeTopLevelItem(0)
+            for _ in range(self.file_list.topLevelItemCount())
+        ]
+        if mode == "Auswahlreihenfolge":
+            rows.sort(
+                key=lambda item: (
+                    self._selection_order.index(item.data(0, Qt.UserRole))
+                    if item.data(0, Qt.UserRole) in self._selection_order
+                    else 99999
+                )
+            )
+        else:
+            reverse = mode in ("Name Z → A", "Neueste zuerst", "Größte zuerst")
+            if "Name" in mode:
+
+                def key_fn(it):
+                    return it.text(1).lower()
+
+            elif "Neueste" in mode or "Älteste" in mode:
+
+                def key_fn(it):
+                    return Path(it.data(0, Qt.UserRole)).stat().st_mtime
+
+            else:
+
+                def key_fn(it):
+                    return Path(it.data(0, Qt.UserRole)).stat().st_size
+
+            rows.sort(key=key_fn, reverse=reverse)
+        self.file_list.addTopLevelItems(rows)
+
+    def _on_item_changed(self, item: QtWidgets.QTreeWidgetItem, _: int) -> None:
+        path = item.data(0, Qt.UserRole)
+        if item.checkState(0) == Qt.Checked:
+            if path not in self._selection_order:
+                self._selection_order.append(path)
+        else:
+            self._selection_order = [
+                p for p in self._selection_order if p != path
+            ]
+        count = len(self._selection_order)
+        self.selected_label.setText(f"{count} ausgewählt")
+        self.ok_button.setEnabled(count > 0)
+        if count > 0 and not self._blink_timer.isActive():
+            self._blink_timer.start()
+        if count == 0 and self._blink_timer.isActive():
+            self._blink_timer.stop()
+            self.ok_button.setStyleSheet("")
+
+    def _set_zoom_from_slider(self, value: int) -> None:
+        self._zoom = max(0.5, min(2.5, value / 100))
+        self._update_preview(self.file_list.currentItem())
+
+    def _adjust_zoom(self, delta: float) -> None:
+        self._zoom = max(0.5, min(2.5, self._zoom + delta))
+        self.zoom_slider.setValue(int(self._zoom * 100))
+
+    def _update_preview(
+        self,
+        current: Optional[QtWidgets.QTreeWidgetItem],
+        _previous: Optional[QtWidgets.QTreeWidgetItem] = None,
+    ) -> None:
+        if not current:
+            return
+        path = Path(current.data(0, Qt.UserRole))
+        info = [f"Datei: {path.name}", f"Pfad: {path}"]
+        if self._mode == "audio":
+            if str(path) not in self._audio_probe_cache:
+                self._audio_probe_cache[str(path)] = probe_duration(str(path))
+            dur = self._audio_probe_cache[str(path)]
+            info.append(f"Dauer: {human_time(max(0.0, dur))}")
+            self.preview_label.setText("Audio-Vorschau: Doppelklick in Liste")
+            self.preview_label.setPixmap(QtGui.QPixmap())
+        else:
+            if str(path) not in self._image_preview_cache:
+                self._image_preview_cache[str(path)] = make_thumb(
+                    str(path),
+                    size=(640, 360),
+                )
+            pix = self._image_preview_cache[str(path)]
+            target = pix.scaled(
+                int(640 * self._zoom),
+                int(360 * self._zoom),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation,
+            )
+            self.preview_label.setPixmap(target)
+            self.preview_label.setText("")
+        self.preview_info.setPlainText("\n".join(info))
+
+    def selected_files(self) -> List[str]:
+        return list(self._selection_order)
 
 
 # ---------- Datenmodell ----------
@@ -1736,6 +2047,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.setStyleSheet(
             "font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;"
         )
+        self._encode_ready_timer = QtCore.QTimer(self)
+        self._encode_ready_timer.setInterval(500)
+        self._encode_ready_timer.timeout.connect(
+            self._toggle_encode_ready_style
+        )
+        self._encode_ready_on = False
 
         top_buttons = QtWidgets.QGridLayout()
         top_buttons.setSpacing(4)
@@ -2390,6 +2707,26 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.dashboard.set_counts(pair_count, fin_count, err_count)
         self.dashboard.set_selection_counts(selected_images, selected_audios)
+        self._update_encode_ready_indicator(pair_count)
+
+    def _update_encode_ready_indicator(self, pair_count: int) -> None:
+        if pair_count > 0 and not self.btn_stop.isEnabled():
+            if not self._encode_ready_timer.isActive():
+                self._encode_ready_timer.start()
+        else:
+            if self._encode_ready_timer.isActive():
+                self._encode_ready_timer.stop()
+            self.btn_encode.setStyleSheet(
+                "font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;"
+            )
+
+    def _toggle_encode_ready_style(self) -> None:
+        self._encode_ready_on = not self._encode_ready_on
+        base = "font-size:14pt;font-weight:bold;color:white;padding:4px 10px;"
+        if self._encode_ready_on:
+            self.btn_encode.setStyleSheet(base + "background:#1E8E3E;")
+        else:
+            self.btn_encode.setStyleSheet(base + "background:#27AE60;")
 
     def _refresh_structure_view(self) -> None:
         if not hasattr(self, "structure_tree"):
@@ -2506,22 +2843,29 @@ class MainWindow(QtWidgets.QMainWindow):
             root.setHidden(not allow_category or visible_children == 0)
 
     # ----- file actions -----
-    def _select_files(
-        self, title: str, start_dir: str, filters: List[str]
+    def _select_files_with_preview(
+        self,
+        title: str,
+        start_dir: Path,
+        suffixes: Tuple[str, ...],
+        mode: str,
     ) -> List[str]:
-        dialog = QtWidgets.QFileDialog(self, title, start_dir)
-        dialog.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
-        dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        dialog.setOption(QtWidgets.QFileDialog.ReadOnly, True)
-        dialog.setNameFilters(filters)
-        dialog.selectNameFilter(filters[0])
+        dialog = FilePickerDialog(
+            self,
+            title,
+            start_dir=start_dir,
+            suffixes=suffixes,
+            mode=mode,
+        )
         if dialog.exec():
-            return dialog.selectedFiles()
+            return dialog.selected_files()
         return []
 
     def _pick_images(self):
         mode = self.mode_combo.currentText()
-        start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
+        start_dir = self._get_last_dir(
+            "ui/last_image_dir", default_downloads_dir()
+        )
         if mode == "Slideshow":
             d = QtWidgets.QFileDialog.getExistingDirectory(
                 self, "Ordner mit Bildern wählen", start_dir
@@ -2530,35 +2874,34 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._set_last_dir("ui/last_image_dir", d)
                 self._on_images_added([d])
         else:
-            files = self._select_files(
+            files = self._select_files_with_preview(
                 "Bilder wählen",
-                start_dir,
-                [
-                    "Alle Medien (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mkv *.avi *.mov)",
-                    "Bilder (*.jpg *.jpeg *.png *.bmp *.webp)",
-                    "Videos (*.mp4 *.mkv *.avi *.mov)",
-                ],
+                Path(start_dir),
+                IMAGE_EXTENSIONS,
+                mode="image",
             )
             if files:
                 self._set_last_dir("ui/last_image_dir", Path(files[0]).parent)
                 self._on_images_added(files)
 
     def _pick_audios(self):
-        start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
-        files = self._select_files(
+        start_dir = self._get_last_dir(
+            "ui/last_audio_dir", default_downloads_dir()
+        )
+        files = self._select_files_with_preview(
             "Audios wählen",
-            start_dir,
-            [
-                "Audios (*.mp3 *.wav *.flac *.m4a *.aac)",
-                "Alle Dateien (*.*)",
-            ],
+            Path(start_dir),
+            AUDIO_EXTENSIONS,
+            mode="audio",
         )
         if files:
             self._set_last_dir("ui/last_audio_dir", Path(files[0]).parent)
             self._on_audios_added(files)
 
     def _pick_image_folder(self):
-        start_dir = self._get_last_dir("ui/last_image_dir", Path.cwd())
+        start_dir = self._get_last_dir(
+            "ui/last_image_dir", default_downloads_dir()
+        )
         d = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Bildordner wählen", start_dir
         )
@@ -2567,36 +2910,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._set_last_dir("ui/last_image_dir", d)
         files = self._collect_media_files(
             Path(d),
-            (
-                ".jpg",
-                ".jpeg",
-                ".png",
-                ".bmp",
-                ".webp",
-                ".mp4",
-                ".mkv",
-                ".avi",
-                ".mov",
-            ),
-        )
-        d = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Bildordner wählen", str(Path.cwd())
-        )
-        if not d:
-            return
-        files = self._collect_media_files(
-            Path(d),
-            (
-                ".jpg",
-                ".jpeg",
-                ".png",
-                ".bmp",
-                ".webp",
-                ".mp4",
-                ".mkv",
-                ".avi",
-                ".mov",
-            ),
+            IMAGE_EXTENSIONS,
         )
         if not files:
             QtWidgets.QMessageBox.information(
@@ -2608,24 +2922,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self._on_images_added([str(f) for f in files])
 
     def _pick_audio_folder(self):
-        start_dir = self._get_last_dir("ui/last_audio_dir", Path.cwd())
+        start_dir = self._get_last_dir(
+            "ui/last_audio_dir", default_downloads_dir()
+        )
         d = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Audioordner wählen", start_dir
         )
         if not d:
             return
         self._set_last_dir("ui/last_audio_dir", d)
-        files = self._collect_media_files(
-            Path(d), (".mp3", ".wav", ".flac", ".m4a", ".aac")
-        )
-        d = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Audioordner wählen", str(Path.cwd())
-        )
-        if not d:
-            return
-        files = self._collect_media_files(
-            Path(d), (".mp3", ".wav", ".flac", ".m4a", ".aac")
-        )
+        files = self._collect_media_files(Path(d), AUDIO_EXTENSIONS)
         if not files:
             QtWidgets.QMessageBox.information(
                 self,
@@ -2699,8 +3005,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.audio_list.item(i).data(Qt.UserRole)
             for i in range(self.audio_list.count())
         ]
-        imgs.sort()
-        auds.sort()
         self._debug(
             f"Auto-Pair start mit {len(imgs)} Bild(er) und {len(auds)} Audio(s)"
         )
@@ -2878,7 +3182,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log("Abbruch: Audiobitrate ist ungültig.")
             return None
 
-        template_result = validate_output_template(self.output_template_edit.text())
+        template_result = validate_output_template(
+            self.output_template_edit.text()
+        )
         output_template = template_result.value
         self.output_template_edit.setText(output_template)
         if require_valid and not template_result.is_valid:
@@ -3121,7 +3427,9 @@ class MainWindow(QtWidgets.QMainWindow):
             if pair.status in {"FERTIG", "FEHLER", "ABGEBROCHEN"}
         )
         total = max(1, len(self.pairs))
-        self.progress_total.setFormat(f"%p% gesamt ({processed}/{total} erledigt)")
+        self.progress_total.setFormat(
+            f"%p% gesamt ({processed}/{total} erledigt)"
+        )
         self.progress_total.setValue(v)
         self.dashboard.set_progress(v)
 
