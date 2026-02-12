@@ -132,6 +132,13 @@ Diese Tipps erleichtern die Bedienung für alle Nutzenden:
 * Ein weiteres Beispiel zum Erhöhen des Kontrasts findest du in `ANLEITUNG_TIPPS.md`.
 Weitere Hinweise finden sich in den Kommentaren der Python-Dateien.
 
+## Erweiterbarkeit und Metadaten-Templates
+
+- Eine detaillierte Projektbeschreibung liegt in `PROJEKTBESCHREIBUNG_DETAILLIERT.md`.
+- Das Standard-Dateinamen-Template nutzt Linux-konforme Metadaten:
+  `{audio_name}_{video_laenge}_{zeitstempel}_{qualitaet}_{abmasse}_{form}.mp4`
+- Zusätzlich sind Plugin-Hooks (`before_encode`, `after_encode`) verfügbar, um den Workflow zu erweitern.
+
 ## Fehleranalyse und Optimierung
 
 Mit dem Programm `flake8` laesst sich der Quellcode (Text des Programms) auf Fehler und Stil-Regeln (PEP8) pruefen.

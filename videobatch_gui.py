@@ -28,10 +28,16 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
 from core.paths import config_dir, log_dir, user_data_dir
+from core.plugins import PluginManager
 from core.themes import load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
-from core.utils import build_out_name, human_time, probe_duration
+from core.utils import (
+    build_out_name,
+    human_time,
+    mark_used_filename,
+    probe_duration,
+)
 from core.validation import normalize_audio_bitrate, validate_output_template
 from core.fallback_media import (
     dumps_audio_list,
@@ -78,6 +84,7 @@ IMAGE_EXTENSIONS = (
 AUDIO_EXTENSIONS = (".mp3", ".wav", ".flac", ".m4a", ".aac")
 SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 OUTPUT_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov")
+MAX_PREVIEW_CACHE_ITEMS = 180
 
 
 def which(p: str):
@@ -107,11 +114,14 @@ def default_downloads_dir() -> Path:
 
 def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
     dst_dir.mkdir(parents=True, exist_ok=True)
-    tgt = dst_dir / src.name
+    target_name = mark_used_filename(src)
+    tgt = dst_dir / target_name
     if tgt.exists():
-        stem, suf = src.stem, src.suffix
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        tgt = dst_dir / f"{stem}_{timestamp}{suf}"
+        tgt = (
+            dst_dir
+            / f"{Path(target_name).stem}_{timestamp}{src.suffix.lower()}"
+        )
     try:
         if copy_only:
             shutil.copy2(src, tgt)
@@ -415,6 +425,16 @@ class FilePickerDialog(QtWidgets.QDialog):
         self._zoom = max(0.5, min(2.5, self._zoom + delta))
         self.zoom_slider.setValue(int(self._zoom * 100))
 
+    def _cache_image_preview(
+        self,
+        key: str,
+        pixmap: QtGui.QPixmap,
+    ) -> None:
+        self._image_preview_cache[key] = pixmap
+        if len(self._image_preview_cache) > MAX_PREVIEW_CACHE_ITEMS:
+            oldest = next(iter(self._image_preview_cache))
+            self._image_preview_cache.pop(oldest, None)
+
     def _update_preview(
         self,
         current: Optional[QtWidgets.QTreeWidgetItem],
@@ -433,9 +453,12 @@ class FilePickerDialog(QtWidgets.QDialog):
             self.preview_label.setPixmap(QtGui.QPixmap())
         else:
             if str(path) not in self._image_preview_cache:
-                self._image_preview_cache[str(path)] = make_thumb(
+                self._cache_image_preview(
                     str(path),
-                    size=(640, 360),
+                    make_thumb(
+                        str(path),
+                        size=(640, 360),
+                    ),
                 )
             pix = self._image_preview_cache[str(path)]
             target = pix.scaled(
@@ -639,7 +662,11 @@ class EncodeWorker(QtCore.QObject):
     finished = Signal()
 
     def __init__(
-        self, pairs: List[PairItem], settings: Dict[str, Any], copy_only: bool
+        self,
+        pairs: List[PairItem],
+        settings: Dict[str, Any],
+        copy_only: bool,
+        plugin_manager: Optional[PluginManager] = None,
     ):
         super().__init__()
         self.pairs = pairs
@@ -650,6 +677,7 @@ class EncodeWorker(QtCore.QObject):
         self._processes: List[subprocess.Popen] = []
         self._progress_lock = threading.Lock()
         self._completed = 0
+        self.plugin_manager = plugin_manager
 
     def stop(self):
         self._stop_event.set()
@@ -697,17 +725,23 @@ class EncodeWorker(QtCore.QObject):
             self.row_progress.emit(index, 0.0)
             out_dir = Path(self.settings["out_dir"]).resolve()
             out_dir.mkdir(parents=True, exist_ok=True)
-            item.output = build_out_name(
-                item.audio_path,
-                out_dir,
-                self.settings.get("output_template"),
-            )
             w, h = self.settings["width"], self.settings["height"]
             crf = self.settings["crf"]
             preset = self.settings["preset"]
             ab = self.settings["abitrate"]
             duration = item.duration or 1
             mode = self.settings.get("mode", "Standard")
+            quality_label = f"crf{crf}_{preset}"
+            form_label = mode.replace(" + ", "_").replace(" ", "_")
+            item.output = build_out_name(
+                item.audio_path,
+                out_dir,
+                self.settings.get("output_template"),
+                duration_seconds=item.duration,
+                quality=quality_label,
+                resolution=f"{w}x{h}",
+                form=form_label,
+            )
             if mode == "Video + Audio":
                 vdur = probe_duration(item.image_path)
                 extra = max(0.0, duration - vdur)
@@ -811,6 +845,18 @@ class EncodeWorker(QtCore.QObject):
                     str(crf),
                     item.output,
                 ]
+            if self.plugin_manager is not None:
+                payload = self.plugin_manager.run_hook(
+                    "before_encode",
+                    {
+                        "command": cmd,
+                        "mode": mode,
+                        "image": item.image_path,
+                        "audio": item.audio_path,
+                        "output": str(item.output),
+                    },
+                )
+                cmd = payload.get("command", cmd)
             proc = subprocess.Popen(
                 cmd,
                 stderr=subprocess.PIPE,
@@ -851,6 +897,11 @@ class EncodeWorker(QtCore.QObject):
                 item.progress = 100.0
                 self.row_progress.emit(index, 100.0)
                 self.log.emit(f"Fertig: {item.output}")
+                if self.plugin_manager is not None:
+                    self.plugin_manager.run_hook(
+                        "after_encode",
+                        {"output": str(item.output), "mode": mode},
+                    )
         except Exception as e:
             item.status = "FEHLER"
             self.row_error.emit(index, str(e))
@@ -1539,6 +1590,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.pairs: List[PairItem] = []
         self.model = PairTableModel(self.pairs)
+        self.plugin_manager = PluginManager(APP_DIR / "plugins")
+        self.plugin_manager.load()
+        logger.info(
+            "Plugin-System aktiv. Geladene Plugins: %s",
+            ", ".join(self.plugin_manager.loaded_plugins) or "keine",
+        )
 
         ff_ok = check_ffmpeg()
         self.dashboard = InfoDashboard(UI_TEXTS)
@@ -1703,10 +1760,14 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.output_template_edit = QtWidgets.QLineEdit(
             self.settings.value(
-                "encode/output_template", "{audio_stem}_{stamp}.mp4", str
+                "encode/output_template",
+                "{audio_name}_{video_laenge}_{zeitstempel}_{qualitaet}_{abmasse}_{form}.mp4",
+                str,
             )
         )
-        self.output_template_edit.setPlaceholderText("{audio_stem}_{stamp}.mp4")
+        self.output_template_edit.setPlaceholderText(
+            "{audio_name}_{video_laenge}_{zeitstempel}_{qualitaet}_{abmasse}_{form}.mp4"
+        )
         self.output_template_edit.setAccessibleName("Dateinamen-Template")
         self.output_template_edit.setAccessibleDescription(
             "Vorlage für Ausgabedateien"
@@ -1876,7 +1937,7 @@ class MainWindow(QtWidgets.QMainWindow):
             form,
             "Dateinamen-Template",
             self.output_template_edit,
-            "Platzhalter: {audio_stem}, {date}, {time}, {stamp}",
+            "Platzhalter: {audio_stem}, {audio_name}, {date}, {time}, {stamp}, {video_laenge}, {zeitstempel}, {qualitaet}, {abmasse}, {form}",
         )
         self._add_form(
             form, "Modus", self.mode_combo, "z.B. Slideshow oder Video + Audio"
@@ -3137,7 +3198,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dashboard.mini_log.clear()
         self._update_counts()
         self._refresh_structure_view()
-        self._log("Listen geleert")
+        self._log(
+            "Listen sicher geleert (Auswahl, Tabelle, Vorschau und Kurzprotokoll zurückgesetzt)"
+        )
 
     def _undo_last(self):
         if not self._history:
@@ -3510,7 +3573,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.progress_total.setValue(0)
         self.dashboard.set_progress(0)
         self._log("Starte Encoding …")
-        self.worker = EncodeWorker(self.pairs, settings, self.copy_only)
+        self.worker = EncodeWorker(
+            self.pairs,
+            settings,
+            self.copy_only,
+            plugin_manager=self.plugin_manager,
+        )
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)

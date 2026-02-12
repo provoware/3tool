@@ -35,3 +35,4 @@ def test_validate_output_template_returns_default_for_invalid():
     assert result.is_valid is False
     assert result.value == DEFAULT_OUTPUT_TEMPLATE
     assert "Erlaubt sind" in result.message
+    assert "video_laenge" in result.message
