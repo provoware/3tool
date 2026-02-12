@@ -30,6 +30,10 @@ from PySide6.QtWidgets import QHeaderView
 
 from core.paths import config_dir, log_dir, user_data_dir
 from core.themes import load_themes
+from core.ui_profiles import (
+    resolve_interface_profile,
+    resolve_spacing_profile,
+)
 from core.utils import build_out_name, human_time, probe_duration
 
 # ---------- Paths ----------
@@ -1399,6 +1403,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spacing_combo.setAccessibleDescription(
             "Abstand zwischen Feldern und Schaltflächen"
         )
+        self.interface_combo = QtWidgets.QComboBox()
+        self.interface_combo.addItems(["Standard", "Profi"])
+        self.interface_combo.setCurrentText(
+            self.settings.value("ui/interface_profile", "Standard", str)
+        )
+        self.interface_combo.setAccessibleName("Interface-Profil")
+        self.interface_combo.setAccessibleDescription(
+            "Standard oder Profi für einheitliche Größen und Abstände"
+        )
 
         form = QtWidgets.QFormLayout()
         out_wrap_layout = QtWidgets.QHBoxLayout()
@@ -1463,6 +1476,12 @@ class MainWindow(QtWidgets.QMainWindow):
             "Abstände",
             self.spacing_combo,
             "Kompakt, Standard oder großzügig",
+        )
+        self._add_form(
+            form,
+            "Interface-Profil",
+            self.interface_combo,
+            "Standard oder Profi (maximal konfigurierbar)",
         )
         font_row = QtWidgets.QHBoxLayout()
         font_row.setContentsMargins(0, 0, 0, 0)
@@ -1698,6 +1717,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spacing_combo.currentTextChanged.connect(
             self._update_spacing_profile
         )
+        self.interface_combo.currentTextChanged.connect(
+            self._update_interface_profile
+        )
         self.auto_open_output.toggled.connect(self._toggle_auto_open_output)
         self.auto_save_project.toggled.connect(self._toggle_auto_save_project)
         self.mode_combo.currentTextChanged.connect(self._update_default_mode)
@@ -1710,8 +1732,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._set_font(self._font_size)
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
-        self._apply_large_controls(self.large_controls)
         self._apply_spacing_profile(self.spacing_combo.currentText())
+        self._apply_interface_profile(self.interface_combo.currentText())
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
         QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
@@ -3077,34 +3099,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Abstandsprofil gesetzt: {profile}")
 
     def _apply_spacing_profile(self, profile: str) -> None:
-        spacing_map = {
-            "Kompakt": {"grid": 2, "margins": 2, "main": 4},
-            "Standard": {"grid": 4, "margins": 4, "main": 6},
-            "Großzügig": {"grid": 8, "margins": 8, "main": 10},
-        }
-        values = spacing_map.get(profile, spacing_map["Standard"])
+        values = resolve_spacing_profile(profile)
         if hasattr(self, "top_buttons_layout"):
-            self.top_buttons_layout.setSpacing(values["grid"])
+            self.top_buttons_layout.setSpacing(values.grid)
             self.top_buttons_layout.setContentsMargins(
-                values["margins"],
-                values["margins"],
-                values["margins"],
-                values["margins"],
+                values.margins,
+                values.margins,
+                values.margins,
+                values.margins,
             )
         if hasattr(self, "central_layout"):
-            self.central_layout.setSpacing(values["main"])
+            self.central_layout.setSpacing(values.main)
+
+    def _update_interface_profile(self, profile: str) -> None:
+        self.settings.setValue("ui/interface_profile", profile)
+        self._apply_interface_profile(profile)
+        self._log(f"Interface-Profil gesetzt: {profile}")
 
     def _toggle_large_controls(self, checked: bool):
         self.large_controls = checked
         self.settings.setValue("ui/large_controls", checked)
-        self._apply_large_controls(checked)
+        self._apply_interface_profile(self.interface_combo.currentText())
         self._log(
             f"Große Bedienelemente {'aktiviert' if checked else 'deaktiviert'}"
         )
 
-    def _apply_large_controls(self, enabled: bool):
-        height = 40 if enabled else 28
-        font_size = self._font_size + (2 if enabled else 0)
+    def _apply_interface_profile(self, profile: str):
+        ui_profile = resolve_interface_profile(profile, self.large_controls)
+        font_size = self._font_size + ui_profile.log_font_delta
+        height = ui_profile.control_height
         buttons = [
             self.btn_add_images,
             self.btn_add_audios,
@@ -3120,8 +3143,11 @@ class MainWindow(QtWidgets.QMainWindow):
         ]
         for btn in buttons:
             btn.setMinimumHeight(height)
+            btn.setMinimumWidth(ui_profile.compact_button_min_width)
             btn.setFont(QtGui.QFont("DejaVu Sans", font_size))
-        self.table.verticalHeader().setDefaultSectionSize(36 if enabled else 24)
+        self.table.verticalHeader().setDefaultSectionSize(
+            ui_profile.table_row_height
+        )
         self.log_edit.setFont(QtGui.QFont("DejaVu Sans", font_size))
 
     def _global_exception(self, etype, value, tb):
