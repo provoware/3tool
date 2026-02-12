@@ -107,3 +107,43 @@ def test_missing_runtime_packages_checks_pip_and_import(monkeypatch):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_unresolved_todo_items_detects_open_tasks(tmp_path):
+    todo = tmp_path / "todo.txt"
+    todo.write_text(
+        "- [x] fertig\n- [ ] offen 1\n- [ ] offen 2\n", encoding="utf-8"
+    )
+
+    unresolved = launcher_checks.unresolved_todo_items(todo)
+
+    assert unresolved == ["offen 1", "offen 2"]
+
+
+def test_evaluate_release_readiness_reports_missing_files(tmp_path):
+    (tmp_path / "todo.txt").write_text("- [ ] offen\n", encoding="utf-8")
+
+    results = launcher_checks.evaluate_release_readiness(tmp_path)
+
+    todo_result = _result_by_key(results, "todo")
+    assert not todo_result.ok
+    assert "Noch offen" in todo_result.detail
+
+    quality_result = _result_by_key(results, "quality_script")
+    assert not quality_result.ok
+    assert "Fehlt" in quality_result.detail
+
+
+def test_evaluate_release_readiness_ok_when_basics_exist(tmp_path):
+    (tmp_path / "todo.txt").write_text("- [x] fertig\n", encoding="utf-8")
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "quality_check.sh").write_text(
+        "#!/usr/bin/env bash\n", encoding="utf-8"
+    )
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "CHANGELOG.md").write_text("# Changelog\n", encoding="utf-8")
+
+    results = launcher_checks.evaluate_release_readiness(tmp_path)
+
+    assert all(result.ok for result in results)

@@ -70,6 +70,24 @@ def _prepare_runtime_dirs() -> dict[str, Path]:
     return required_dirs
 
 
+def _print_release_readiness(project_root: Path) -> bool:
+    checks = launcher_checks.evaluate_release_readiness(project_root)
+    print("\nRelease-Check (was fehlt bis zur Freigabe?):")
+    for item in checks:
+        marker = "✅" if item.ok else "⚠️"
+        print(f"  {marker} {item.title}: {item.detail}")
+        if not item.ok:
+            print(f"     Nächster Schritt: {item.recommendation}")
+    blocking_ok = all(item.ok for item in checks if item.blocking)
+    if blocking_ok:
+        print("  ✅ Release-Basis erfüllt (technisch).")
+    else:
+        print(
+            "  ⚠️  Release noch nicht bereit: offene Punkte bitte vor Freigabe lösen."
+        )
+    return blocking_ok
+
+
 def _print_beginner_tips() -> None:
     print("\nLaien-Tipps (einfach):")
     print(" - Bei Problemen zuerst: python3 start_gui.py --auto-repair")
@@ -206,6 +224,7 @@ def main() -> int:
         apply_simple_mode_defaults()
         _ok("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
 
+    _print_release_readiness(Path.cwd())
     _print_beginner_tips()
 
     _status(steps, steps, "GUI starten")

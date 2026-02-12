@@ -74,6 +74,16 @@ class RepairResult:
     skipped_offline: bool = False
 
 
+@dataclass(frozen=True)
+class ReleaseReadinessResult:
+    key: str
+    title: str
+    ok: bool
+    detail: str
+    recommendation: str
+    blocking: bool = True
+
+
 def in_venv() -> bool:
     return (
         hasattr(sys, "real_prefix")
@@ -374,6 +384,78 @@ def collect_checks(py: str, target_dir: Path) -> list[CheckResult]:
         check_write_permissions(target_dir),
         check_internet(),
     ]
+
+
+def unresolved_todo_items(todo_file: Path) -> list[str]:
+    if not isinstance(todo_file, Path):
+        raise TypeError("todo_file muss ein Path sein.")
+    if not todo_file.exists():
+        return []
+    unresolved: list[str] = []
+    for line in todo_file.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- [ ]"):
+            unresolved.append(stripped.removeprefix("- [ ]").strip())
+    return unresolved
+
+
+def evaluate_release_readiness(
+    project_root: Path,
+) -> list[ReleaseReadinessResult]:
+    if not isinstance(project_root, Path):
+        raise TypeError("project_root muss ein Path sein.")
+
+    checks: list[ReleaseReadinessResult] = []
+    todo_file = project_root / "todo.txt"
+    open_items = unresolved_todo_items(todo_file)
+    checks.append(
+        ReleaseReadinessResult(
+            key="todo",
+            title="Offene Aufgaben (todo.txt)",
+            ok=not open_items,
+            detail=(
+                "Keine offenen Aufgaben gefunden."
+                if not open_items
+                else f"Noch offen: {', '.join(open_items[:3])}"
+            ),
+            recommendation=(
+                "Release-Kandidat: Aufgabenliste ist abgeschlossen."
+                if not open_items
+                else "Bitte offene Aufgaben abschließen und abhaken."
+            ),
+        )
+    )
+
+    must_exist = {
+        "quality_script": (
+            project_root / "scripts" / "quality_check.sh",
+            "Qualitäts-Check-Skript",
+            "Datei prüfen und Check-Befehl dokumentieren.",
+        ),
+        "tests": (
+            project_root / "tests",
+            "Automatische Tests",
+            "Mindestens Smoke- und Start-Tests ergänzen.",
+        ),
+        "changelog": (
+            project_root / "CHANGELOG.md",
+            "Changelog für Release",
+            "Änderungen vor Release im Changelog beschreiben.",
+        ),
+    }
+    for key, (path, title, recommendation) in must_exist.items():
+        exists = path.exists()
+        checks.append(
+            ReleaseReadinessResult(
+                key=key,
+                title=title,
+                ok=exists,
+                detail=(f"Gefunden: {path}" if exists else f"Fehlt: {path}"),
+                recommendation=("OK" if exists else recommendation),
+            )
+        )
+
+    return checks
 
 
 def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
