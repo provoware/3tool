@@ -184,3 +184,4 @@
 [2026-02-12] Versioniertes JSON-Datei-Manifest mit SHA256-Pruefung eingefuehrt, QA-Workflow um Manifest-Check erweitert und Entwicklerdoku erstellt (Aufgabe "Versioniertes JSON-Datei-Manifest mit SHA256-Pruefung eingefuehrt und QA-Workflow erweitert" erledigt)
 [2026-02-12] Launcher-Check-Zusammenfassung ergänzt und zwei neue Kontrast-Themes mit Tests umgesetzt (Aufgabe "Launcher-Check-Zusammenfassung und zwei neue Kontrast-Themes mit automatischen Tests ergänzt" erledigt)
 2026-02-12 07:22:51 | Aufgabe erledigt: GUI-Bereiche vereinheitlicht, Fokus-Markierung verbessert, Schriftgröße-Standard erhöht, Eingabefeld-Kontrast in Themes abgesichert.
+2026-02-12 07:37:46 | Aufgabe erledigt: AGENTS.md Sicherheits-/Disziplin-Standards erweitert, persistente Fallback-Medien + großes Dashboard implementiert.

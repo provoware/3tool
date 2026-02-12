@@ -70,3 +70,4 @@
 - [x] Launcher-Check-Zusammenfassung und zwei neue Kontrast-Themes mit automatischen Tests ergänzt
 
 - [x] GUI-Bereiche gleich groß gemacht, Fokus-Hervorhebung ergänzt, Standardschrift vergrößert und Theme-Kontrast für Felder vereinheitlicht
+- [x] AGENTS.md um Sicherheits- und Disziplin-Standards erweitert sowie persistente Fallback-Medien und erweitertes Dashboard umgesetzt

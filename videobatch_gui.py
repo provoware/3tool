@@ -33,6 +33,11 @@ from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, human_time, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
+from core.fallback_media import (
+    dumps_audio_list,
+    loads_audio_list,
+    persist_fallback_media,
+)
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -1356,8 +1361,11 @@ class InfoDashboard(QtWidgets.QWidget):
         self.ffmpeg_lbl.setAccessibleName("FFmpeg Status")
         self.env_lbl = QtWidgets.QLabel("Env: OK")
         self.env_lbl.setAccessibleName("Umgebung")
+        self.progress_value = QtWidgets.QLabel("0%")
+        self.progress_value.setAccessibleName("Großer Fortschrittswert")
+        self.progress_value.setStyleSheet("font-size: 30px; font-weight: 700;")
         self.progress = QtWidgets.QProgressBar()
-        self.progress.setMaximumWidth(260)
+        self.progress.setMinimumHeight(26)
         self.progress.setAccessibleName("Fortschritt gesamt")
         self.progress.setFormat("%p%")
         self.mini_log = QtWidgets.QPlainTextEdit()
@@ -1380,6 +1388,7 @@ class InfoDashboard(QtWidgets.QWidget):
         self.selection_label.setAccessibleName("Auswahlstatus")
 
         row = QtWidgets.QHBoxLayout()
+        row.setSpacing(12)
         for w in (
             QtWidgets.QLabel(
                 text_with_fallback(
@@ -1417,6 +1426,7 @@ class InfoDashboard(QtWidgets.QWidget):
                 + ":"
             ),
             self.progress,
+            self.progress_value,
             self.ffmpeg_lbl,
             self.env_lbl,
         ):
@@ -1451,6 +1461,7 @@ class InfoDashboard(QtWidgets.QWidget):
 
     def set_progress(self, v):
         self.progress.setValue(v)
+        self.progress_value.setText(f"{int(v)}%")
 
     def set_env(self, ff_ok, imp_ok=True):
         self.ffmpeg_lbl.setText(
@@ -1785,7 +1796,11 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.language_combo = QtWidgets.QComboBox()
         self.language_combo.addItems(
-            ["Deutsch (Standard)", "Englisch (vorbereitet)"]
+            [
+                "Deutsch (Standard)",
+                "Polski (informacje)",
+                "Englisch (vorbereitet)",
+            ]
         )
         self.language_combo.setCurrentText(
             self.settings.value("ui/language", "Deutsch (Standard)", str)
@@ -1809,6 +1824,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.interface_combo.setAccessibleName("Interface-Profil")
         self.interface_combo.setAccessibleDescription(
             "Standard oder Profi für einheitliche Größen und Abstände"
+        )
+        self.fallback_enabled = QtWidgets.QCheckBox(
+            "Fallback-Medien bei Fehlern automatisch nutzen"
+        )
+        self.fallback_enabled.setChecked(
+            self.settings.value("fallback/enabled", True, bool)
+        )
+        self.btn_fallback_media = QtWidgets.QPushButton(
+            "Fallback-Medien verwalten"
+        )
+        self.btn_fallback_media.setToolTip(
+            "Persistentes Ersatzbild und bis zu zwei Ersatz-Audios hinterlegen"
         )
 
         form = QtWidgets.QFormLayout()
@@ -1880,6 +1907,18 @@ class MainWindow(QtWidgets.QMainWindow):
             "Interface-Profil",
             self.interface_combo,
             "Standard oder Profi (maximal konfigurierbar)",
+        )
+        self._add_form(
+            form,
+            "Fehler-Fallback",
+            self.fallback_enabled,
+            "Bei ungültigen Dateien auf hinterlegte Medien ausweichen",
+        )
+        self._add_form(
+            form,
+            "Fallback-Medien",
+            self.btn_fallback_media,
+            "Bild + bis zu 2 Audios persistent speichern",
         )
         font_row = QtWidgets.QHBoxLayout()
         font_row.setContentsMargins(0, 0, 0, 0)
@@ -2140,6 +2179,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.log_level_combo.currentTextChanged.connect(self._update_log_level)
         self.language_combo.currentTextChanged.connect(self._update_language)
+        self.btn_fallback_media.clicked.connect(self._manage_fallback_media)
         self.spacing_combo.currentTextChanged.connect(
             self._update_spacing_profile
         )
@@ -3270,10 +3310,87 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Fehler in Zeile {row + 1}: {msg}")
         self._update_counts()
 
+    def _load_fallback_audio_paths(self) -> List[str]:
+        return [
+            path
+            for path in loads_audio_list(
+                self.settings.value("fallback/audios", "", str)
+            )
+            if Path(path).exists()
+        ]
+
+    def _maybe_apply_fallback_media(self) -> int:
+        if not self.fallback_enabled.isChecked():
+            return 0
+        fallback_image = self.settings.value("fallback/image", "", str).strip()
+        fallback_audios = self._load_fallback_audio_paths()
+        if not fallback_image and not fallback_audios:
+            return 0
+        replacements = 0
+        for index, pair in enumerate(self.pairs):
+            image_missing = (
+                not pair.image_path or not Path(pair.image_path).exists()
+            )
+            audio_missing = (
+                not pair.audio_path or not Path(pair.audio_path).exists()
+            )
+            if (
+                image_missing
+                and fallback_image
+                and Path(fallback_image).exists()
+            ):
+                pair.image_path = fallback_image
+                replacements += 1
+            if audio_missing and fallback_audios:
+                pair.audio_path = fallback_audios[index % len(fallback_audios)]
+                replacements += 1
+        if replacements:
+            self.model.layoutChanged.emit()
+            self._log(
+                f"Fallback aktiv: {replacements} fehlerhafte Eingaben ersetzt."
+            )
+        return replacements
+
+    def _manage_fallback_media(self) -> None:
+        info = (
+            "Lege ein Ersatzbild und bis zu zwei Ersatz-Audios fest.\n"
+            "Diese Dateien werden in den App-Datenordner kopiert und bleiben erhalten.\n\n"
+            "PL: Ustaw obraz zapasowy i maksymalnie dwa pliki audio zapasowe. "
+            "Pliki pozostają zapisane trwale."
+        )
+        QtWidgets.QMessageBox.information(self, "Fallback-Medien", info)
+        image_file, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Fallback-Bild wählen",
+            self._get_last_dir("ui/last_image_dir", default_downloads_dir()),
+            "Bild/Video (*.jpg *.jpeg *.png *.bmp *.webp *.mp4 *.mov)",
+        )
+        audio_files, _ = QtWidgets.QFileDialog.getOpenFileNames(
+            self,
+            "Bis zu zwei Fallback-Audios wählen",
+            self._get_last_dir("ui/last_audio_dir", default_downloads_dir()),
+            "Audio (*.mp3 *.wav *.flac *.m4a *.aac)",
+        )
+        persisted_image, persisted_audio = persist_fallback_media(
+            APP_DIR / "fallback_media", image_file, audio_files
+        )
+        self.settings.setValue("fallback/image", persisted_image)
+        self.settings.setValue(
+            "fallback/audios", dumps_audio_list(persisted_audio)
+        )
+        self.settings.setValue(
+            "fallback/enabled", self.fallback_enabled.isChecked()
+        )
+        self._log(
+            "Fallback-Medien gespeichert: "
+            f"Bild={'ja' if persisted_image else 'nein'}, Audio={len(persisted_audio)}"
+        )
+
     def _start_encode(self):
         settings = self._gather_settings()
         if settings is None:
             return
+        self._maybe_apply_fallback_media()
         if self.image_list.count() == 0:
             self._suggest_add_images()
             return
@@ -3554,6 +3671,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _update_language(self, language: str) -> None:
         self.settings.setValue("ui/language", language)
+        if "Polski" in language:
+            self._log(
+                "Informacja (PL): Wsparcie tłumaczenia jest przygotowane."
+            )
         self._log(f"Sprache vorbereitet: {language}")
 
     def _update_spacing_profile(self, profile: str) -> None:
@@ -3694,6 +3815,9 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.settings.setValue("log/level", self.log_level)
         self.settings.setValue("ui/language", self.language_combo.currentText())
+        self.settings.setValue(
+            "fallback/enabled", self.fallback_enabled.isChecked()
+        )
         s = self._gather_settings(require_valid=False)
         if s:
             self.settings.setValue("encode/out_dir", s["out_dir"])
