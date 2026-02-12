@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib
 from pathlib import Path
-from typing import Callable
+from typing import Callable, cast
 
 from core import launcher_checks
 from core.config import apply_simple_mode_defaults, cfg
@@ -88,6 +88,20 @@ def _run_checks(py: str, target_dir: Path) -> list[launcher_checks.CheckResult]:
     return results
 
 
+def _print_check_summary(results: list[launcher_checks.CheckResult]) -> None:
+    total = len(results)
+    passed = sum(1 for item in results if item.ok)
+    failed = total - passed
+    blocking_failed = sum(
+        1 for item in results if item.blocking and not item.ok
+    )
+    print(
+        "  📋 Check-Zusammenfassung: "
+        f"{passed}/{total} ok, {failed} problematisch, "
+        f"{blocking_failed} blockierend"
+    )
+
+
 def _all_blocking_ok(results: list[launcher_checks.CheckResult]) -> bool:
     return all(result.ok for result in results if result.blocking)
 
@@ -105,6 +119,12 @@ def _run_repairs(
             repair.key,
             repair.detail,
         )
+    success = sum(1 for item in repairs if item.ok)
+    failed = len(repairs) - success
+    print(
+        "  🛠️ Repair-Zusammenfassung: "
+        f"{success}/{len(repairs)} erfolgreich, {failed} fehlgeschlagen"
+    )
     return repairs
 
 
@@ -163,6 +183,7 @@ def main() -> int:
 
     _status(4, steps, "System-Checks ausführen")
     results = _run_checks(py, runtime_dirs["Nutzerdaten"])
+    _print_check_summary(results)
 
     if not _all_blocking_ok(results):
         if args.auto_repair:
@@ -170,6 +191,7 @@ def main() -> int:
             _run_repairs(py, runtime_dirs["Nutzerdaten"])
             _status(6, steps, "Checks nach Reparatur wiederholen")
             results = _run_checks(py, runtime_dirs["Nutzerdaten"])
+            _print_check_summary(results)
         else:
             _warn("Blockierende Probleme gefunden. Starte mit --auto-repair.")
 
@@ -191,7 +213,7 @@ def main() -> int:
     start_func = getattr(gui, "run_gui", None)
     if not callable(start_func):
         _fail("videobatch_gui.run_gui fehlt. Bitte Projektdateien prüfen.")
-    _start_gui(start_func)
+    _start_gui(cast(Callable[[], None], start_func))
     return 0
 
 
