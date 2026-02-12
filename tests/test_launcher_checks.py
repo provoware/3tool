@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
 
+import pytest
+
 from core import launcher_checks
 
 
@@ -103,6 +105,45 @@ def test_missing_runtime_packages_checks_pip_and_import(monkeypatch):
     missing = launcher_checks.missing_runtime_packages("python")
 
     assert missing == ["Pillow", "ffmpeg-python"]
+
+
+def test_collect_checks_rejects_invalid_types(tmp_path):
+    with pytest.raises(ValueError):
+        launcher_checks.collect_checks("", tmp_path)
+
+    with pytest.raises(TypeError):
+        launcher_checks.collect_checks("python", "not-a-path")
+
+
+def test_beginner_recovery_hints_include_actionable_steps():
+    results = [
+        launcher_checks.RepairResult(
+            key="packages",
+            title="Python-Pakete",
+            ok=False,
+            detail="Fehlend",
+            skipped_offline=True,
+        ),
+        launcher_checks.RepairResult(
+            key="ffmpeg",
+            title="ffmpeg/ffprobe",
+            ok=False,
+            detail="Fehlt",
+        ),
+        launcher_checks.RepairResult(
+            key="write_permissions",
+            title="Schreibrechte",
+            ok=False,
+            detail="Fehlen",
+        ),
+    ]
+
+    hints = launcher_checks.beginner_recovery_hints(results)
+
+    assert any("Python-Pakete" in hint for hint in hints)
+    assert any("Video-Werkzeuge" in hint for hint in hints)
+    assert any("Schreibrechte" in hint for hint in hints)
+    assert any("Offline" in hint for hint in hints)
 
 
 if __name__ == "__main__":

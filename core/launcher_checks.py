@@ -104,6 +104,7 @@ def ensure_venv() -> None:
 
 
 def pip_ok(py: str) -> bool:
+    py = validated_python_command(py)
     return (
         subprocess.run(
             [py, "-m", "pip", "--version"],
@@ -115,6 +116,9 @@ def pip_ok(py: str) -> bool:
 
 
 def pip_show(py: str, pkg: str) -> bool:
+    py = validated_python_command(py)
+    if not isinstance(pkg, str) or not pkg.strip():
+        raise ValueError("pkg muss ein nicht-leerer String sein.")
     return (
         subprocess.run(
             [py, "-m", "pip", "show", pkg],
@@ -126,6 +130,9 @@ def pip_show(py: str, pkg: str) -> bool:
 
 
 def module_import_ok(py: str, module_name: str) -> bool:
+    py = validated_python_command(py)
+    if not isinstance(module_name, str) or not module_name.strip():
+        raise ValueError("module_name muss ein nicht-leerer String sein.")
     return (
         subprocess.run(
             [py, "-c", f"import {module_name}"],
@@ -137,6 +144,7 @@ def module_import_ok(py: str, module_name: str) -> bool:
 
 
 def missing_runtime_packages(py: str) -> list[str]:
+    py = validated_python_command(py)
     missing: list[str] = []
     for package_name in REQ_PKGS:
         import_name = PACKAGE_IMPORT_NAMES.get(package_name, package_name)
@@ -148,6 +156,7 @@ def missing_runtime_packages(py: str) -> list[str]:
 
 
 def ensure_pip(py: str) -> bool:
+    py = validated_python_command(py)
     if pip_ok(py):
         return True
     try:
@@ -159,6 +168,7 @@ def ensure_pip(py: str) -> bool:
 
 
 def pip_install(py: str, pkgs: Iterable[str]) -> None:
+    py = validated_python_command(py)
     packages = list(pkgs)
     if not packages:
         return
@@ -234,6 +244,12 @@ def linux_package_manager() -> PackageManagerInfo | None:
 
 def format_command(command: list[str]) -> str:
     return " ".join(command)
+
+
+def validated_python_command(py: str) -> str:
+    if not isinstance(py, str) or not py.strip():
+        raise ValueError("py muss ein nicht-leerer String sein.")
+    return py
 
 
 def ffmpeg_install_hint() -> str:
@@ -375,6 +391,9 @@ def check_internet() -> CheckResult:
 
 
 def collect_checks(py: str, target_dir: Path) -> list[CheckResult]:
+    py = validated_python_command(py)
+    if not isinstance(target_dir, Path):
+        raise TypeError("target_dir muss ein Path sein.")
     return [
         check_python_version(),
         check_venv(),
@@ -459,6 +478,9 @@ def evaluate_release_readiness(
 
 
 def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
+    py = validated_python_command(py)
+    if not isinstance(target_dir, Path):
+        raise TypeError("target_dir muss ein Path sein.")
     results: list[RepairResult] = []
     online = has_internet()
 
@@ -623,3 +645,32 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
     )
 
     return results
+
+
+def beginner_recovery_hints(results: Iterable[RepairResult]) -> list[str]:
+    result_list = list(results)
+    hints: list[str] = []
+    failed = {item.key for item in result_list if not item.ok}
+    if "pip" in failed or "packages" in failed:
+        hints.append(
+            "Python-Pakete konnten nicht vollstaendig installiert werden. "
+            "Bitte Internet, Rechte und danach den Button 'Reparieren' "
+            "noch einmal pruefen."
+        )
+    if "ffmpeg" in failed:
+        hints.append(
+            "Video-Werkzeuge fehlen noch. Nutzen Sie den angezeigten "
+            "Befehl fuer Ihr System (Paketmanager = Software-Verwalter)."
+        )
+    if "write_permissions" in failed:
+        hints.append(
+            "Es fehlen Schreibrechte im Projektordner. Starten Sie das Tool "
+            "in einem eigenen Benutzerordner oder passen Sie Rechte an."
+        )
+    if any(item.skipped_offline for item in result_list):
+        hints.append(
+            "Offline erkannt: Nach Verbindungsaufbau bitte Reparatur erneut "
+            "starten, damit fehlende Pakete automatisch nachinstalliert "
+            "werden."
+        )
+    return hints

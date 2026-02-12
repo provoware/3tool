@@ -76,3 +76,4 @@
 - [x] Plugin-Hook-System, _benutzt-Suffix-Ablage und sichere Listen-Leerung mit Detail-Logging umgesetzt
 - [x] Release-Readiness-Check im Launcher ergänzt (todo/offene Punkte + Basisdateien) und automatische Tests erweitert
 - [x] Leitfaden fuer modernes, barrierefreies Layout mit Hilfselementen und Statistik-Kennzahlen ergänzt
+- [x] Launcher-Reparaturausgabe um laienfreundliche Recovery-Hinweise und Eingabevalidierung erweitert
