@@ -82,3 +82,4 @@
 - [x] Professionelles Theme-Designsystem mit einheitlichen UI-Komponenten und zwei neuen Kontrast-Themes umgesetzt
 - [x] Hauptfenster-Layout professionell flexibilisiert (dynamische Splitter, stabile Mindestgrößen, linke Dock-Seite repariert) und Theme-Auswahl auf exakt drei Farbschemata reduziert
 - [x] Theme-Feldkontrastpruefung und Launcher-Recovery-Hinweise fuer Laien erweitert
+- [x] Seniorenmodus (groessere Schrift/Bedienelemente) und einfache Laien-Hinweise im Launcher erweitern

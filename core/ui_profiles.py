@@ -37,6 +37,12 @@ INTERFACE_PROFILES = {
         compact_button_min_width=116,
         log_font_delta=0,
     ),
+    "Seniorenfreundlich": InterfaceProfile(
+        control_height=40,
+        table_row_height=36,
+        compact_button_min_width=140,
+        log_font_delta=2,
+    ),
 }
 
 

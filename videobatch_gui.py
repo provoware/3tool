@@ -1885,13 +1885,15 @@ class MainWindow(QtWidgets.QMainWindow):
             "Abstand zwischen Feldern und Schaltflächen"
         )
         self.interface_combo = QtWidgets.QComboBox()
-        self.interface_combo.addItems(["Standard", "Profi"])
+        self.interface_combo.addItems(
+            ["Standard", "Profi", "Seniorenfreundlich"]
+        )
         self.interface_combo.setCurrentText(
             self.settings.value("ui/interface_profile", "Standard", str)
         )
         self.interface_combo.setAccessibleName("Interface-Profil")
         self.interface_combo.setAccessibleDescription(
-            "Standard oder Profi für einheitliche Größen und Abstände"
+            "Standard, Profi oder Seniorenfreundlich für klare Abstände und große Klickflächen"
         )
         self.fallback_enabled = QtWidgets.QCheckBox(
             "Fallback-Medien bei Fehlern automatisch nutzen"
@@ -1993,7 +1995,7 @@ class MainWindow(QtWidgets.QMainWindow):
             form,
             "Interface-Profil",
             self.interface_combo,
-            "Standard oder Profi (maximal konfigurierbar)",
+            "Standard, Profi oder Seniorenfreundlich (extra groß und laienfreundlich)",
         )
         self._add_form(
             form,
@@ -3938,7 +3940,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_interface_profile(self, profile: str) -> None:
         self.settings.setValue("ui/interface_profile", profile)
         self._apply_interface_profile(profile)
-        self._log(f"Interface-Profil gesetzt: {profile}")
+        self._log(
+            f"Interface-Profil gesetzt: {profile}. "
+            "Tipp: Seniorenfreundlich ist für sehschwache Nutzer optimiert."
+        )
 
     def _toggle_large_controls(self, checked: bool):
         self.large_controls = checked
