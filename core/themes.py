@@ -113,20 +113,36 @@ def load_themes(logger: Optional[logging.Logger] = None) -> Dict[str, str]:
 
 def _warn_low_contrast(themes: Dict[str, str], logger: logging.Logger) -> None:
     for name, css in themes.items():
-        colors = _extract_widget_colors(css)
-        if not colors:
+        widget_colors = _extract_widget_colors(css)
+        if not widget_colors:
             continue
-        foreground, background = colors
+        foreground, background = widget_colors
         ratio = _contrast_ratio(foreground, background)
-        if ratio is None:
-            continue
-        if ratio < 4.5:
+        if ratio is not None and ratio < 7.0:
             logger.warning(
-                "Theme '%s' hat niedrigen Kontrast (%.2f:1) zwischen %s und %s.",
+                "Theme '%s' hat niedrigen Grundkontrast (%.2f:1) zwischen %s und %s.",
                 name,
                 ratio,
                 foreground,
                 background,
+            )
+
+        input_colors = _extract_input_colors(css)
+        if not input_colors:
+            logger.warning(
+                "Theme '%s' hat keine klaren Eingabefarben fuer Felder.",
+                name,
+            )
+            continue
+        input_foreground, input_background = input_colors
+        input_ratio = _contrast_ratio(input_foreground, input_background)
+        if input_ratio is not None and input_ratio < 7.0:
+            logger.warning(
+                "Theme '%s' hat niedrigen Feldkontrast (%.2f:1) zwischen %s und %s.",
+                name,
+                input_ratio,
+                input_foreground,
+                input_background,
             )
 
 
@@ -137,6 +153,20 @@ def _extract_widget_colors(css: str) -> Optional[Tuple[str, str]]:
     if not widget_match:
         return None
     block = widget_match.group(1)
+    background = _find_hex_color(block, "background-color")
+    foreground = _find_hex_color(block, "color")
+    if not background or not foreground:
+        return None
+    return foreground, background
+
+
+def _extract_input_colors(css: str) -> Optional[Tuple[str, str]]:
+    if not isinstance(css, str):
+        return None
+    field_match = re.search(r"QLineEdit[^\{]*\{([^}]*)\}", css)
+    if not field_match:
+        return None
+    block = field_match.group(1)
     background = _find_hex_color(block, "background-color")
     foreground = _find_hex_color(block, "color")
     if not background or not foreground:

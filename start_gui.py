@@ -143,6 +143,11 @@ def _run_repairs(
         "  🛠️ Repair-Zusammenfassung: "
         f"{success}/{len(repairs)} erfolgreich, {failed} fehlgeschlagen"
     )
+    hints = launcher_checks.beginner_recovery_hints(repairs)
+    if hints:
+        print("  🧭 Einfache Loesungsvorschlaege:")
+        for hint in hints:
+            print(f"     - {hint}")
     return repairs
 
 
@@ -209,7 +214,12 @@ def main() -> int:
             _warn(
                 "Blockierende Probleme gefunden. Auto-Reparatur wird jetzt automatisch ausgeführt."
             )
-        _run_repairs(py, runtime_dirs["Nutzerdaten"])
+        repairs = _run_repairs(py, runtime_dirs["Nutzerdaten"])
+        launcher_checks.LOGGER.info(
+            "Repair-Hinweise fuer Laien: %s",
+            " | ".join(launcher_checks.beginner_recovery_hints(repairs))
+            or "keine",
+        )
         _status(6, steps, "Checks nach Reparatur wiederholen")
         results = _run_checks(py, runtime_dirs["Nutzerdaten"])
         _print_check_summary(results)

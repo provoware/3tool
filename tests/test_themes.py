@@ -31,3 +31,13 @@ def test_input_fields_have_explicit_border() -> None:
     for name, css in loaded.items():
         assert "QLineEdit" in css, name
         assert "border:" in css, name
+
+
+def test_accessible_themes_have_good_input_field_contrast() -> None:
+    loaded = themes.load_themes()
+    for name in loaded:
+        colors = themes._extract_input_colors(loaded[name])
+        assert colors is not None, name
+        ratio = themes._contrast_ratio(colors[0], colors[1])
+        assert ratio is not None
+        assert ratio >= 7.0
