@@ -47,107 +47,6 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         + ACTIVE_SECTION_STYLE,
     ),
     (
-        "Hell",
-        "QWidget{background-color:#ffffff;color:#202020;} "
-        "QPushButton{background-color:#e0e0e0;color:#202020;border:1px solid #b8b8b8;}"
-        "QPushButton:hover{background-color:#d3d3d3;} "
-        "QPushButton:pressed{background-color:#c4c4c4;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
-        "background-color:#f7f7f7;color:#111111;border:1px solid #5f6368;}"
-        "QTableView::item:selected,QListView::item:selected{background-color:#dbeafe;color:#111111;} "
-        "QProgressBar{background-color:#f1f1f1;color:#202020;border:1px solid #c3c3c3;} "
-        "QProgressBar::chunk{background-color:#2f6ee4;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Dunkel",
-        "QWidget{background-color:#2b2b2b;color:#e0e0e0;} "
-        "QPushButton{background-color:#444;color:#e0e0e0;border:1px solid #5f6368;} "
-        "QPushButton:hover{background-color:#505050;} "
-        "QPushButton:pressed{background-color:#5a5a5a;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
-        "background-color:#3a3a3a;color:#f0f0f0;border:1px solid #9aa0a6;} "
-        "QTableView::item:selected,QListView::item:selected{background-color:#365d85;color:#ffffff;} "
-        "QProgressBar{background-color:#3a3f46;color:#f0f0f0;border:1px solid #6e7781;} "
-        "QProgressBar::chunk{background-color:#90caf9;} "
-        "QWidget:focus{outline:2px solid #90caf9;}"
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Sepia",
-        "QWidget{background-color:#f4ecd8;color:#5b4636;} "
-        "QPushButton{background-color:#d6c3a0;color:#5b4636;border:1px solid #a78963;}"
-        "QPushButton:hover{background-color:#ccb68f;} "
-        "QPushButton:pressed{background-color:#bea87f;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
-        "background-color:#fffaf0;color:#3e3024;border:1px solid #8b6f47;}"
-        "QTableView::item:selected,QListView::item:selected{background-color:#ead8b8;color:#2f261e;} "
-        "QProgressBar{background-color:#efe2c8;color:#3e3024;border:1px solid #b49569;} "
-        "QProgressBar::chunk{background-color:#8b6f47;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Hochkontrast Hell",
-        "QWidget{background-color:#ffffff;color:#000000;} "
-        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;}"
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#ffffff;color:#000000;border:2px solid #000000;}"
-        "QHeaderView::section{background-color:#000000;color:#ffffff;}"
-        "QProgressBar{background-color:#ffffff;color:#000000;border:2px solid #000000;} "
-        "QProgressBar::chunk{background-color:#000000;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Blau Kontrast",
-        "QWidget{background-color:#0b1f33;color:#f4f8ff;} "
-        "QPushButton{background-color:#f4f8ff;color:#0b1f33;border:2px solid #f4f8ff;border-radius:5px;} "
-        "QPushButton:disabled{background-color:#9db2c7;color:#1b2a39;border-color:#9db2c7;} "
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#102942;color:#f4f8ff;border:2px solid #7fc8ff;} "
-        "QHeaderView::section{background-color:#f4f8ff;color:#0b1f33;} "
-        "QTableView::item:selected,QListView::item:selected{background-color:#7fc8ff;color:#001425;}"
-        "QProgressBar{background-color:#102942;color:#f4f8ff;border:2px solid #7fc8ff;} "
-        "QProgressBar::chunk{background-color:#7fc8ff;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Gruen Kontrast",
-        "QWidget{background-color:#102015;color:#effff2;} "
-        "QPushButton{background-color:#effff2;color:#102015;border:2px solid #effff2;border-radius:5px;} "
-        "QPushButton:disabled{background-color:#9fbba7;color:#1f2f24;border-color:#9fbba7;} "
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#173121;color:#effff2;border:2px solid #8bf0b2;} "
-        "QHeaderView::section{background-color:#effff2;color:#102015;} "
-        "QTableView::item:selected,QListView::item:selected{background-color:#8bf0b2;color:#0d1d13;}"
-        "QProgressBar{background-color:#173121;color:#effff2;border:2px solid #8bf0b2;} "
-        "QProgressBar::chunk{background-color:#8bf0b2;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Hochkontrast Dunkel",
-        "QWidget{background-color:#000000;color:#ffffff;} "
-        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
-        "QHeaderView::section{background-color:#ffffff;color:#000000;}"
-        "QProgressBar{background-color:#000000;color:#ffffff;border:2px solid #ffffff;} "
-        "QProgressBar::chunk{background-color:#ffffff;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
         "Nachtblau Pro",
         "QWidget{background-color:#101827;color:#e6edf7;} "
         "QPushButton{background-color:#20324f;color:#e6edf7;border:1px solid #46618c;} "
@@ -164,17 +63,14 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         + ACTIVE_SECTION_STYLE,
     ),
     (
-        "Sand Kontrast Pro",
-        "QWidget{background-color:#fffaf2;color:#1f140a;} "
-        "QPushButton{background-color:#3b2f1f;color:#fffaf2;border:1px solid #3b2f1f;} "
-        "QPushButton:hover{background-color:#2f2619;} "
-        "QPushButton:pressed{background-color:#241d13;} "
+        "Hochkontrast Hell",
+        "QWidget{background-color:#ffffff;color:#000000;} "
+        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;}"
         "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#ffffff;color:#1f140a;border:2px solid #60482f;} "
-        "QHeaderView::section{background-color:#3b2f1f;color:#fffaf2;} "
-        "QTableView::item:selected,QListView::item:selected{background-color:#c59a64;color:#120d06;} "
-        "QProgressBar{background-color:#ffffff;color:#1f140a;border:2px solid #60482f;} "
-        "QProgressBar::chunk{background-color:#3b2f1f;} "
+        "background-color:#ffffff;color:#000000;border:2px solid #000000;}"
+        "QHeaderView::section{background-color:#000000;color:#ffffff;}"
+        "QProgressBar{background-color:#ffffff;color:#000000;border:2px solid #000000;} "
+        "QProgressBar::chunk{background-color:#000000;} "
         + FOCUS_STYLE
         + BASE_COMPONENT_STYLE
         + ACTIVE_SECTION_STYLE,
