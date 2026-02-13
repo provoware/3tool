@@ -155,7 +155,7 @@ def build_wizard():
             self.theme_label.setBuddy(self.theme_select)
             self.theme_select.setAccessibleName("Farbschema")
             self.theme_select.setAccessibleDescription(
-                "Wählen Sie das Farbschema für den Launcher."
+                "Wählen Sie das Farbschema für den Launcher. Für sehschwache Personen ist Hoher Kontrast empfohlen."
             )
 
             self.debug_check = QtWidgets.QCheckBox("&Debug-Log (Fehlersuche)")
@@ -211,7 +211,12 @@ def build_wizard():
         def _start_check(self):
             self.btn_fix.setEnabled(False)
             self.btn_start.setEnabled(False)
-            self.info.setHtml("<p>Prüfung läuft…</p>")
+            self.info.setHtml(
+                "<p>Prüfung läuft…</p>"
+                "<p><strong>Tipp für gute Lesbarkeit:</strong> Nutzen Sie bei Bedarf "
+                "<em>Hoher Kontrast</em> und aktivieren Sie <em>Debug-Log</em> "
+                "für klare Fehlermeldungen in einfacher Sprache.</p>"
+            )
             self._check_worker = CheckWorker()
             self._check_worker.results_ready.connect(self._handle_results)
             self._check_worker.failed.connect(self._handle_error)
@@ -329,6 +334,11 @@ def build_wizard():
             self._debug_enabled = enabled
             os.environ["VT_DEBUG"] = "1" if enabled else "0"
             setup_logging(enabled)
+            launcher_checks.LOGGER.info(
+                "Debug-Modus %s. Hinweise sind in %s gespeichert.",
+                "aktiv" if enabled else "inaktiv",
+                LOG_FILE,
+            )
 
         def _apply_theme(self, theme_name: str):
             if theme_name == "Dunkel":
