@@ -83,3 +83,4 @@
 - [x] Hauptfenster-Layout professionell flexibilisiert (dynamische Splitter, stabile Mindestgrößen, linke Dock-Seite repariert) und Theme-Auswahl auf exakt drei Farbschemata reduziert
 - [x] Theme-Feldkontrastpruefung und Launcher-Recovery-Hinweise fuer Laien erweitert
 - [x] Seniorenmodus (groessere Schrift/Bedienelemente) und einfache Laien-Hinweise im Launcher erweitern
+- [x] Neues Barrierefrei-Max-Profil und robustere Profilvalidierung mit Logging umgesetzt
