@@ -1876,7 +1876,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.language_combo.setAccessibleName("Sprache")
         self.language_combo.setAccessibleDescription("Sprache vorbereiten")
         self.spacing_combo = QtWidgets.QComboBox()
-        self.spacing_combo.addItems(["Kompakt", "Standard", "Großzügig"])
+        self.spacing_combo.addItems(
+            ["Kompakt", "Standard", "Großzügig", "Barrierefrei"]
+        )
         self.spacing_combo.setCurrentText(
             self.settings.value("ui/spacing_profile", "Standard", str)
         )
@@ -1886,7 +1888,12 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.interface_combo = QtWidgets.QComboBox()
         self.interface_combo.addItems(
-            ["Standard", "Profi", "Seniorenfreundlich"]
+            [
+                "Standard",
+                "Profi",
+                "Seniorenfreundlich",
+                "Barrierefrei Max",
+            ]
         )
         self.interface_combo.setCurrentText(
             self.settings.value("ui/interface_profile", "Standard", str)
