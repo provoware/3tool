@@ -1,22 +1,18 @@
 import core.themes as themes
 
 
-def test_accessible_themes_available() -> None:
+def test_theme_catalog_is_limited_to_three_profiles() -> None:
     loaded = themes.load_themes()
-    assert "Blau Kontrast" in loaded
-    assert "Gruen Kontrast" in loaded
-    assert "Nachtblau Pro" in loaded
-    assert "Sand Kontrast Pro" in loaded
+    assert list(loaded.keys()) == [
+        "Modern",
+        "Nachtblau Pro",
+        "Hochkontrast Hell",
+    ]
 
 
 def test_accessible_themes_have_good_widget_contrast() -> None:
     loaded = themes.load_themes()
-    for name in (
-        "Blau Kontrast",
-        "Gruen Kontrast",
-        "Nachtblau Pro",
-        "Sand Kontrast Pro",
-    ):
+    for name in loaded:
         colors = themes._extract_widget_colors(loaded[name])
         assert colors is not None
         ratio = themes._contrast_ratio(colors[0], colors[1])

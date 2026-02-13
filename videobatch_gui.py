@@ -1545,6 +1545,8 @@ class InfoDashboard(QtWidgets.QWidget):
 # ---------- MainWindow ----------
 class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
+    WORKFLOW_SECTION_MIN_WIDTH = 240
+    WORKFLOW_SECTION_MIN_HEIGHT = 190
 
     def __init__(self):
         super().__init__()
@@ -1642,11 +1644,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # optionale Seitenleiste (Zusatzinfos)
         self.sidebar = QtWidgets.QDockWidget("Schnellhilfe", self)
-        self.sidebar.setFeatures(
-            QtWidgets.QDockWidget.DockWidgetClosable
-            | QtWidgets.QDockWidget.DockWidgetMovable
-        )
-        self.addDockWidget(Qt.LeftDockWidgetArea, self.sidebar)
+        self.sidebar.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.sidebar.setAllowedAreas(Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.sidebar)
         sidebar_hint = QtWidgets.QLabel(
             "Schnellhilfe: Im Hauptbereich sind jetzt 6 gleich große Workflow-Felder angeordnet."
         )
@@ -2185,25 +2185,46 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.workflow_columns = QtWidgets.QSplitter(Qt.Horizontal)
         self.workflow_columns.setChildrenCollapsible(False)
+        self.workflow_columns.setHandleWidth(10)
         col1 = QtWidgets.QSplitter(Qt.Vertical)
         col1.setChildrenCollapsible(False)
+        col1.setHandleWidth(10)
         col1.addWidget(pool_box)
         col1.addWidget(self.settings_widget)
         col2 = QtWidgets.QSplitter(Qt.Vertical)
         col2.setChildrenCollapsible(False)
+        col2.setHandleWidth(10)
         col2.addWidget(btn_box)
         col2.addWidget(table_box)
         col3 = QtWidgets.QSplitter(Qt.Vertical)
         col3.setChildrenCollapsible(False)
+        col3.setHandleWidth(10)
         col3.addWidget(help_box)
         col3.addWidget(self.log_box)
         self.workflow_columns.addWidget(col1)
         self.workflow_columns.addWidget(col2)
         self.workflow_columns.addWidget(col3)
         self.workflow_columns.setSizes([1, 1, 1])
+        for idx in range(3):
+            self.workflow_columns.setCollapsible(idx, False)
         for col in (col1, col2, col3):
             col.setSizes([1, 1])
+            col.setCollapsible(0, False)
+            col.setCollapsible(1, False)
         self.workflow_splitters = [col1, col2, col3]
+
+        for section in (
+            pool_box,
+            self.settings_widget,
+            btn_box,
+            table_box,
+            help_box,
+            self.log_box,
+        ):
+            section.setMinimumSize(
+                self.WORKFLOW_SECTION_MIN_WIDTH,
+                self.WORKFLOW_SECTION_MIN_HEIGHT,
+            )
 
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(dashboard_header)
@@ -2316,6 +2337,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().focusChanged.connect(
             self._on_focus_changed
         )
+        self._active_section_name = "Paare"
         self._on_focus_changed(None, self.table)
 
     # ----- UI helpers -----
@@ -2439,10 +2461,40 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setFont(f)
 
     def _apply_theme(self, name: str):
+        if name not in THEMES:
+            name = "Modern"
         css = THEMES.get(name, "")
         QtWidgets.QApplication.instance().setStyleSheet(css)
         self.settings.setValue("ui/theme", name)
         self._log(f"Farbschema gewechselt: {name}")
+
+    def _rebalance_workflow_layout(
+        self, active_name: Optional[str] = None
+    ) -> None:
+        if not hasattr(self, "workflow_columns"):
+            return
+        name = active_name or getattr(self, "_active_section_name", "Paare")
+        active_column = self._section_resize_targets.get(name, (1, 1))[0]
+        total = max(self.workflow_columns.width(), 1)
+        base = max(self.WORKFLOW_SECTION_MIN_WIDTH, int(total * 0.28))
+        focus = max(self.WORKFLOW_SECTION_MIN_WIDTH + 20, int(total * 0.38))
+        column_sizes = [base, base, base]
+        column_sizes[active_column] = focus
+        self.workflow_columns.setSizes(column_sizes)
+
+        total_h = max(self.workflow_columns.height(), 1)
+        base_h = max(self.WORKFLOW_SECTION_MIN_HEIGHT, int(total_h * 0.44))
+        focus_h = max(
+            self.WORKFLOW_SECTION_MIN_HEIGHT + 20, int(total_h * 0.56)
+        )
+        for idx, splitter in enumerate(self.workflow_splitters):
+            if idx == active_column:
+                row = self._section_resize_targets.get(name, (idx, 0))[1]
+                sizes = [base_h, base_h]
+                sizes[row] = focus_h
+                splitter.setSizes(sizes)
+            else:
+                splitter.setSizes([base_h, base_h])
 
     def _apply_template_preset(self, preset_name: str) -> None:
         presets = {
@@ -2462,20 +2514,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Template-Preset gesetzt: {preset_name}")
 
     def _resize_focus_sections(self, active_name: str) -> None:
-        if not hasattr(self, "workflow_columns"):
-            return
-        active_column = self._section_resize_targets.get(active_name, (1, 1))[0]
-        column_sizes = [220, 220, 220]
-        column_sizes[active_column] = 380
-        self.workflow_columns.setSizes(column_sizes)
-        for idx, splitter in enumerate(self.workflow_splitters):
-            if idx == active_column:
-                row = self._section_resize_targets.get(active_name, (idx, 0))[1]
-                sizes = [180, 180]
-                sizes[row] = 320
-                splitter.setSizes(sizes)
-            else:
-                splitter.setSizes([220, 220])
+        self._active_section_name = active_name
+        self._rebalance_workflow_layout(active_name)
 
     def _on_focus_changed(
         self,
@@ -3953,6 +3993,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
         self._resize_columns()
+        QtCore.QTimer.singleShot(0, self._rebalance_workflow_layout)
 
     def _table_menu(self, pos: QtCore.QPoint):
         index = self.table.indexAt(pos)
