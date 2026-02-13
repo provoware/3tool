@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -49,9 +50,15 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher_checks, "has_internet", lambda: True)
     monkeypatch.setattr(launcher_checks, "ensure_venv", lambda: None)
     monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
-    monkeypatch.setattr(launcher_checks, "pip_show", lambda py, pkg: False)
+    state = {"installed": False}
+
+    def _missing_runtime_packages(_py):
+        return [] if state["installed"] else list(launcher_checks.REQ_PKGS)
+
     monkeypatch.setattr(
-        launcher_checks, "module_import_ok", lambda py, name: False
+        launcher_checks,
+        "missing_runtime_packages",
+        _missing_runtime_packages,
     )
     monkeypatch.setattr(
         launcher_checks.shutil,
@@ -65,6 +72,7 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
 
     def _pip_install(py, pkgs):
         installed.extend(pkgs)
+        state["installed"] = True
 
     monkeypatch.setattr(launcher_checks, "pip_install", _pip_install)
 
@@ -72,8 +80,33 @@ def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
 
     packages = _result_by_key(results, "packages")
     assert packages.ok
-    assert "Pakete installiert" in packages.detail
+    assert "erfolgreich geprüft" in packages.detail
     assert set(installed) == set(launcher_checks.REQ_PKGS)
+
+
+def test_install_missing_packages_with_retries_uses_user_fallback(monkeypatch):
+    calls = []
+
+    def _pip_install(_py, _pkgs):
+        raise subprocess.SubprocessError("blocked")
+
+    def _check_call(cmd):
+        calls.append(cmd)
+        return 0
+
+    monkeypatch.setattr(launcher_checks, "pip_install", _pip_install)
+    monkeypatch.setattr(launcher_checks.subprocess, "check_call", _check_call)
+    monkeypatch.setattr(
+        launcher_checks, "missing_runtime_packages", lambda _py: []
+    )
+
+    ok, detail = launcher_checks.install_missing_packages_with_retries(
+        "python", ["PySide6"]
+    )
+
+    assert ok
+    assert "erfolgreich geprüft" in detail
+    assert calls and "--user" in calls[0]
 
 
 def test_missing_runtime_packages_checks_pip_and_import(monkeypatch):

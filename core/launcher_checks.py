@@ -179,6 +179,56 @@ def pip_install(py: str, pkgs: Iterable[str]) -> None:
     subprocess.check_call([py, "-m", "pip", "install", "--upgrade"] + packages)
 
 
+def install_missing_packages_with_retries(
+    py: str, missing_packages: Iterable[str]
+) -> tuple[bool, str]:
+    """Install missing packages with a fallback strategy and clear feedback."""
+    py = validated_python_command(py)
+    packages = [pkg for pkg in missing_packages if isinstance(pkg, str) and pkg]
+    if not packages:
+        LOGGER.info("Keine fehlenden Pakete erkannt.")
+        return True, "Alle Pakete vorhanden."
+
+    try:
+        pip_install(py, packages)
+    except subprocess.SubprocessError as exc:
+        LOGGER.warning(
+            "Standard-Installation fehlgeschlagen, nutze Fallback mit --user: %s",
+            exc,
+        )
+        try:
+            subprocess.check_call(
+                [py, "-m", "pip", "install", "--upgrade", "--user"] + packages
+            )
+        except subprocess.SubprocessError as fallback_exc:
+            LOGGER.error(
+                "Fallback-Installation fehlgeschlagen: %s", fallback_exc
+            )
+            return (
+                False,
+                "Pakete konnten nicht installiert werden. "
+                "Bitte Internet, Rechte und den Befehl "
+                f"'{py} -m pip install --upgrade {' '.join(packages)}' prüfen.",
+            )
+
+    unresolved = missing_runtime_packages(py)
+    if unresolved:
+        LOGGER.error(
+            "Paket-Reparatur abgeschlossen, aber weiter fehlend: %s",
+            ", ".join(unresolved),
+        )
+        return (
+            False,
+            "Installation lief, aber folgende Pakete fehlen weiter: "
+            + ", ".join(unresolved),
+        )
+
+    LOGGER.info("Paket-Reparatur erfolgreich: %s", ", ".join(packages))
+    return True, "Pakete installiert und erfolgreich geprüft: " + ", ".join(
+        packages
+    )
+
+
 def has_internet(timeout: float = 2.0) -> bool:
     try:
         socket.create_connection(("1.1.1.1", 53), timeout=timeout)
@@ -518,25 +568,17 @@ def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
     if online:
         missing = missing_runtime_packages(py)
         if missing and pip_ready:
-            try:
-                pip_install(py, missing)
-                results.append(
-                    RepairResult(
-                        "packages",
-                        "Python-Pakete",
-                        True,
-                        "Pakete installiert: " + ", ".join(missing),
-                    )
+            package_ok, package_detail = install_missing_packages_with_retries(
+                py, missing
+            )
+            results.append(
+                RepairResult(
+                    "packages",
+                    "Python-Pakete",
+                    package_ok,
+                    package_detail,
                 )
-            except subprocess.SubprocessError as exc:
-                results.append(
-                    RepairResult(
-                        "packages",
-                        "Python-Pakete",
-                        False,
-                        f"Pakete konnten nicht installiert werden: {exc}",
-                    )
-                )
+            )
         else:
             results.append(
                 RepairResult(
