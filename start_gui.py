@@ -204,14 +204,15 @@ def main() -> int:
     _print_check_summary(results)
 
     if not _all_blocking_ok(results):
-        if args.auto_repair:
-            _status(5, steps, "Self-Repair ausführen")
-            _run_repairs(py, runtime_dirs["Nutzerdaten"])
-            _status(6, steps, "Checks nach Reparatur wiederholen")
-            results = _run_checks(py, runtime_dirs["Nutzerdaten"])
-            _print_check_summary(results)
-        else:
-            _warn("Blockierende Probleme gefunden. Starte mit --auto-repair.")
+        _status(5, steps, "Self-Repair ausführen")
+        if not args.auto_repair:
+            _warn(
+                "Blockierende Probleme gefunden. Auto-Reparatur wird jetzt automatisch ausgeführt."
+            )
+        _run_repairs(py, runtime_dirs["Nutzerdaten"])
+        _status(6, steps, "Checks nach Reparatur wiederholen")
+        results = _run_checks(py, runtime_dirs["Nutzerdaten"])
+        _print_check_summary(results)
 
     if not _all_blocking_ok(results):
         _fail(
