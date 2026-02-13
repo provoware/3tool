@@ -81,3 +81,4 @@
 - [x] GUI-Workflow auf 6 gleichgroße Bereiche mit DashboardHeader, flexibler Fokus-Vergrößerung und kompakter Preset-Steuerung umgestellt
 - [x] Professionelles Theme-Designsystem mit einheitlichen UI-Komponenten und zwei neuen Kontrast-Themes umgesetzt
 - [x] Hauptfenster-Layout professionell flexibilisiert (dynamische Splitter, stabile Mindestgrößen, linke Dock-Seite repariert) und Theme-Auswahl auf exakt drei Farbschemata reduziert
+- [x] Theme-Feldkontrastpruefung und Launcher-Recovery-Hinweise fuer Laien erweitert
