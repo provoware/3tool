@@ -77,3 +77,4 @@
 - [x] Release-Readiness-Check im Launcher ergänzt (todo/offene Punkte + Basisdateien) und automatische Tests erweitert
 - [x] Leitfaden fuer modernes, barrierefreies Layout mit Hilfselementen und Statistik-Kennzahlen ergänzt
 - [x] Launcher-Reparaturausgabe um laienfreundliche Recovery-Hinweise und Eingabevalidierung erweitert
+- [x] Paket-Reparatur mit Verifikation und Fallback-Strategie erweitert; laienfreundliche Fehlerrueckmeldung und Tests ergaenzt
