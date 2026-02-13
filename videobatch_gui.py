@@ -1585,6 +1585,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._audio_player.errorOccurred.connect(self._on_audio_preview_error)
 
         self._restore_window_state()
+        self.setMinimumSize(900, 560)
 
         sys.excepthook = self._global_exception
 
@@ -1639,15 +1640,21 @@ class MainWindow(QtWidgets.QMainWindow):
         pb_lay = QtWidgets.QVBoxLayout(pool_box)
         pb_lay.addWidget(pool_tabs)
 
-        # aufklappbare Seitenleiste
-        self.sidebar = QtWidgets.QDockWidget("Dateilisten", self)
+        # optionale Seitenleiste (Zusatzinfos)
+        self.sidebar = QtWidgets.QDockWidget("Schnellhilfe", self)
         self.sidebar.setFeatures(
             QtWidgets.QDockWidget.DockWidgetClosable
             | QtWidgets.QDockWidget.DockWidgetMovable
         )
         self.addDockWidget(Qt.LeftDockWidgetArea, self.sidebar)
+        sidebar_hint = QtWidgets.QLabel(
+            "Schnellhilfe: Im Hauptbereich sind jetzt 6 gleich große Workflow-Felder angeordnet."
+        )
+        sidebar_hint.setWordWrap(True)
+        sidebar_hint.setMargin(8)
+        self.sidebar.setWidget(sidebar_hint)
         self.sidebar.setVisible(
-            self.settings.value("ui/show_sidebar", True, bool)
+            self.settings.value("ui/show_sidebar", False, bool)
         )
 
         self.table = QtWidgets.QTableView()
@@ -1933,11 +1940,30 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(
             form, "Audio-Bitrate", self.abitrate_edit, "z.B. 192k, 256k"
         )
+        template_row = QtWidgets.QHBoxLayout()
+        template_row.setContentsMargins(0, 0, 0, 0)
+        template_row.addWidget(self.output_template_edit, 1)
+        self.template_presets_combo = QtWidgets.QComboBox()
+        self.template_presets_combo.addItems(
+            [
+                "Template-Presets",
+                "Standard kompakt",
+                "Mit Qualität+Maße",
+                "Mit Datum+Uhrzeit",
+            ]
+        )
+        self.template_presets_combo.setAccessibleName("Template-Presets")
+        self.template_presets_combo.currentTextChanged.connect(
+            self._apply_template_preset
+        )
+        template_row.addWidget(self.template_presets_combo)
+        template_wrap = QtWidgets.QWidget()
+        template_wrap.setLayout(template_row)
         self._add_form(
             form,
             "Dateinamen-Template",
-            self.output_template_edit,
-            "Platzhalter: {audio_stem}, {audio_name}, {date}, {time}, {stamp}, {video_laenge}, {zeitstempel}, {qualitaet}, {abmasse}, {form}",
+            template_wrap,
+            "Preset statt Freitext nutzen: {audio_stem}, {zeitstempel}, {qualitaet}, {abmasse}",
         )
         self._add_form(
             form, "Modus", self.mode_combo, "z.B. Slideshow oder Video + Audio"
@@ -2054,24 +2080,6 @@ class MainWindow(QtWidgets.QMainWindow):
         structure_layout.addLayout(structure_filter_row)
         structure_layout.addWidget(self.structure_tree)
 
-        left_tabs = QtWidgets.QTabWidget()
-        left_tabs.setAccessibleName("Seitenleiste-Register")
-        left_tabs.setAccessibleDescription(
-            "Register für Dateilisten und Einstellungen"
-        )
-        left_tabs.addTab(pool_box, "Dateien")
-        left_tabs.addTab(self.settings_widget, "Einstellungen")
-        left_tabs.addTab(structure_box, "Struktur")
-        self.sidebar.setWidget(left_tabs)
-
-        panel_splitter = QtWidgets.QSplitter(Qt.Horizontal)
-        panel_splitter.addWidget(table_box)
-        panel_splitter.addWidget(help_box)
-        panel_splitter.setStretchFactor(0, 1)
-        panel_splitter.setStretchFactor(1, 1)
-        panel_splitter.setSizes([1, 1])
-        self.panel_splitter = panel_splitter
-
         self.progress_total = QtWidgets.QProgressBar()
         self.progress_total.setFormat("%p% gesamt")
         self.progress_total.setAccessibleName("Gesamtfortschritt")
@@ -2111,15 +2119,6 @@ class MainWindow(QtWidgets.QMainWindow):
         bl.addWidget(self.progress_total)
         bl.addLayout(log_path_row)
         bl.addWidget(self.log_edit)
-
-        # Log-Bereich flexibel einteilbar
-        main_splitter = QtWidgets.QSplitter(Qt.Vertical)
-        main_splitter.addWidget(panel_splitter)
-        main_splitter.addWidget(self.log_box)
-        main_splitter.setStretchFactor(0, 1)
-        main_splitter.setStretchFactor(1, 1)
-        main_splitter.setSizes([1, 1])
-        self.main_splitter = main_splitter
 
         # Buttons
         self.btn_add_images = QtWidgets.QPushButton("Bilder wählen")
@@ -2179,16 +2178,42 @@ class MainWindow(QtWidgets.QMainWindow):
         btn_box = QtWidgets.QGroupBox("Aktionen")
         btn_box.setLayout(top_buttons)
 
+        dashboard_header = QtWidgets.QGroupBox("DashboardHeader")
+        dashboard_header_layout = QtWidgets.QVBoxLayout(dashboard_header)
+        dashboard_header_layout.setContentsMargins(8, 8, 8, 8)
+        dashboard_header_layout.addWidget(self.dashboard)
+
+        self.workflow_columns = QtWidgets.QSplitter(Qt.Horizontal)
+        self.workflow_columns.setChildrenCollapsible(False)
+        col1 = QtWidgets.QSplitter(Qt.Vertical)
+        col1.setChildrenCollapsible(False)
+        col1.addWidget(pool_box)
+        col1.addWidget(self.settings_widget)
+        col2 = QtWidgets.QSplitter(Qt.Vertical)
+        col2.setChildrenCollapsible(False)
+        col2.addWidget(btn_box)
+        col2.addWidget(table_box)
+        col3 = QtWidgets.QSplitter(Qt.Vertical)
+        col3.setChildrenCollapsible(False)
+        col3.addWidget(help_box)
+        col3.addWidget(self.log_box)
+        self.workflow_columns.addWidget(col1)
+        self.workflow_columns.addWidget(col2)
+        self.workflow_columns.addWidget(col3)
+        self.workflow_columns.setSizes([1, 1, 1])
+        for col in (col1, col2, col3):
+            col.setSizes([1, 1])
+        self.workflow_splitters = [col1, col2, col3]
+
         central_layout = QtWidgets.QVBoxLayout()
-        central_layout.addWidget(self.dashboard)
-        central_layout.addWidget(btn_box)
+        central_layout.addWidget(dashboard_header)
         self.focus_hint_label = QtWidgets.QLabel(
-            "Tipp: Klicken Sie in einen Bereich. Der aktive Bereich wird farbig hervorgehoben."
+            "Tipp: Klicken Sie in einen Bereich. Der aktive Bereich wird größer, alle anderen bleiben sichtbar und kleiner."
         )
         self.focus_hint_label.setAccessibleName("Hinweis aktiver Bereich")
         self.focus_hint_label.setWordWrap(True)
         central_layout.addWidget(self.focus_hint_label)
-        central_layout.addWidget(main_splitter)
+        central_layout.addWidget(self.workflow_columns, 1)
         self.central_layout = central_layout
         central = QtWidgets.QWidget()
         central.setLayout(central_layout)
@@ -2273,11 +2298,20 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self._refresh_structure_view()
         self._section_boxes = {
+            "Dateilisten": pool_box,
             "Paare": table_box,
             "Hilfe": help_box,
             "Protokoll": self.log_box,
             "Einstellungen": settings_box,
-            "Projektstruktur": structure_box,
+            "Aktionen": btn_box,
+        }
+        self._section_resize_targets = {
+            "Dateilisten": (0, 0),
+            "Einstellungen": (0, 1),
+            "Aktionen": (1, 0),
+            "Paare": (1, 1),
+            "Hilfe": (2, 0),
+            "Protokoll": (2, 1),
         }
         QtWidgets.QApplication.instance().focusChanged.connect(
             self._on_focus_changed
@@ -2410,6 +2444,39 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings.setValue("ui/theme", name)
         self._log(f"Farbschema gewechselt: {name}")
 
+    def _apply_template_preset(self, preset_name: str) -> None:
+        presets = {
+            "Standard kompakt": "{audio_stem}_{stamp}.mp4",
+            "Mit Qualität+Maße": (
+                "{audio_stem}_{video_laenge}_{qualitaet}_{abmasse}_{stamp}.mp4"
+            ),
+            "Mit Datum+Uhrzeit": (
+                "{audio_stem}_{date}_{time}_{video_laenge}_{abmasse}.mp4"
+            ),
+        }
+        template = presets.get(preset_name)
+        if not template:
+            return
+        self.output_template_edit.setText(template)
+        self._validate_output_template()
+        self._log(f"Template-Preset gesetzt: {preset_name}")
+
+    def _resize_focus_sections(self, active_name: str) -> None:
+        if not hasattr(self, "workflow_columns"):
+            return
+        active_column = self._section_resize_targets.get(active_name, (1, 1))[0]
+        column_sizes = [220, 220, 220]
+        column_sizes[active_column] = 380
+        self.workflow_columns.setSizes(column_sizes)
+        for idx, splitter in enumerate(self.workflow_splitters):
+            if idx == active_column:
+                row = self._section_resize_targets.get(active_name, (idx, 0))[1]
+                sizes = [180, 180]
+                sizes[row] = 320
+                splitter.setSizes(sizes)
+            else:
+                splitter.setSizes([220, 220])
+
     def _on_focus_changed(
         self,
         _old: Optional[QtWidgets.QWidget],
@@ -2425,6 +2492,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if is_active:
                 active_name = name
         if active_name:
+            self._resize_focus_sections(active_name)
             self.focus_hint_label.setText(
                 f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, dann den nächsten Schritt starten."
             )
@@ -3681,12 +3749,76 @@ class MainWindow(QtWidgets.QMainWindow):
         self.thread = None
         self.worker = None
         self._update_counts()
-        if self.auto_open_output.isChecked():
-            self._open_out_dir()
+        summary_dir = self._archive_generation_run()
+        if summary_dir is not None:
+            self._log(f"Generierungsablage erstellt: {summary_dir}")
+        QtWidgets.QApplication.beep()
+        self.raise_()
+        self.activateWindow()
+        done_count = sum(1 for pair in self.pairs if pair.status == "FERTIG")
+        QtWidgets.QMessageBox.information(
+            self,
+            "Fertig",
+            (
+                f"Videogenerierung abgeschlossen: {done_count} Datei(en).\n"
+                "Der Zielordner wird jetzt geöffnet."
+            ),
+        )
+        self._open_out_dir()
         if self.clear_after.isChecked():
             self._clear_all()
 
     # ----- misc -----
+    def _archive_generation_run(self) -> Optional[Path]:
+        out_dir_value = self.out_dir_edit.text().strip()
+        if not out_dir_value:
+            return None
+        out_dir = Path(out_dir_value)
+        if not out_dir.exists():
+            return None
+        finished = [
+            pair
+            for pair in self.pairs
+            if pair.status == "FERTIG"
+            and pair.output
+            and Path(pair.output).exists()
+        ]
+        if not finished:
+            return None
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        bundle_dir = out_dir / f"videogenerierung_{timestamp}"
+        bundle_dir.mkdir(parents=True, exist_ok=True)
+        inputs_dir = bundle_dir / "eingaben"
+        outputs_dir = bundle_dir / "ausgaben"
+        inputs_dir.mkdir(parents=True, exist_ok=True)
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+
+        copied_inputs = 0
+        for pair in finished:
+            for path_str in (pair.image_path, pair.audio_path):
+                if not path_str:
+                    continue
+                src = Path(path_str)
+                if not src.exists():
+                    continue
+                safe_move(src, inputs_dir, copy_only=True)
+                copied_inputs += 1
+        copied_outputs = 0
+        for pair in finished:
+            if not pair.output:
+                continue
+            src = Path(pair.output)
+            if not src.exists():
+                continue
+            safe_move(src, outputs_dir, copy_only=True)
+            copied_outputs += 1
+
+        self._log(
+            "Ablage gesichert: "
+            f"{copied_inputs} Eingabedatei(en), {copied_outputs} Ausgabedatei(en)."
+        )
+        return bundle_dir
+
     def _toggle_copy_mode(self, checked: bool):
         self.copy_only = checked
         self._log(

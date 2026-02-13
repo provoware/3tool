@@ -77,3 +77,5 @@
 - [x] Release-Readiness-Check im Launcher ergänzt (todo/offene Punkte + Basisdateien) und automatische Tests erweitert
 - [x] Leitfaden fuer modernes, barrierefreies Layout mit Hilfselementen und Statistik-Kennzahlen ergänzt
 - [x] Launcher-Reparaturausgabe um laienfreundliche Recovery-Hinweise und Eingabevalidierung erweitert
+- [x] GUI-Workflow auf 6 gleichgroße Bereiche mit DashboardHeader, flexibler Fokus-Vergrößerung und kompakter Preset-Steuerung umgestellt
+
