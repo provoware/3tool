@@ -87,3 +87,80 @@ def test_print_release_readiness_outputs_warning(capsys, monkeypatch) -> None:
 
     assert not ok
     assert "Release noch nicht bereit" in output
+
+
+def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
+    calls = {"repairs": 0}
+
+    class Args:
+        auto_repair = False
+        simple_mode = False
+        debug = False
+
+    monkeypatch.setattr(start_gui, "parse_args", lambda: Args())
+    monkeypatch.setattr(start_gui, "_ensure_files", lambda: None)
+    monkeypatch.setattr(
+        start_gui,
+        "_prepare_runtime_dirs",
+        lambda: {
+            "Nutzerdaten": start_gui.Path("."),
+            "Protokolle": start_gui.Path("."),
+        },
+    )
+    monkeypatch.setattr(
+        start_gui.launcher_checks, "configure_logging", lambda *_args: None
+    )
+    monkeypatch.setattr(start_gui.launcher_checks, "ensure_venv", lambda: None)
+    monkeypatch.setattr(
+        start_gui.launcher_checks,
+        "venv_python",
+        lambda: start_gui.Path("python3"),
+    )
+    first = [
+        start_gui.launcher_checks.CheckResult(
+            key="fail",
+            title="Fail",
+            ok=False,
+            detail="blocked",
+            blocking=True,
+        )
+    ]
+    second = [
+        start_gui.launcher_checks.CheckResult(
+            key="ok",
+            title="OK",
+            ok=True,
+            detail="ready",
+            blocking=True,
+        )
+    ]
+    state = {"count": 0}
+
+    def fake_run_checks(_py: str, _target):
+        state["count"] += 1
+        return first if state["count"] == 1 else second
+
+    monkeypatch.setattr(start_gui, "_run_checks", fake_run_checks)
+
+    def fake_run_repairs(_py: str, _target):
+        calls["repairs"] += 1
+        return []
+
+    monkeypatch.setattr(start_gui, "_run_repairs", fake_run_repairs)
+    monkeypatch.setattr(start_gui, "_print_check_summary", lambda *_args: None)
+    monkeypatch.setattr(
+        start_gui, "_print_release_readiness", lambda *_args: True
+    )
+    monkeypatch.setattr(start_gui, "_print_beginner_tips", lambda: None)
+    monkeypatch.setattr(
+        start_gui,
+        "_import_module",
+        lambda _name: type(
+            "GUI", (), {"run_gui": staticmethod(lambda: None)}
+        )(),
+    )
+
+    result = start_gui.main()
+
+    assert result == 0
+    assert calls["repairs"] == 1

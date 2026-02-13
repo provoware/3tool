@@ -78,3 +78,5 @@
 - [x] Leitfaden fuer modernes, barrierefreies Layout mit Hilfselementen und Statistik-Kennzahlen ergänzt
 - [x] Launcher-Reparaturausgabe um laienfreundliche Recovery-Hinweise und Eingabevalidierung erweitert
 - [x] Paket-Reparatur mit Verifikation und Fallback-Strategie erweitert; laienfreundliche Fehlerrueckmeldung und Tests ergaenzt
+- [x] GUI-Workflow auf 6 gleichgroße Bereiche mit DashboardHeader, flexibler Fokus-Vergrößerung und kompakter Preset-Steuerung umgestellt
+
