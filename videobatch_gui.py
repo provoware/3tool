@@ -2208,7 +2208,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(dashboard_header)
         self.focus_hint_label = QtWidgets.QLabel(
-            "Tipp: Klicken Sie in einen Bereich. Der aktive Bereich wird größer, alle anderen bleiben sichtbar und kleiner."
+            "Tipp: Wählen Sie ein Farbschema mit hohem Kontrast. Der aktive Bereich wird größer und bleibt klar fokussiert (Fokus = sichtbare Hervorhebung)."
         )
         self.focus_hint_label.setAccessibleName("Hinweis aktiver Bereich")
         self.focus_hint_label.setWordWrap(True)
