@@ -222,6 +222,85 @@ def test_network_reachable_returns_false_on_oserror(monkeypatch) -> None:
     assert qa_preflight._network_reachable("pypi.org", 443, 3) is False
 
 
+def test_ensure_pip_with_fallback_returns_ready_when_pip_exists(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(qa_preflight, "_pip_available", lambda *_: True)
+
+    ok, message = qa_preflight._ensure_pip_with_fallback(
+        "python3",
+        debug_mode=False,
+    )
+
+    assert ok is True
+    assert "pip ist bereit" in message
+
+
+def test_ensure_pip_with_fallback_repairs_with_ensurepip(monkeypatch) -> None:
+    states = iter([False, True])
+    monkeypatch.setattr(
+        qa_preflight,
+        "_pip_available",
+        lambda *_: next(states),
+    )
+    monkeypatch.setattr(
+        qa_preflight.subprocess,
+        "check_call",
+        lambda *_args, **_kwargs: None,
+    )
+
+    ok, message = qa_preflight._ensure_pip_with_fallback(
+        "python3",
+        debug_mode=True,
+    )
+
+    assert ok is True
+    assert "automatisch repariert" in message
+
+
+def test_ensure_pip_with_fallback_fails_when_ensurepip_errors(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(qa_preflight, "_pip_available", lambda *_: False)
+
+    def fail_ensurepip(*_args, **_kwargs):
+        raise subprocess.SubprocessError("ensurepip failed")
+
+    monkeypatch.setattr(
+        qa_preflight.subprocess,
+        "check_call",
+        fail_ensurepip,
+    )
+
+    ok, message = qa_preflight._ensure_pip_with_fallback(
+        "python3",
+        debug_mode=False,
+    )
+
+    assert ok is False
+    assert "ensurepip fehlgeschlagen" in message
+
+
+def test_run_preflight_fails_when_pip_not_repairable(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_ensure_pip_with_fallback",
+        lambda *_: (False, "pip kaputt"),
+    )
+
+    result = qa_preflight.run_preflight(req, ["pytest"], "python3")
+
+    assert result == 1
+
+
 def test_run_preflight_warns_when_network_unreachable(
     monkeypatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

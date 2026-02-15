@@ -189,6 +189,66 @@ def _module_import_ok(module_name: str, python_cmd: str) -> bool:
     )
 
 
+def _pip_available(python_cmd: str) -> bool:
+    interpreter = _validate_python_cmd(python_cmd)
+    return (
+        subprocess.run(
+            [interpreter, "-m", "pip", "--version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=_validate_timeout_seconds(
+                IMPORT_TIMEOUT_SECONDS,
+                "IMPORT_TIMEOUT_SECONDS",
+            ),
+        ).returncode
+        == 0
+    )
+
+
+def _ensure_pip_with_fallback(
+    python_cmd: str, debug_mode: bool
+) -> tuple[bool, str]:
+    interpreter = _validate_python_cmd(python_cmd)
+    debug_enabled = _validate_debug_mode(debug_mode)
+
+    if _pip_available(interpreter):
+        return True, "pip ist bereit."
+
+    _print_warn(
+        "pip ist aktuell nicht verfuegbar. Starte automatische Selbstreparatur "
+        "mit ensurepip."
+    )
+    _print_debug(
+        "Führe ensurepip --upgrade aus, um pip wiederherzustellen.",
+        debug_enabled,
+    )
+
+    try:
+        subprocess.check_call(
+            [interpreter, "-m", "ensurepip", "--upgrade"],
+            timeout=_validate_timeout_seconds(
+                PIP_TIMEOUT_SECONDS,
+                "PIP_TIMEOUT_SECONDS",
+            ),
+        )
+    except (subprocess.SubprocessError, OSError) as exc:
+        return (
+            False,
+            "pip-Selbstreparatur mit ensurepip fehlgeschlagen. "
+            f"Details: {exc}",
+        )
+
+    if _pip_available(interpreter):
+        return True, "pip wurde automatisch repariert (ensurepip)."
+
+    return (
+        False,
+        "pip bleibt nach ensurepip nicht nutzbar. "
+        "Bitte Python-Installation pruefen.",
+    )
+
+
 def _network_reachable(host: str, port: int, timeout_seconds: int) -> bool:
     if not isinstance(host, str) or not host.strip():
         raise ValueError("host muss ein nicht-leerer String sein.")
@@ -274,6 +334,22 @@ def run_preflight(
         return 1
 
     _print_ok(f"Python-Interpreter gefunden: {interpreter}")
+
+    pip_ok, pip_message = _ensure_pip_with_fallback(
+        interpreter,
+        debug_enabled,
+    )
+    if pip_ok:
+        _print_ok(pip_message)
+    else:
+        print("❌ pip konnte nicht automatisch vorbereitet werden.")
+        print(f"💡 Ursache: {pip_message}")
+        print(
+            "💡 Lösung: Python mit pip-Unterstützung installieren oder manuell "
+            f"testen: {interpreter} -m ensurepip --upgrade"
+        )
+        return 1
+
     if _network_reachable("pypi.org", 443, NETWORK_TIMEOUT_SECONDS):
         _print_ok("Netzwerk-Check: pypi.org erreichbar.")
     else:
