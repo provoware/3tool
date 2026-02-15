@@ -96,3 +96,5 @@
 - [x] QA-Preflight um Debug-Modus, strengere Eingabevalidierung und transparente Status-Logs erweitert
 
 - [x] Quality-Fix-Skript um mypy-Validierung nach Auto-Fixes erweitert
+
+- [x] QA-Preflight um automatische Tool-Selbstreparatur mit Re-Validierung erweitert

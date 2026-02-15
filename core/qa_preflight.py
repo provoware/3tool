@@ -85,6 +85,25 @@ def _run_pip_install(requirements: Path, python_cmd: str) -> None:
     )
 
 
+def _run_pip_install_packages(
+    package_names: list[str], python_cmd: str
+) -> None:
+    if not isinstance(package_names, list):
+        raise TypeError("package_names muss eine Liste sein.")
+    cleaned_packages: list[str] = []
+    for package_name in package_names:
+        if not isinstance(package_name, str) or not package_name.strip():
+            raise ValueError(
+                "Jeder Paketname muss ein nicht-leerer String sein."
+            )
+        cleaned_packages.append(package_name.strip())
+
+    interpreter = _validate_python_cmd(python_cmd)
+    subprocess.check_call(
+        [interpreter, "-m", "pip", "install", "--upgrade", *cleaned_packages]
+    )
+
+
 def _module_import_ok(module_name: str, python_cmd: str) -> bool:
     return (
         subprocess.run(
@@ -95,6 +114,47 @@ def _module_import_ok(module_name: str, python_cmd: str) -> bool:
         ).returncode
         == 0
     )
+
+
+def _attempt_tool_repair(
+    failed_tools: list[str], python_cmd: str, debug_mode: bool
+) -> list[str]:
+    if not isinstance(failed_tools, list):
+        raise TypeError("failed_tools muss eine Liste sein.")
+    if not isinstance(debug_mode, bool):
+        raise TypeError("debug_mode muss ein bool sein.")
+
+    tools_to_repair = _validate_tool_names(failed_tools)
+    if not tools_to_repair:
+        return []
+
+    _print_info(
+        "Starte automatische Reparatur für fehlende Prüftools: "
+        + ", ".join(tools_to_repair)
+    )
+    _print_debug(
+        "Auto-Reparatur nutzt pip --upgrade auf fehlenden Tools.",
+        debug_mode,
+    )
+    try:
+        _run_pip_install_packages(tools_to_repair, python_cmd)
+    except (TypeError, ValueError, subprocess.SubprocessError) as exc:
+        _print_warn(
+            "Automatische Reparatur konnte nicht vollständig ausgeführt "
+            f"werden: {exc}"
+        )
+        return tools_to_repair
+
+    unresolved_tools: list[str] = []
+    for tool in tools_to_repair:
+        module_name = TOOL_MODULES[tool]
+        if _module_import_ok(module_name, python_cmd):
+            _print_ok(f"Tool nach Reparatur bereit: {tool}")
+        else:
+            unresolved_tools.append(tool)
+            _print_warn(f"Tool trotz Reparatur nicht importierbar: {tool}")
+
+    return unresolved_tools
 
 
 def run_preflight(
@@ -149,6 +209,13 @@ def run_preflight(
         else:
             failed_tools.append(tool)
             _print_warn(f"Tool nicht importierbar: {tool}")
+
+    if failed_tools:
+        failed_tools = _attempt_tool_repair(
+            failed_tools,
+            interpreter,
+            debug_enabled,
+        )
 
     if failed_tools:
         print(
