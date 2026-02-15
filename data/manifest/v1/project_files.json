@@ -13,8 +13,8 @@
     },
     {
       "path": "0000-testall",
-      "size": 3759,
-      "sha256": "e5dbf2079d2d2b202e1d88d93ccc0abdf3044ba428150132d0d9706372a83493"
+      "size": 3768,
+      "sha256": "4afa021b01a84b0c0eb458635f6bb4980a96ef468c796bc8b6f09b87a5310911"
     },
     {
       "path": "AGENTS.md",
@@ -28,8 +28,8 @@
     },
     {
       "path": "ANLEITUNG_EINSTEIGER.md",
-      "size": 2118,
-      "sha256": "fcea3e299c53173691cdd407fbb52f6db1d360d86e17faa6f195385b972f5774"
+      "size": 2126,
+      "sha256": "14d7bc1f55f2fbc2c77399fcf13b5dcc9a6f5c5de26bfaf104b285adef6cf9ad"
     },
     {
       "path": "ANLEITUNG_EXTRA.md",
@@ -38,8 +38,8 @@
     },
     {
       "path": "ANLEITUNG_GESAMT.md",
-      "size": 11770,
-      "sha256": "0e8fa95fa84bf5594bf694e57bf4765c3b21dcdfc5ca95912ab3d394f0dd5bda"
+      "size": 11778,
+      "sha256": "c0e34b0f0088a6b65a10086628b03783948f09c4fc68ad13076e79f5cf2c2ce8"
     },
     {
       "path": "ANLEITUNG_LAIENPLUS.md",
@@ -88,8 +88,8 @@
     },
     {
       "path": "README.md",
-      "size": 12975,
-      "sha256": "9208bb94af29b7377ed0e24853528676341fdc15af84dfa2b7e7231e48d971c5"
+      "size": 13330,
+      "sha256": "eeb4fc178425bdc438ed135b587e7b2a2508bb11dec7a3e5243b12ff46ecd4fc"
     },
     {
       "path": "README_PRO.md",
@@ -128,8 +128,8 @@
     },
     {
       "path": "core/launcher_checks.py",
-      "size": 26150,
-      "sha256": "2c7629e631422c7716a5e9b78e259c4c3cb5292fb2a988cdf559cbdda824a02b"
+      "size": 27954,
+      "sha256": "1452c88a0cd800dc71e7aeb685cd62380dcb509865f7f771d9373b54c2f34f79"
     },
     {
       "path": "core/paths.py",
@@ -148,8 +148,8 @@
     },
     {
       "path": "core/themes.py",
-      "size": 8649,
-      "sha256": "35e5089f083a1a16c0604b7bb648778894767d68cb3dc1eebe2c81c5e42cd288"
+      "size": 9515,
+      "sha256": "507d20a00a3348f0cd59908483924b9758061bb9fe12496e017b851847de9c9b"
     },
     {
       "path": "core/ui_profiles.py",
@@ -178,8 +178,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 43654,
-      "sha256": "70e88685ef3f4916fe32733355cadfb7870771c1ea5f854be79b8cbd83772384"
+      "size": 45763,
+      "sha256": "ecd6e313476db8f9678d1bb3444450f49754b7077f07c8cee8f04d18dc7b7e50"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -193,8 +193,8 @@
     },
     {
       "path": "pyproject.toml",
-      "size": 203,
-      "sha256": "136a31371b09ffbb21976b506e379ce7b47952969eaa84d3433aa88ffc836a21"
+      "size": 212,
+      "sha256": "4755781f265399fce03735dfe0928507befa50b57fc019469d4939a8921ed849"
     },
     {
       "path": "requirements-dev.txt",
@@ -228,18 +228,18 @@
     },
     {
       "path": "setup-sh.txt",
-      "size": 441,
-      "sha256": "e4bb8427358fb3b5787e5b987a8b971467507ac07f0fa3491e950644cf9bc7d7"
+      "size": 266,
+      "sha256": "3be08cc474c02a394aa883d077e3f373bc84e77ac3150d181cbac235a009a38d"
     },
     {
       "path": "setup.sh",
-      "size": 441,
-      "sha256": "e4bb8427358fb3b5787e5b987a8b971467507ac07f0fa3491e950644cf9bc7d7"
+      "size": 207,
+      "sha256": "bd41ef539fb984dae6bf8f82a39e5f10d78030e7f1876fbdfc535c6e1ba8fa4f"
     },
     {
       "path": "start_gui.py",
-      "size": 10351,
-      "sha256": "2bc34849cd96bda1a0c99d22089715f075474874107fe72d8876f0f2453d39b4"
+      "size": 11188,
+      "sha256": "580ee2660337d648c1ba9ffb905506f444685939ebccb29da08369e877c4b5be"
     },
     {
       "path": "tests/conftest.py",
@@ -268,8 +268,8 @@
     },
     {
       "path": "tests/test_launcher_checks.py",
-      "size": 9954,
-      "sha256": "81b9a58bd893b7172b4fb37c937d2ee779ef14cd58f8c808449bba1a5513417e"
+      "size": 11417,
+      "sha256": "17f6eb3f747fd6de3f999180a00d7808ee1fccbbfb51b577534a5dbdffc55082"
     },
     {
       "path": "tests/test_launcher_logging.py",
@@ -298,13 +298,13 @@
     },
     {
       "path": "tests/test_start_gui.py",
-      "size": 6947,
-      "sha256": "74bafc1d1f3ff1d38628c5a8158b7b3d9211f38a9840478fd72188e3a931a723"
+      "size": 7136,
+      "sha256": "5e2757f03b6637768e58d0c2b87659d4b0daa95e45ad89e117e6a80610ea4de2"
     },
     {
       "path": "tests/test_themes.py",
-      "size": 1330,
-      "sha256": "bf1b3dbaac921bbf9841790ec4d27f95107b3aa1a207e2d0c48a47735401c2bf"
+      "size": 1360,
+      "sha256": "2daec79988e70ef89d47e264aba298ea28a098b48fc055a0f8cfbec25c30a4dc"
     },
     {
       "path": "tests/test_ui_profiles.py",
@@ -323,13 +323,13 @@
     },
     {
       "path": "todo.txt",
-      "size": 8304,
-      "sha256": "b5b07b8b044e374ee7f5da9636d32d495c7d99f5b47f26eaedb9e6a7a725c486"
+      "size": 8547,
+      "sha256": "1f334f43791a239d058512ddc02558c8e74ce2de0066434347ce7e718c503f1e"
     },
     {
       "path": "videobatch_extra.py",
-      "size": 23533,
-      "sha256": "2c8b7ff667f30b095d7d0b2e953591a7ce3eb9e34b0318dacf3a604fcdd211f2"
+      "size": 23523,
+      "sha256": "515ad9f0ace0c43aba9c6052f9082ea3312b8e1abba8f673c550a37f2e18d227"
     },
     {
       "path": "videobatch_extra_improved.py",
@@ -338,13 +338,13 @@
     },
     {
       "path": "videobatch_gui.py",
-      "size": 159224,
-      "sha256": "3c3e81a71b4cd5d8c0bf323a3ae573e799cb55539f42ec6a42dbfefce9ad693d"
+      "size": 159214,
+      "sha256": "b56230f6ddaa9f3ff419f98921065d05e89da9ff9b2db56cc49432e2531631fc"
     },
     {
       "path": "videobatch_launcher.py",
-      "size": 16145,
-      "sha256": "25d7c2e00ebd8c7de23b5b68e9510adcea2bb7e5f36b9649043e9e6614a6579e"
+      "size": 16464,
+      "sha256": "65c94cbc6e7df2828249f053462ac1f6b13e15cd0ee86c1edea3fae4bc0b1d2c"
     },
     {
       "path": "videobatch_professional.py",

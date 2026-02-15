@@ -1,7 +1,7 @@
 # =========================================
 # QUICKSTART
 # Direktstart (wenn alles installiert):  python3 videobatch_gui.py
-# Empfohlen (Auto-Setup):                python3 videobatch_launcher.py
+# Empfohlen (Auto-Setup):                python3 start_gui.py
 # Edit mit micro:                        micro videobatch_gui.py
 # =========================================
 

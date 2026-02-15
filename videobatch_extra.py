@@ -744,7 +744,7 @@ def main() -> None:
                 args.audio_normalize,
             )
         )
-    print("GUI starten: python3 videobatch_launcher.py")
+    print("GUI starten: python3 start_gui.py")
 
 
 if __name__ == "__main__":

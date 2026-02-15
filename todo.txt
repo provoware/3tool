@@ -104,3 +104,4 @@
 - [x] QA-Preflight um Netzwerk-Erreichbarkeitscheck und Timeouts fuer robustere Auto-Reparatur erweitern
 - [x] QA-Preflight um pip-Selbstreparatur (ensurepip) mit klaren Nutzerhinweisen und Tests erweitert
 - [x] Neues barrierearmes Hochkontrast-Dunkel-Theme ergänzen und Theme-Tests aktualisieren
+- [x] Startpfade auf festen Projektroot umgestellt, venv-Strategie auf .videotool_env vereinheitlicht und setup.sh als veralteter Platzhalter markiert

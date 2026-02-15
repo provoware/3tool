@@ -13,7 +13,7 @@ fi
 
 LOG_DIR="${LOG_DIR:-$PROJECT_ROOT/var/log}"
 LOG_FILE="$LOG_DIR/0000-testall.log"
-VENV_DIR="${VENV_DIR:-$PROJECT_ROOT/.venv}"
+VENV_DIR="${VENV_DIR:-$PROJECT_ROOT/.videotool_env}"
 DEBUG_MODE=0
 
 usage() {

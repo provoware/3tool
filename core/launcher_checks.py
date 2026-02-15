@@ -7,6 +7,8 @@ import socket
 import subprocess
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, TypeVar
@@ -20,7 +22,7 @@ PACKAGE_IMPORT_NAMES = {
     "Pillow": "PIL",
     "ffmpeg-python": "ffmpeg",
 }
-ENV_DIR = Path(".videotool_env").resolve()
+ENV_DIR_NAME = ".videotool_env"
 MIN_PYTHON = (3, 8)
 
 LOGGER = logging.getLogger("videobatch_launcher")
@@ -93,15 +95,26 @@ def in_venv() -> bool:
     )
 
 
-def venv_python() -> Path:
+def env_dir(project_root: Path = Path.cwd()) -> Path:
+    if not isinstance(project_root, Path):
+        raise TypeError("project_root muss ein Path sein.")
+    return (project_root / ENV_DIR_NAME).resolve()
+
+
+def venv_python(project_root: Path = Path.cwd()) -> Path:
     """Return path to launcher venv or current interpreter if missing."""
-    path = ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+    path = (
+        env_dir(project_root)
+        / ("Scripts" if os.name == "nt" else "bin")
+        / "python"
+    )
     return path if path.exists() else Path(sys.executable)
 
 
-def ensure_venv() -> None:
-    if not ENV_DIR.exists():
-        subprocess.check_call([sys.executable, "-m", "venv", str(ENV_DIR)])
+def ensure_venv(project_root: Path = Path.cwd()) -> None:
+    target = env_dir(project_root)
+    if not target.exists():
+        subprocess.check_call([sys.executable, "-m", "venv", str(target)])
 
 
 def pip_ok(py: str) -> bool:
@@ -193,6 +206,17 @@ def install_missing_packages_with_retries(
     try:
         pip_install(py, packages)
     except subprocess.SubprocessError as exc:
+        if in_venv():
+            LOGGER.error(
+                "Installation in venv fehlgeschlagen; --user ist im venv deaktiviert: %s",
+                exc,
+            )
+            return (
+                False,
+                "Installation in der virtuellen Umgebung fehlgeschlagen. "
+                "Bitte zuerst pip/venv reparieren (python -m ensurepip --upgrade, "
+                "danach venv neu erstellen) und erneut starten.",
+            )
         LOGGER.warning(
             "Standard-Installation fehlgeschlagen, nutze Fallback mit --user: %s",
             exc,
@@ -230,14 +254,37 @@ def install_missing_packages_with_retries(
     )
 
 
-def has_internet(timeout: float = 2.0) -> bool:
-    if timeout <= 0:
-        raise ValueError("timeout muss groesser als 0 sein.")
+def _dns_reachable(timeout: float) -> bool:
     try:
         with socket.create_connection(("1.1.1.1", 53), timeout=timeout):
             return True
     except OSError:
         return False
+
+
+def _https_head_reachable(url: str, timeout: float) -> bool:
+    if not isinstance(url, str) or not url.strip():
+        raise ValueError("url muss ein nicht-leerer String sein.")
+    request = urllib.request.Request(url=url, method="HEAD")
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.status < 500
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return False
+
+
+def has_internet(timeout: float = 2.0) -> bool:
+    if timeout <= 0:
+        raise ValueError("timeout muss groesser als 0 sein.")
+    dns_ok = _dns_reachable(timeout)
+    https_targets = (
+        "https://pypi.org/",
+        "https://www.python.org/",
+    )
+    https_ok = any(
+        _https_head_reachable(target, timeout) for target in https_targets
+    )
+    return dns_ok or https_ok
 
 
 def parse_os_release(path: Path = Path("/etc/os-release")) -> dict[str, str]:
@@ -374,8 +421,8 @@ def check_python_version() -> CheckResult:
     )
 
 
-def check_venv() -> CheckResult:
-    ok = ENV_DIR.exists()
+def check_venv(project_root: Path = Path.cwd()) -> CheckResult:
+    ok = env_dir(project_root).exists()
     detail = (
         "Virtuelle Umgebung vorhanden." if ok else "Virtuelle Umgebung fehlt."
     )
@@ -505,7 +552,7 @@ def collect_checks(
         raise TypeError("project_root muss ein Path sein.")
     return [
         check_python_version(),
-        check_venv(),
+        check_venv(project_root),
         check_pip(py),
         check_packages(py),
         check_ffmpeg(),
@@ -587,15 +634,19 @@ def evaluate_release_readiness(
     return checks
 
 
-def run_repairs(py: str, target_dir: Path) -> list[RepairResult]:
+def run_repairs(
+    py: str, target_dir: Path, project_root: Path = Path.cwd()
+) -> list[RepairResult]:
     py = validated_python_command(py)
     if not isinstance(target_dir, Path):
         raise TypeError("target_dir muss ein Path sein.")
+    if not isinstance(project_root, Path):
+        raise TypeError("project_root muss ein Path sein.")
     results: list[RepairResult] = []
     online = has_internet()
 
     try:
-        ensure_venv()
+        ensure_venv(project_root)
         results.append(
             RepairResult(
                 "venv", "Virtuelle Umgebung (venv)", True, "Venv ist bereit."

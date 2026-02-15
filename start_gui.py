@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import subprocess
+import sys
 from pathlib import Path
 from typing import Callable, cast
 
@@ -11,6 +12,7 @@ from core.config import apply_simple_mode_defaults, cfg
 from core.paths import cache_dir, config_dir, log_dir, user_data_dir, work_dir
 
 REQUIRED_FILES = ("videobatch_gui.py", "videobatch_extra.py")
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 
 class LauncherError(RuntimeError):
@@ -33,8 +35,12 @@ def _fail(message: str) -> None:
     raise LauncherError(message)
 
 
-def _ensure_files() -> None:
-    missing = [name for name in REQUIRED_FILES if not Path(name).exists()]
+def _ensure_files(project_root: Path = PROJECT_ROOT) -> None:
+    if not isinstance(project_root, Path):
+        _fail("Interner Fehler: project_root ist kein Path.")
+    missing = [
+        name for name in REQUIRED_FILES if not (project_root / name).exists()
+    ]
     if missing:
         _fail(
             "Wichtige Projektdateien fehlen: "
@@ -43,7 +49,12 @@ def _ensure_files() -> None:
         )
 
 
-def _import_module(name: str):
+def _import_module(name: str, project_root: Path = PROJECT_ROOT):
+    if not isinstance(project_root, Path):
+        _fail("Interner Fehler: project_root ist kein Path.")
+    root = str(project_root)
+    if root not in sys.path:
+        sys.path.insert(0, root)
     try:
         return importlib.import_module(name)
     except Exception as exc:  # pragma: no cover - user facing runtime guard
@@ -99,10 +110,10 @@ def _safe_prepare_runtime_dirs() -> dict[str, Path]:
     return _validated_runtime_dirs(runtime_dirs, ("Nutzerdaten", "Protokolle"))
 
 
-def _safe_ensure_venv() -> str:
+def _safe_ensure_venv(project_root: Path = PROJECT_ROOT) -> str:
     try:
-        launcher_checks.ensure_venv()
-        return str(launcher_checks.venv_python())
+        launcher_checks.ensure_venv(project_root)
+        return str(launcher_checks.venv_python(project_root))
     except (subprocess.SubprocessError, OSError, ValueError) as exc:
         _fail(
             "Python-Umgebung konnte nicht vorbereitet werden: "
@@ -111,10 +122,10 @@ def _safe_ensure_venv() -> str:
 
 
 def _safe_run_checks(
-    py: str, target_dir: Path
+    py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
 ) -> list[launcher_checks.CheckResult]:
     try:
-        return _run_checks(py, target_dir)
+        return _run_checks(py, target_dir, project_root)
     except (TypeError, ValueError, OSError) as exc:
         _fail(
             "System-Checks konnten nicht abgeschlossen werden: "
@@ -148,8 +159,10 @@ def _print_beginner_tips() -> None:
     print(" - Selbsttest für CLI: python3 videobatch_extra.py --selftest")
 
 
-def _run_checks(py: str, target_dir: Path) -> list[launcher_checks.CheckResult]:
-    results = launcher_checks.collect_checks(py, target_dir)
+def _run_checks(
+    py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
+) -> list[launcher_checks.CheckResult]:
+    results = launcher_checks.collect_checks(py, target_dir, project_root)
     for result in results:
         marker = "✅" if result.ok else "❌"
         print(f"  {marker} {result.title}: {result.detail}")
@@ -177,9 +190,9 @@ def _all_blocking_ok(results: list[launcher_checks.CheckResult]) -> bool:
 
 
 def _run_repairs(
-    py: str, target_dir: Path
+    py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
 ) -> list[launcher_checks.RepairResult]:
-    repairs = launcher_checks.run_repairs(py, target_dir)
+    repairs = launcher_checks.run_repairs(py, target_dir, project_root)
     for repair in repairs:
         marker = "✅" if repair.ok else "❌"
         print(f"  {marker} {repair.title}: {repair.detail}")
@@ -204,10 +217,10 @@ def _run_repairs(
 
 
 def _safe_run_repairs(
-    py: str, target_dir: Path
+    py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
 ) -> list[launcher_checks.RepairResult]:
     try:
-        return _run_repairs(py, target_dir)
+        return _run_repairs(py, target_dir, project_root)
     except (TypeError, ValueError, OSError) as exc:
         _fail(
             "Self-Repair konnte nicht abgeschlossen werden: "
@@ -253,7 +266,7 @@ def main() -> int:
 
     steps = 7
     _status(1, steps, "Projektdateien prüfen")
-    _ensure_files()
+    _ensure_files(PROJECT_ROOT)
     _ok("Projektdateien vollständig")
 
     _status(2, steps, "Laufzeitordner vorbereiten")
@@ -264,11 +277,11 @@ def main() -> int:
     _ok("Daten-, Config-, Log-, Work- und Cache-Ordner bereit")
 
     _status(3, steps, "Launcher-Umgebung vorbereiten")
-    py = _safe_ensure_venv()
+    py = _safe_ensure_venv(PROJECT_ROOT)
     _ok(f"Python-Umgebung bereit: {py}")
 
     _status(4, steps, "System-Checks ausführen")
-    results = _safe_run_checks(py, runtime_dirs["Nutzerdaten"])
+    results = _safe_run_checks(py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT)
     _print_check_summary(results)
 
     if not _all_blocking_ok(results):
@@ -277,14 +290,18 @@ def main() -> int:
             _warn(
                 "Blockierende Probleme gefunden. Auto-Reparatur wird jetzt automatisch ausgeführt."
             )
-        repairs = _safe_run_repairs(py, runtime_dirs["Nutzerdaten"])
+        repairs = _safe_run_repairs(
+            py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT
+        )
         launcher_checks.LOGGER.info(
             "Repair-Hinweise fuer Laien: %s",
             " | ".join(launcher_checks.beginner_recovery_hints(repairs))
             or "keine",
         )
         _status(6, steps, "Checks nach Reparatur wiederholen")
-        results = _safe_run_checks(py, runtime_dirs["Nutzerdaten"])
+        results = _safe_run_checks(
+            py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT
+        )
         _print_check_summary(results)
 
     if not _all_blocking_ok(results):
@@ -298,11 +315,11 @@ def main() -> int:
         apply_simple_mode_defaults()
         _ok("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
 
-    _print_release_readiness(Path.cwd())
+    _print_release_readiness(PROJECT_ROOT)
     _print_beginner_tips()
 
     _status(steps, steps, "GUI starten")
-    gui = _import_module("videobatch_gui")
+    gui = _import_module("videobatch_gui", PROJECT_ROOT)
     start_func = getattr(gui, "run_gui", None)
     if not callable(start_func):
         _fail("videobatch_gui.run_gui fehlt. Bitte Projektdateien prüfen.")
