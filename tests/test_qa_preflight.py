@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -83,3 +84,47 @@ def test_run_preflight_debug_mode_prints_debug_lines(
     captured = capsys.readouterr()
     assert "🐞 Debug-Modus aktiv" in captured.out
     assert "🐞 Prüfe Tool-Import: pytest" in captured.out
+
+
+def test_attempt_tool_repair_success(monkeypatch) -> None:
+    installed_packages: list[str] = []
+
+    def fake_install(packages: list[str], _python_cmd: str) -> None:
+        installed_packages.extend(packages)
+
+    monkeypatch.setattr(
+        qa_preflight,
+        "_run_pip_install_packages",
+        fake_install,
+    )
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_: True)
+
+    unresolved = qa_preflight._attempt_tool_repair(
+        ["pytest", "mypy"],
+        "python3",
+        debug_mode=False,
+    )
+
+    assert unresolved == []
+    assert installed_packages == ["pytest", "mypy"]
+
+
+def test_attempt_tool_repair_returns_unresolved_on_install_error(
+    monkeypatch,
+) -> None:
+    def fail_install(_packages: list[str], _python_cmd: str) -> None:
+        raise subprocess.SubprocessError("boom")
+
+    monkeypatch.setattr(
+        qa_preflight,
+        "_run_pip_install_packages",
+        fail_install,
+    )
+
+    unresolved = qa_preflight._attempt_tool_repair(
+        ["pytest"],
+        "python3",
+        debug_mode=True,
+    )
+
+    assert unresolved == ["pytest"]
