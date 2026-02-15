@@ -56,6 +56,8 @@
 - [x] Profi-Interface - Maximal Konfigurabel und perfekt einheitliche größen und abstände, verbessere codequalität.
 - [x] mehr Optionen und bessere Lesbarkeit und Übersichtlichkeit. Intuitive Toolführung.
 
+- [x] QA-Preflight-Wartbarkeit verbessern: subprocess-Aufrufe zentralisieren und Eingaben für Paketlisten strikter validieren
+
 - [x] Infoanzeigen fuer Auswahlmengen modernisiert und UI-Texte in versioniertes JSON-Archiv ausgelagert
 - [x] Fortschrittsanzeige erweitert und intelligente Eingabevalidierung zentralisiert
 - [x] Launcher-Debug-Logging, Ordner-Validierung und automatische Tests für Start-Routine ergänzt

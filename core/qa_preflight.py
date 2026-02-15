@@ -72,6 +72,67 @@ def _validate_timeout_seconds(timeout_seconds: int, name: str) -> int:
     return timeout_seconds
 
 
+def _validate_package_names(package_names: list[str]) -> list[str]:
+    if not isinstance(package_names, list):
+        raise TypeError("package_names muss eine Liste sein.")
+
+    cleaned_packages: list[str] = []
+    seen: set[str] = set()
+    for package_name in package_names:
+        if not isinstance(package_name, str) or not package_name.strip():
+            raise ValueError(
+                "Jeder Paketname muss ein nicht-leerer String sein."
+            )
+        normalized = package_name.strip()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        cleaned_packages.append(normalized)
+
+    if not cleaned_packages:
+        raise ValueError("Mindestens ein Paketname ist erforderlich.")
+
+    return cleaned_packages
+
+
+def _run_checked_call(command: list[str], timeout_seconds: int) -> None:
+    if not isinstance(command, list) or not command:
+        raise ValueError("command muss eine nicht-leere Liste sein.")
+    for part in command:
+        if not isinstance(part, str) or not part.strip():
+            raise ValueError(
+                "Jeder Kommando-Teil muss ein nicht-leerer String sein."
+            )
+
+    subprocess.check_call(
+        command,
+        timeout=_validate_timeout_seconds(timeout_seconds, "timeout_seconds"),
+    )
+
+
+def _run_quiet(command: list[str], timeout_seconds: int) -> bool:
+    if not isinstance(command, list) or not command:
+        raise ValueError("command muss eine nicht-leere Liste sein.")
+    for part in command:
+        if not isinstance(part, str) or not part.strip():
+            raise ValueError(
+                "Jeder Kommando-Teil muss ein nicht-leerer String sein."
+            )
+
+    return (
+        subprocess.run(
+            command,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+            timeout=_validate_timeout_seconds(
+                timeout_seconds, "timeout_seconds"
+            ),
+        ).returncode
+        == 0
+    )
+
+
 def _print_info(message: str) -> None:
     print(f"ℹ️  {message}")
 
@@ -94,13 +155,13 @@ def _run_pip_install(requirements: Path, python_cmd: str) -> None:
         PIP_TIMEOUT_SECONDS,
         "PIP_TIMEOUT_SECONDS",
     )
-    subprocess.check_call(
+    _run_checked_call(
         [python_cmd, "-m", "pip", "install", "--upgrade", "pip"],
-        timeout=timeout_seconds,
+        timeout_seconds,
     )
-    subprocess.check_call(
+    _run_checked_call(
         [python_cmd, "-m", "pip", "install", "-r", str(requirements)],
-        timeout=timeout_seconds,
+        timeout_seconds,
     )
 
 
@@ -109,13 +170,13 @@ def _run_pip_install_user(requirements: Path, python_cmd: str) -> None:
         PIP_TIMEOUT_SECONDS,
         "PIP_TIMEOUT_SECONDS",
     )
-    subprocess.check_call(
+    _run_checked_call(
         [python_cmd, "-m", "pip", "install", "--upgrade", "--user", "pip"],
-        timeout=timeout_seconds,
+        timeout_seconds,
     )
-    subprocess.check_call(
+    _run_checked_call(
         [python_cmd, "-m", "pip", "install", "--user", "-r", str(requirements)],
-        timeout=timeout_seconds,
+        timeout_seconds,
     )
 
 
@@ -153,20 +214,11 @@ def _install_requirements_with_fallback(
 def _run_pip_install_packages(
     package_names: list[str], python_cmd: str
 ) -> None:
-    if not isinstance(package_names, list):
-        raise TypeError("package_names muss eine Liste sein.")
-    cleaned_packages: list[str] = []
-    for package_name in package_names:
-        if not isinstance(package_name, str) or not package_name.strip():
-            raise ValueError(
-                "Jeder Paketname muss ein nicht-leerer String sein."
-            )
-        cleaned_packages.append(package_name.strip())
-
+    cleaned_packages = _validate_package_names(package_names)
     interpreter = _validate_python_cmd(python_cmd)
-    subprocess.check_call(
+    _run_checked_call(
         [interpreter, "-m", "pip", "install", "--upgrade", *cleaned_packages],
-        timeout=_validate_timeout_seconds(
+        _validate_timeout_seconds(
             PIP_TIMEOUT_SECONDS,
             "PIP_TIMEOUT_SECONDS",
         ),
@@ -174,35 +226,26 @@ def _run_pip_install_packages(
 
 
 def _module_import_ok(module_name: str, python_cmd: str) -> bool:
-    return (
-        subprocess.run(
-            [python_cmd, "-c", f"import {module_name}"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-            timeout=_validate_timeout_seconds(
-                IMPORT_TIMEOUT_SECONDS,
-                "IMPORT_TIMEOUT_SECONDS",
-            ),
-        ).returncode
-        == 0
+    if not isinstance(module_name, str) or not module_name.strip():
+        raise ValueError("module_name muss ein nicht-leerer String sein.")
+
+    return _run_quiet(
+        [python_cmd, "-c", f"import {module_name.strip()}"],
+        _validate_timeout_seconds(
+            IMPORT_TIMEOUT_SECONDS,
+            "IMPORT_TIMEOUT_SECONDS",
+        ),
     )
 
 
 def _pip_available(python_cmd: str) -> bool:
     interpreter = _validate_python_cmd(python_cmd)
-    return (
-        subprocess.run(
-            [interpreter, "-m", "pip", "--version"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-            timeout=_validate_timeout_seconds(
-                IMPORT_TIMEOUT_SECONDS,
-                "IMPORT_TIMEOUT_SECONDS",
-            ),
-        ).returncode
-        == 0
+    return _run_quiet(
+        [interpreter, "-m", "pip", "--version"],
+        _validate_timeout_seconds(
+            IMPORT_TIMEOUT_SECONDS,
+            "IMPORT_TIMEOUT_SECONDS",
+        ),
     )
 
 
@@ -225,9 +268,9 @@ def _ensure_pip_with_fallback(
     )
 
     try:
-        subprocess.check_call(
+        _run_checked_call(
             [interpreter, "-m", "ensurepip", "--upgrade"],
-            timeout=_validate_timeout_seconds(
+            _validate_timeout_seconds(
                 PIP_TIMEOUT_SECONDS,
                 "PIP_TIMEOUT_SECONDS",
             ),

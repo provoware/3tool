@@ -25,6 +25,22 @@ def test_validate_debug_mode_requires_bool() -> None:
         qa_preflight._validate_debug_mode("ja")  # type: ignore[arg-type]
 
 
+def test_validate_package_names_rejects_empty_and_duplicates() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._validate_package_names([])
+
+    result = qa_preflight._validate_package_names(
+        ["pytest", " pytest ", "mypy"]
+    )
+
+    assert result == ["pytest", "mypy"]
+
+
+def test_run_quiet_rejects_invalid_command() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._run_quiet([], 1)
+
+
 def test_run_preflight_rejects_empty_python_cmd(tmp_path: Path) -> None:
     req = tmp_path / "requirements-dev.txt"
     req.write_text("", encoding="utf-8")
