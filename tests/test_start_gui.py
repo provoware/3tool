@@ -164,3 +164,80 @@ def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
 
     assert result == 0
     assert calls["repairs"] == 1
+
+
+def test_safe_prepare_runtime_dirs_wraps_oserror(monkeypatch) -> None:
+    monkeypatch.setattr(
+        start_gui,
+        "_prepare_runtime_dirs",
+        lambda: (_ for _ in ()).throw(OSError("readonly")),
+    )
+
+    try:
+        start_gui._safe_prepare_runtime_dirs()
+    except start_gui.LauncherError as exc:
+        assert "Laufzeitordner" in str(exc)
+    else:
+        raise AssertionError("LauncherError erwartet")
+
+
+def test_safe_prepare_runtime_dirs_validates_required_keys(monkeypatch) -> None:
+    monkeypatch.setattr(
+        start_gui,
+        "_prepare_runtime_dirs",
+        lambda: {"Nutzerdaten": start_gui.Path(".")},
+    )
+
+    try:
+        start_gui._safe_prepare_runtime_dirs()
+    except start_gui.LauncherError as exc:
+        assert "Laufzeitordner fehlt" in str(exc)
+    else:
+        raise AssertionError("LauncherError erwartet")
+
+
+def test_safe_run_checks_wraps_value_error(monkeypatch) -> None:
+    monkeypatch.setattr(
+        start_gui,
+        "_run_checks",
+        lambda _py, _target: (_ for _ in ()).throw(ValueError("bad args")),
+    )
+
+    try:
+        start_gui._safe_run_checks("python", start_gui.Path("."))
+    except start_gui.LauncherError as exc:
+        assert "System-Checks" in str(exc)
+    else:
+        raise AssertionError("LauncherError erwartet")
+
+
+def test_safe_ensure_venv_wraps_subprocess_error(monkeypatch) -> None:
+    monkeypatch.setattr(
+        start_gui.launcher_checks,
+        "ensure_venv",
+        lambda: (_ for _ in ()).throw(
+            start_gui.subprocess.SubprocessError("boom")
+        ),
+    )
+
+    try:
+        start_gui._safe_ensure_venv()
+    except start_gui.LauncherError as exc:
+        assert "Python-Umgebung" in str(exc)
+    else:
+        raise AssertionError("LauncherError erwartet")
+
+
+def test_safe_run_repairs_wraps_value_error(monkeypatch) -> None:
+    monkeypatch.setattr(
+        start_gui,
+        "_run_repairs",
+        lambda _py, _target: (_ for _ in ()).throw(ValueError("broken")),
+    )
+
+    try:
+        start_gui._safe_run_repairs("python", start_gui.Path("."))
+    except start_gui.LauncherError as exc:
+        assert "Self-Repair" in str(exc)
+    else:
+        raise AssertionError("LauncherError erwartet")
