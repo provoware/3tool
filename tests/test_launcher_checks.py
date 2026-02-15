@@ -310,6 +310,23 @@ def test_build_check_feedback_with_blocking_failure():
     assert any("Reparieren" in step for step in feedback["next_steps"])
 
 
+def test_build_check_feedback_adds_beginner_terms_and_commands():
+    results = [
+        launcher_checks.CheckResult(
+            key="venv",
+            title="Virtuelle Umgebung",
+            ok=False,
+            detail="fehlt",
+            fix_hint="Befehl: python3 -m venv .videotool_env",
+        )
+    ]
+
+    feedback = launcher_checks.build_check_feedback(results)
+
+    assert any("venv" in term for term in feedback["beginner_terms"])
+    assert feedback["quick_commands"] == ["python3 -m venv .videotool_env"]
+
+
 def test_build_repair_feedback_summarizes_offline_and_hints():
     results = [
         launcher_checks.RepairResult(

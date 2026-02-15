@@ -95,4 +95,6 @@ def test_wizard_render_results_contains_next_steps(monkeypatch, qapp):
 
     assert "Naechste Schritte" in html
     assert "Start noch nicht bereit" in html
+    assert "Begriffe einfach erklaert" in html
+    assert "Schnelle Befehle (Terminal)" in html
     assert pct == 0
