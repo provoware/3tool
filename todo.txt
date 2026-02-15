@@ -98,3 +98,4 @@
 - [x] Quality-Fix-Skript um mypy-Validierung nach Auto-Fixes erweitert
 
 - [x] QA-Preflight um automatische Tool-Selbstreparatur mit Re-Validierung erweitert
+- [x] QA-Preflight Requirements-Installation um --user-Fallback bei Rechteproblemen erweitern

@@ -85,6 +85,46 @@ def _run_pip_install(requirements: Path, python_cmd: str) -> None:
     )
 
 
+def _run_pip_install_user(requirements: Path, python_cmd: str) -> None:
+    subprocess.check_call(
+        [python_cmd, "-m", "pip", "install", "--upgrade", "--user", "pip"]
+    )
+    subprocess.check_call(
+        [python_cmd, "-m", "pip", "install", "--user", "-r", str(requirements)]
+    )
+
+
+def _install_requirements_with_fallback(
+    requirements: Path,
+    python_cmd: str,
+    debug_mode: bool,
+) -> tuple[bool, str]:
+    _validate_requirements_path(requirements)
+    interpreter = _validate_python_cmd(python_cmd)
+    debug_enabled = _validate_debug_mode(debug_mode)
+
+    try:
+        _run_pip_install(requirements, interpreter)
+        return True, "Standard-Installation erfolgreich."
+    except subprocess.SubprocessError as exc:
+        _print_warn(
+            "Standard-Installation fehlgeschlagen. "
+            "Starte Fallback ohne Admin-Rechte (--user)."
+        )
+        _print_debug(f"Fehler in Standard-Installation: {exc}", debug_enabled)
+
+    try:
+        _run_pip_install_user(requirements, interpreter)
+        return True, "Fallback-Installation mit --user erfolgreich."
+    except subprocess.SubprocessError as exc:
+        return (
+            False,
+            "Automatische Installation fehlgeschlagen. "
+            "Bitte Internet, Rechte und Requirements-Datei prüfen. "
+            f"Letzter Fehler: {exc}",
+        )
+
+
 def _run_pip_install_packages(
     package_names: list[str], python_cmd: str
 ) -> None:
@@ -186,14 +226,23 @@ def run_preflight(
         f"Installiere Abhängigkeiten aus: {requirements}",
         debug_enabled,
     )
-    try:
-        _run_pip_install(requirements, interpreter)
-    except subprocess.SubprocessError as exc:
+    install_ok, install_message = _install_requirements_with_fallback(
+        requirements,
+        interpreter,
+        debug_enabled,
+    )
+    if install_ok:
+        _print_ok(install_message)
+    else:
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
-        print(f"💡 Ursache: {exc}")
+        print(f"💡 Ursache: {install_message}")
         print(
             "💡 Lösung: Internet, Rechte und Requirements-Datei prüfen; "
             f"Befehl manuell testen: {interpreter} -m pip install -r {requirements}"
+        )
+        print(
+            "💡 Falls Rechte fehlen, probiere ohne Admin-Rechte: "
+            f"{interpreter} -m pip install --user -r {requirements}"
         )
         return 1
 

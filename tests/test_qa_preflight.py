@@ -128,3 +128,66 @@ def test_attempt_tool_repair_returns_unresolved_on_install_error(
     )
 
     assert unresolved == ["pytest"]
+
+
+def test_install_requirements_with_fallback_uses_user_install(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight,
+        "_run_pip_install",
+        lambda *_: (_ for _ in ()).throw(
+            subprocess.SubprocessError("no perms")
+        ),
+    )
+
+    used_user = {"value": False}
+
+    def fake_user_install(_requirements: Path, _python_cmd: str) -> None:
+        used_user["value"] = True
+
+    monkeypatch.setattr(
+        qa_preflight, "_run_pip_install_user", fake_user_install
+    )
+
+    ok, message = qa_preflight._install_requirements_with_fallback(
+        req,
+        "python3",
+        debug_mode=True,
+    )
+
+    assert ok is True
+    assert used_user["value"] is True
+    assert "--user" in message
+
+
+def test_install_requirements_with_fallback_fails_after_user_install(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight,
+        "_run_pip_install",
+        lambda *_: (_ for _ in ()).throw(
+            subprocess.SubprocessError("no perms")
+        ),
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_run_pip_install_user",
+        lambda *_: (_ for _ in ()).throw(subprocess.SubprocessError("offline")),
+    )
+
+    ok, message = qa_preflight._install_requirements_with_fallback(
+        req,
+        "python3",
+        debug_mode=False,
+    )
+
+    assert ok is False
+    assert "offline" in message
