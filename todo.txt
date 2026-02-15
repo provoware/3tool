@@ -93,3 +93,5 @@
 - [x] Startroutine-Hardening: defensive Guards fuer Laufzeitordner/Checks/Repairs und laienfreundliche Fehlerpfade mit Tests erweitert
 - [x] QA-Preflight-Startroutine fuer automatische Pruefungs-Tools und Abhaengigkeits-Reparatur mit Nutzerfeedback eingefuehrt
 - [x] Launcher-Checks um optionalen Konsistenzcheck fuer requirements-Dateien erweitert und mit Tests abgesichert
+- [x] QA-Preflight um Debug-Modus, strengere Eingabevalidierung und transparente Status-Logs erweitert
+
