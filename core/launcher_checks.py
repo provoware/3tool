@@ -230,18 +230,32 @@ def install_missing_packages_with_retries(
 
 
 def has_internet(timeout: float = 2.0) -> bool:
+    if timeout <= 0:
+        raise ValueError("timeout muss groesser als 0 sein.")
     try:
-        socket.create_connection(("1.1.1.1", 53), timeout=timeout)
+        with socket.create_connection(("1.1.1.1", 53), timeout=timeout):
+            return True
     except OSError:
         return False
-    return True
 
 
 def parse_os_release(path: Path = Path("/etc/os-release")) -> dict[str, str]:
+    if not isinstance(path, Path):
+        raise TypeError("path muss ein Path sein.")
     if not path.exists():
+        LOGGER.debug("os-release nicht gefunden: %s", path)
+        return {}
+    if path.is_dir():
+        LOGGER.warning("os-release Pfad ist ein Ordner statt Datei: %s", path)
         return {}
     data: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    try:
+        content = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        LOGGER.warning("os-release konnte nicht gelesen werden: %s", exc)
+        return {}
+
+    for line in content.splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -322,6 +336,19 @@ def ffmpeg_install_hint() -> str:
 
 
 def write_permissions_ok(target_dir: Path) -> bool:
+    if not isinstance(target_dir, Path):
+        raise TypeError("target_dir muss ein Path sein.")
+    if not target_dir.exists():
+        LOGGER.warning(
+            "Schreibtest nicht moeglich: Zielordner fehlt (%s)", target_dir
+        )
+        return False
+    if not target_dir.is_dir():
+        LOGGER.warning(
+            "Schreibtest nicht moeglich: Ziel ist kein Ordner (%s)",
+            target_dir,
+        )
+        return False
     try:
         with tempfile.NamedTemporaryFile(dir=target_dir, delete=True):
             return True
