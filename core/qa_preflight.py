@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import socket
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,10 @@ TOOL_MODULES: Final[dict[str, str]] = {
     "isort": "isort",
     "autoflake": "autoflake",
 }
+
+PIP_TIMEOUT_SECONDS: Final[int] = 300
+IMPORT_TIMEOUT_SECONDS: Final[int] = 20
+NETWORK_TIMEOUT_SECONDS: Final[int] = 3
 
 
 def _validate_requirements_path(path: Path) -> None:
@@ -59,6 +64,14 @@ def _validate_debug_mode(debug_mode: bool) -> bool:
     return debug_mode
 
 
+def _validate_timeout_seconds(timeout_seconds: int, name: str) -> int:
+    if not isinstance(timeout_seconds, int):
+        raise TypeError(f"{name} muss ein int sein.")
+    if timeout_seconds <= 0:
+        raise ValueError(f"{name} muss groesser als 0 sein.")
+    return timeout_seconds
+
+
 def _print_info(message: str) -> None:
     print(f"ℹ️  {message}")
 
@@ -77,20 +90,32 @@ def _print_debug(message: str, debug_mode: bool) -> None:
 
 
 def _run_pip_install(requirements: Path, python_cmd: str) -> None:
-    subprocess.check_call(
-        [python_cmd, "-m", "pip", "install", "--upgrade", "pip"]
+    timeout_seconds = _validate_timeout_seconds(
+        PIP_TIMEOUT_SECONDS,
+        "PIP_TIMEOUT_SECONDS",
     )
     subprocess.check_call(
-        [python_cmd, "-m", "pip", "install", "-r", str(requirements)]
+        [python_cmd, "-m", "pip", "install", "--upgrade", "pip"],
+        timeout=timeout_seconds,
+    )
+    subprocess.check_call(
+        [python_cmd, "-m", "pip", "install", "-r", str(requirements)],
+        timeout=timeout_seconds,
     )
 
 
 def _run_pip_install_user(requirements: Path, python_cmd: str) -> None:
-    subprocess.check_call(
-        [python_cmd, "-m", "pip", "install", "--upgrade", "--user", "pip"]
+    timeout_seconds = _validate_timeout_seconds(
+        PIP_TIMEOUT_SECONDS,
+        "PIP_TIMEOUT_SECONDS",
     )
     subprocess.check_call(
-        [python_cmd, "-m", "pip", "install", "--user", "-r", str(requirements)]
+        [python_cmd, "-m", "pip", "install", "--upgrade", "--user", "pip"],
+        timeout=timeout_seconds,
+    )
+    subprocess.check_call(
+        [python_cmd, "-m", "pip", "install", "--user", "-r", str(requirements)],
+        timeout=timeout_seconds,
     )
 
 
@@ -106,7 +131,7 @@ def _install_requirements_with_fallback(
     try:
         _run_pip_install(requirements, interpreter)
         return True, "Standard-Installation erfolgreich."
-    except subprocess.SubprocessError as exc:
+    except (subprocess.SubprocessError, OSError) as exc:
         _print_warn(
             "Standard-Installation fehlgeschlagen. "
             "Starte Fallback ohne Admin-Rechte (--user)."
@@ -116,7 +141,7 @@ def _install_requirements_with_fallback(
     try:
         _run_pip_install_user(requirements, interpreter)
         return True, "Fallback-Installation mit --user erfolgreich."
-    except subprocess.SubprocessError as exc:
+    except (subprocess.SubprocessError, OSError) as exc:
         return (
             False,
             "Automatische Installation fehlgeschlagen. "
@@ -140,7 +165,11 @@ def _run_pip_install_packages(
 
     interpreter = _validate_python_cmd(python_cmd)
     subprocess.check_call(
-        [interpreter, "-m", "pip", "install", "--upgrade", *cleaned_packages]
+        [interpreter, "-m", "pip", "install", "--upgrade", *cleaned_packages],
+        timeout=_validate_timeout_seconds(
+            PIP_TIMEOUT_SECONDS,
+            "PIP_TIMEOUT_SECONDS",
+        ),
     )
 
 
@@ -151,9 +180,33 @@ def _module_import_ok(module_name: str, python_cmd: str) -> bool:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             check=False,
+            timeout=_validate_timeout_seconds(
+                IMPORT_TIMEOUT_SECONDS,
+                "IMPORT_TIMEOUT_SECONDS",
+            ),
         ).returncode
         == 0
     )
+
+
+def _network_reachable(host: str, port: int, timeout_seconds: int) -> bool:
+    if not isinstance(host, str) or not host.strip():
+        raise ValueError("host muss ein nicht-leerer String sein.")
+    if not isinstance(port, int):
+        raise TypeError("port muss ein int sein.")
+    if not (1 <= port <= 65535):
+        raise ValueError("port muss zwischen 1 und 65535 liegen.")
+    timeout_value = _validate_timeout_seconds(
+        timeout_seconds,
+        "timeout_seconds",
+    )
+    try:
+        with socket.create_connection(
+            (host.strip(), port), timeout=timeout_value
+        ):
+            return True
+    except OSError:
+        return False
 
 
 def _attempt_tool_repair(
@@ -221,6 +274,14 @@ def run_preflight(
         return 1
 
     _print_ok(f"Python-Interpreter gefunden: {interpreter}")
+    if _network_reachable("pypi.org", 443, NETWORK_TIMEOUT_SECONDS):
+        _print_ok("Netzwerk-Check: pypi.org erreichbar.")
+    else:
+        _print_warn(
+            "Netzwerk-Check: pypi.org aktuell nicht erreichbar. "
+            "Falls Installation fehlschlaegt, bitte Internet pruefen "
+            "oder spaeter erneut starten."
+        )
     _print_info(f"Starte QA-Preflight mit {interpreter}")
     _print_debug(
         f"Installiere Abhängigkeiten aus: {requirements}",
