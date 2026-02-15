@@ -22,6 +22,9 @@ BASE_COMPONENT_STYLE = (
     "QHeaderView::section{padding:6px;font-weight:700;} "
     "QProgressBar{border-radius:6px;text-align:center;min-height:18px;} "
     "QProgressBar::chunk{border-radius:6px;} "
+    "QFrame[dashboardCard='true']{border:1px solid #7a8699;border-radius:10px;padding:6px;} "
+    "QLabel[metricLabel='true']{font-size:11px;font-weight:600;letter-spacing:0.3px;} "
+    "QLabel[metricValue='true']{font-size:24px;font-weight:700;} "
 )
 
 ACTIVE_SECTION_STYLE = (
