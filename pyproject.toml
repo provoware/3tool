@@ -4,7 +4,7 @@ skip-string-normalization = false
 
 [tool.ruff]
 line-length = 80
-extend-exclude = [".venv", "dist", "build"]
+extend-exclude = [".videotool_env", "dist", "build"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

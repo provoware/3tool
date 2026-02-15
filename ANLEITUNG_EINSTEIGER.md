@@ -15,8 +15,8 @@ Diese Anleitung richtet sich an Anfaenger und erklaert jeden Schritt.
 
 3. **Virtuelle Umgebung** (isolierter Arbeitsbereich fuer Python) anlegen:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   python3 -m venv .videotool_env
+   source .videotool_env/bin/activate
    ```
    Danach steht in der Eingabezeile meist ein Praefix wie `(venv)`.
 
@@ -27,7 +27,7 @@ Diese Anleitung richtet sich an Anfaenger und erklaert jeden Schritt.
 
 5. **Programm starten**:
    ```bash
-   python3 videobatch_launcher.py
+   python3 start_gui.py
    ```
    Der Launcher prueft, ob alles korrekt eingerichtet ist und startet dann die grafische Oberflaeche (GUI).
 

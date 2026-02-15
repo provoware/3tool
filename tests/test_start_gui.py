@@ -98,7 +98,7 @@ def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
         debug = False
 
     monkeypatch.setattr(start_gui, "parse_args", lambda: Args())
-    monkeypatch.setattr(start_gui, "_ensure_files", lambda: None)
+    monkeypatch.setattr(start_gui, "_ensure_files", lambda _project_root: None)
     monkeypatch.setattr(
         start_gui,
         "_prepare_runtime_dirs",
@@ -110,11 +110,13 @@ def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
     monkeypatch.setattr(
         start_gui.launcher_checks, "configure_logging", lambda *_args: None
     )
-    monkeypatch.setattr(start_gui.launcher_checks, "ensure_venv", lambda: None)
+    monkeypatch.setattr(
+        start_gui.launcher_checks, "ensure_venv", lambda _project_root: None
+    )
     monkeypatch.setattr(
         start_gui.launcher_checks,
         "venv_python",
-        lambda: start_gui.Path("python3"),
+        lambda _project_root: start_gui.Path("python3"),
     )
     first = [
         start_gui.launcher_checks.CheckResult(
@@ -136,13 +138,13 @@ def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
     ]
     state = {"count": 0}
 
-    def fake_run_checks(_py: str, _target):
+    def fake_run_checks(_py: str, _target, _project_root):
         state["count"] += 1
         return first if state["count"] == 1 else second
 
     monkeypatch.setattr(start_gui, "_run_checks", fake_run_checks)
 
-    def fake_run_repairs(_py: str, _target):
+    def fake_run_repairs(_py: str, _target, _project_root):
         calls["repairs"] += 1
         return []
 
@@ -155,7 +157,7 @@ def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
     monkeypatch.setattr(
         start_gui,
         "_import_module",
-        lambda _name: type(
+        lambda _name, _project_root: type(
             "GUI", (), {"run_gui": staticmethod(lambda: None)}
         )(),
     )
@@ -200,7 +202,9 @@ def test_safe_run_checks_wraps_value_error(monkeypatch) -> None:
     monkeypatch.setattr(
         start_gui,
         "_run_checks",
-        lambda _py, _target: (_ for _ in ()).throw(ValueError("bad args")),
+        lambda _py, _target, _project_root: (_ for _ in ()).throw(
+            ValueError("bad args")
+        ),
     )
 
     try:
@@ -215,7 +219,7 @@ def test_safe_ensure_venv_wraps_subprocess_error(monkeypatch) -> None:
     monkeypatch.setattr(
         start_gui.launcher_checks,
         "ensure_venv",
-        lambda: (_ for _ in ()).throw(
+        lambda _project_root: (_ for _ in ()).throw(
             start_gui.subprocess.SubprocessError("boom")
         ),
     )
@@ -232,7 +236,9 @@ def test_safe_run_repairs_wraps_value_error(monkeypatch) -> None:
     monkeypatch.setattr(
         start_gui,
         "_run_repairs",
-        lambda _py, _target: (_ for _ in ()).throw(ValueError("broken")),
+        lambda _py, _target, _project_root: (_ for _ in ()).throw(
+            ValueError("broken")
+        ),
     )
 
     try:

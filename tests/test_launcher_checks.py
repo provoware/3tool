@@ -24,7 +24,9 @@ def _result_by_key(results, key):
 
 def test_run_repairs_offline_skips_install(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher_checks, "has_internet", lambda: False)
-    monkeypatch.setattr(launcher_checks, "ensure_venv", lambda: None)
+    monkeypatch.setattr(
+        launcher_checks, "ensure_venv", lambda _project_root: None
+    )
     monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
     monkeypatch.setattr(launcher_checks, "pip_show", lambda py, pkg: False)
     monkeypatch.setattr(
@@ -48,7 +50,9 @@ def test_run_repairs_offline_skips_install(monkeypatch, tmp_path):
 
 def test_run_repairs_installs_missing_packages(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher_checks, "has_internet", lambda: True)
-    monkeypatch.setattr(launcher_checks, "ensure_venv", lambda: None)
+    monkeypatch.setattr(
+        launcher_checks, "ensure_venv", lambda _project_root: None
+    )
     monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
     state = {"installed": False}
 
@@ -96,6 +100,7 @@ def test_install_missing_packages_with_retries_uses_user_fallback(monkeypatch):
 
     monkeypatch.setattr(launcher_checks, "pip_install", _pip_install)
     monkeypatch.setattr(launcher_checks.subprocess, "check_call", _check_call)
+    monkeypatch.setattr(launcher_checks, "in_venv", lambda: False)
     monkeypatch.setattr(
         launcher_checks, "missing_runtime_packages", lambda _py: []
     )
@@ -327,3 +332,50 @@ def test_build_repair_feedback_summarizes_offline_and_hints():
     assert feedback["headline"].startswith("Reparatur abgeschlossen")
     assert "Offline" in feedback["summary"]
     assert any("Offline" in hint for hint in feedback["hints"])
+
+
+def test_install_missing_packages_in_venv_disables_user_fallback(monkeypatch):
+    calls = []
+
+    def _pip_install(_py, _pkgs):
+        raise subprocess.SubprocessError("blocked")
+
+    def _check_call(cmd):
+        calls.append(cmd)
+        return 0
+
+    monkeypatch.setattr(launcher_checks, "pip_install", _pip_install)
+    monkeypatch.setattr(launcher_checks, "in_venv", lambda: True)
+    monkeypatch.setattr(launcher_checks.subprocess, "check_call", _check_call)
+
+    ok, detail = launcher_checks.install_missing_packages_with_retries(
+        "python", ["PySide6"]
+    )
+
+    assert not ok
+    assert "virtuellen Umgebung" in detail
+    assert calls == []
+
+
+def test_has_internet_uses_dns_or_https(monkeypatch):
+    monkeypatch.setattr(
+        launcher_checks, "_dns_reachable", lambda _timeout: False
+    )
+    monkeypatch.setattr(
+        launcher_checks,
+        "_https_head_reachable",
+        lambda url, _timeout: url == "https://pypi.org/",
+    )
+
+    assert launcher_checks.has_internet(1.0)
+
+
+def test_has_internet_returns_false_when_all_targets_fail(monkeypatch):
+    monkeypatch.setattr(
+        launcher_checks, "_dns_reachable", lambda _timeout: False
+    )
+    monkeypatch.setattr(
+        launcher_checks, "_https_head_reachable", lambda _url, _timeout: False
+    )
+
+    assert not launcher_checks.has_internet(1.0)

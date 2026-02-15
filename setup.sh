@@ -1,12 +1,6 @@
-# Muster für setup.sh
-# Dieses Skript richtet die Umgebung ein und testet das Tool.
-# 1. Virtuelle Umgebung (getrennter Python-Arbeitsbereich) erstellen
-python3 -m venv .venv
-# 2. Aktivieren (Linux/macOS)
-source .venv/bin/activate
-# 3. Benötigte Pakete installieren
-pip install -r requirements.txt
-# 4. Optionale Selbsttests starten
-python3 videobatch_extra.py --selftest
-# 5. GUI über den Launcher starten
-python3 videobatch_launcher.py
+#!/usr/bin/env bash
+# DEPRECATED: Diese Datei ist nur ein Platzhalter.
+# Bitte nutzen: scripts/setup_template.sh
+
+echo "Hinweis: setup.sh ist veraltet. Bitte scripts/setup_template.sh verwenden." >&2
+exit 1

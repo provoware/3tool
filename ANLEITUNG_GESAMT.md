@@ -10,8 +10,8 @@ Diese Anleitung fasst alle bisherigen Hilfen zusammen. Die Sprache ist bewusst e
    ```
 2. Virtuelle Umgebung ("virtual environment" – isolierter Python-Bereich) anlegen:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   python3 -m venv .videotool_env
+   source .videotool_env/bin/activate
    ```
 3. Abhaengigkeiten (benoetigte Pakete) installieren:
    ```bash
@@ -19,7 +19,7 @@ Diese Anleitung fasst alle bisherigen Hilfen zusammen. Die Sprache ist bewusst e
    ```
 4. Programm starten:
    ```bash
-   python3 videobatch_launcher.py
+   python3 start_gui.py
    ```
    Der Launcher prueft alles und startet die grafische Oberflaeche (GUI).
 5. Selbsttest ohne GUI:

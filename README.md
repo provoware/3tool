@@ -14,17 +14,26 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
 
 1. Python-Abhaengigkeiten installieren:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   python3 -m venv .videotool_env
+   source .videotool_env/bin/activate
    pip install -r requirements.txt
    ```
 2. Das Tool starten:
    ```bash
-   python3 videobatch_launcher.py
+   python3 start_gui.py
    ```
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
    Bist du bereits in einer eigenen Umgebung, erkennt der Launcher dies und nutzt dein aktuelles Python.
-3. Alternativ kann das Beispielskript `setup.sh` alles in einem Durchlauf erledigen. Ein Muster steht in `setup-sh.txt`.
+3. Alternativ kann das Beispielskript `scripts/setup_template.sh` alles in einem Durchlauf erledigen. Ein Muster steht in `setup-sh.txt`.
+
+### Kanonische Startpunkte (empfohlene Standardpfade)
+
+* **Start (ein Klick mit Checks/Self-Repair):** `python3 start_gui.py`
+* **GUI-Modul:** `videobatch_gui.py`
+* **CLI-Modul:** `videobatch_extra.py`
+
+Der ältere Einstieg `videobatch_launcher.py` bleibt aus Kompatibilitätsgründen erhalten,
+ist aber nicht mehr der primäre Startpfad.
 
 ### Start mit Hilfefenster
 
@@ -34,7 +43,7 @@ benötigten Pakete und `ffmpeg` vorhanden sind. Über die Schaltfläche
 Mit dem Parameter `--help` zeigt der Launcher alle verfügbaren Optionen an:
 
 ```bash
-python3 videobatch_launcher.py --help
+python3 start_gui.py --help
 ```
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.

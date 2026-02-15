@@ -16,8 +16,8 @@ import sys
 from core import launcher_checks
 from core.paths import log_dir, user_data_dir
 
-ENV_DIR = launcher_checks.ENV_DIR
 SELF = Path(__file__).resolve()
+PROJECT_ROOT = SELF.parent
 FLAG = "VT_BOOTSTRAPPED"
 USER_DATA_DIR = user_data_dir()
 LOG_FILE = log_dir() / "launcher.log"
@@ -41,19 +41,21 @@ def setup_logging(debug: bool) -> None:
 
 
 def reboot_into_venv():
-    py_path = Path(launcher_checks.venv_python())
+    py_path = Path(launcher_checks.venv_python(PROJECT_ROOT))
     if not py_path.exists():
         try:
-            launcher_checks.ensure_venv()
+            launcher_checks.ensure_venv(PROJECT_ROOT)
         except Exception as e:
             print("Konnte virtuelle Umgebung nicht erstellen:", e)
             py_path = Path(sys.executable)
         else:
             path_obj = (
-                ENV_DIR / ("Scripts" if os.name == "nt" else "bin") / "python"
+                launcher_checks.env_dir(PROJECT_ROOT)
+                / ("Scripts" if os.name == "nt" else "bin")
+                / "python"
             )
             py_path = (
-                Path(launcher_checks.venv_python())
+                Path(launcher_checks.venv_python(PROJECT_ROOT))
                 if path_obj.exists()
                 else Path(sys.executable)
             )
@@ -69,12 +71,15 @@ def reboot_into_venv():
 
 def bootstrap_console():
     if not launcher_checks.in_venv():
-        launcher_checks.ensure_venv()
+        launcher_checks.ensure_venv(PROJECT_ROOT)
         reboot_into_venv()
-    elif ENV_DIR.exists() and os.environ.get(FLAG) != "1":
+    elif (
+        launcher_checks.env_dir(PROJECT_ROOT).exists()
+        and os.environ.get(FLAG) != "1"
+    ):
         reboot_into_venv()
 
-    py = str(launcher_checks.venv_python())
+    py = str(launcher_checks.venv_python(PROJECT_ROOT))
     missing_pkgs = [
         pkg
         for pkg in launcher_checks.REQ_PKGS
@@ -102,7 +107,9 @@ def build_wizard():
         def run(self):
             try:
                 results = launcher_checks.collect_checks(
-                    str(launcher_checks.venv_python()), Path.cwd()
+                    str(launcher_checks.venv_python(PROJECT_ROOT)),
+                    PROJECT_ROOT,
+                    PROJECT_ROOT,
                 )
             except Exception as exc:
                 self.failed.emit(str(exc))
@@ -116,7 +123,9 @@ def build_wizard():
         def run(self):
             try:
                 results = launcher_checks.run_repairs(
-                    str(launcher_checks.venv_python()), Path.cwd()
+                    str(launcher_checks.venv_python(PROJECT_ROOT)),
+                    PROJECT_ROOT,
+                    PROJECT_ROOT,
                 )
             except Exception as exc:
                 self.failed.emit(str(exc))
@@ -130,7 +139,7 @@ def build_wizard():
             self.resize(700, 520)
             self._debug_enabled = os.environ.get("VT_DEBUG") == "1"
             self.resize(600, 420)
-            self.py = str(launcher_checks.venv_python())
+            self.py = str(launcher_checks.venv_python(PROJECT_ROOT))
             self._build_ui()
             self._start_check()
 
