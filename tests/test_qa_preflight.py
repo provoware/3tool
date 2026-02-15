@@ -53,6 +53,7 @@ def test_run_preflight_success(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
         qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
     )
+    monkeypatch.setattr(qa_preflight, "_network_reachable", lambda *_: True)
     monkeypatch.setattr(qa_preflight, "_run_pip_install", lambda *_args: None)
     monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
 
@@ -70,6 +71,7 @@ def test_run_preflight_debug_mode_prints_debug_lines(
     monkeypatch.setattr(
         qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
     )
+    monkeypatch.setattr(qa_preflight, "_network_reachable", lambda *_: True)
     monkeypatch.setattr(qa_preflight, "_run_pip_install", lambda *_args: None)
     monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
 
@@ -191,3 +193,50 @@ def test_install_requirements_with_fallback_fails_after_user_install(
 
     assert ok is False
     assert "offline" in message
+
+
+def test_validate_timeout_seconds_rejects_invalid_values() -> None:
+    with pytest.raises(TypeError):
+        qa_preflight._validate_timeout_seconds("3", "timeout")  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        qa_preflight._validate_timeout_seconds(0, "timeout")
+
+
+def test_network_reachable_validates_inputs() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._network_reachable("", 443, 3)
+    with pytest.raises(TypeError):
+        qa_preflight._network_reachable("pypi.org", "443", 3)  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        qa_preflight._network_reachable("pypi.org", 70000, 3)
+
+
+def test_network_reachable_returns_false_on_oserror(monkeypatch) -> None:
+    def fail_connection(*_args, **_kwargs):
+        raise OSError("offline")
+
+    monkeypatch.setattr(
+        qa_preflight.socket, "create_connection", fail_connection
+    )
+
+    assert qa_preflight._network_reachable("pypi.org", 443, 3) is False
+
+
+def test_run_preflight_warns_when_network_unreachable(
+    monkeypatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(qa_preflight, "_network_reachable", lambda *_: False)
+    monkeypatch.setattr(qa_preflight, "_run_pip_install", lambda *_args: None)
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
+
+    result = qa_preflight.run_preflight(req, ["pytest"], "python3")
+
+    assert result == 0
+    captured = capsys.readouterr()
+    assert "Netzwerk-Check: pypi.org aktuell nicht erreichbar" in captured.out

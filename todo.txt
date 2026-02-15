@@ -99,3 +99,4 @@
 
 - [x] QA-Preflight um automatische Tool-Selbstreparatur mit Re-Validierung erweitert
 - [x] QA-Preflight Requirements-Installation um --user-Fallback bei Rechteproblemen erweitern
+- [x] QA-Preflight um Netzwerk-Erreichbarkeitscheck und Timeouts fuer robustere Auto-Reparatur erweitern
