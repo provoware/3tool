@@ -91,3 +91,4 @@
 - [x] QA-Skripte vereinheitlicht: gemeinsamer Helper, pytest/mypy in quality_check und quality_fix auf pytest umgestellt
 - [x] Robustheit der Startroutine weiter verbessern (defensive IO-/Netzwerk-Fehlerbehandlung mit Tests)
 - [x] Startroutine-Hardening: defensive Guards fuer Laufzeitordner/Checks/Repairs und laienfreundliche Fehlerpfade mit Tests erweitert
+- [x] QA-Preflight-Startroutine fuer automatische Pruefungs-Tools und Abhaengigkeits-Reparatur mit Nutzerfeedback eingefuehrt

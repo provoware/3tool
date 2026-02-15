@@ -3,7 +3,7 @@ set -euo pipefail
 
 source "$(dirname "$0")/_quality_common.sh"
 
-qb_install_dev_deps "requirements-dev.txt"
+qb_run_python_check "QA-Preflight (Abhaengigkeiten + Tool-Importe)" core.qa_preflight --requirements requirements-dev.txt --tools ruff black pytest
 
 qb_print_step "✨" "Wende Auto-Fixes an..."
 qb_run_python_check "Auto-Fix Linting (ruff --fix)" ruff check --fix .

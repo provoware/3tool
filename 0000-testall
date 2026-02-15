@@ -95,20 +95,13 @@ fi
 source "$VENV_DIR/bin/activate"
 
 log_info "📦 Abhaengigkeiten (Dependencies) werden installiert/aktualisiert..."
-python -m pip install --upgrade pip > /dev/null
-
 if [ -f "requirements.txt" ]; then
   python -m pip install -r requirements.txt
 else
   log_warn "requirements.txt nicht gefunden. Grundpakete werden uebersprungen."
 fi
 
-if [ -f "requirements-dev.txt" ]; then
-  python -m pip install -r requirements-dev.txt
-else
-  log_warn "requirements-dev.txt nicht gefunden. Prueftools werden einzeln installiert."
-  python -m pip install flake8 mypy ruff black isort autoflake pytest
-fi
+python -m core.qa_preflight --requirements requirements-dev.txt --tools flake8 mypy ruff black isort autoflake pytest
 
 log_info "\n🔍 Versionen der Prueftools:"
 python -m flake8 --version || log_warn "flake8 nicht verfuegbar."
