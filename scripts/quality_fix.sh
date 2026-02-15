@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "🔧 Installiere Prüftools..."
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements-dev.txt
+source "$(dirname "$0")/_quality_common.sh"
 
-echo "✨ Wende Auto-Fixes an..."
-python3 -m ruff check --fix .
-python3 -m black .
-python3 -m unittest discover -s tests -p "test_*.py"
+qb_install_dev_deps "requirements-dev.txt"
+
+qb_print_step "✨" "Wende Auto-Fixes an..."
+qb_run_python_check "Auto-Fix Linting (ruff --fix)" ruff check --fix .
+qb_run_python_check "Code formatieren (black)" black .
+qb_run_python_check "Tests nach Auto-Fix (pytest)" pytest -q
+
+qb_print_step "✅" "Auto-Fixes und Tests erfolgreich abgeschlossen."
