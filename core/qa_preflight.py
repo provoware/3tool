@@ -353,6 +353,37 @@ def _attempt_tool_repair(
     return unresolved_tools
 
 
+def _can_skip_install_when_offline(
+    selected_tools: list[str], python_cmd: str, debug_mode: bool
+) -> bool:
+    tools = _validate_tool_names(selected_tools)
+    interpreter = _validate_python_cmd(python_cmd)
+    debug_enabled = _validate_debug_mode(debug_mode)
+
+    if not tools:
+        return False
+
+    missing_tools: list[str] = []
+    for tool in tools:
+        module_name = TOOL_MODULES[tool]
+        if not _module_import_ok(module_name, interpreter):
+            missing_tools.append(tool)
+
+    if missing_tools:
+        _print_debug(
+            "Offline-Weiterlauf nicht möglich. Fehlende Tools: "
+            + ", ".join(missing_tools),
+            debug_enabled,
+        )
+        return False
+
+    _print_ok(
+        "Offline erkannt, aber alle Prüftools sind bereits verfügbar. "
+        "Installation wird übersprungen."
+    )
+    return True
+
+
 def run_preflight(
     requirements: Path,
     tool_names: list[str],
@@ -393,7 +424,8 @@ def run_preflight(
         )
         return 1
 
-    if _network_reachable("pypi.org", 443, NETWORK_TIMEOUT_SECONDS):
+    network_ok = _network_reachable("pypi.org", 443, NETWORK_TIMEOUT_SECONDS)
+    if network_ok:
         _print_ok("Netzwerk-Check: pypi.org erreichbar.")
     else:
         _print_warn(
@@ -402,6 +434,17 @@ def run_preflight(
             "oder spaeter erneut starten."
         )
     _print_info(f"Starte QA-Preflight mit {interpreter}")
+    if not network_ok:
+        if _can_skip_install_when_offline(
+            selected_tools,
+            interpreter,
+            debug_enabled,
+        ):
+            _print_ok(
+                "QA-Preflight erfolgreich ohne Neuinstallation (Offline-Modus)."
+            )
+            return 0
+
     _print_debug(
         f"Installiere Abhängigkeiten aus: {requirements}",
         debug_enabled,
