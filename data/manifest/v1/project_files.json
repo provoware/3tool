@@ -178,8 +178,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 46693,
-      "sha256": "5235dbfcd72c2e408169c47c2d511fd803cb10decf646f1054a9608e759d556a"
+      "size": 47642,
+      "sha256": "44727ed6649c36543826f1c7d1b1d017f7f27eb49c4f3765db95de729d6fbd51"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -243,8 +243,8 @@
     },
     {
       "path": "start_gui.py",
-      "size": 11188,
-      "sha256": "580ee2660337d648c1ba9ffb905506f444685939ebccb29da08369e877c4b5be"
+      "size": 13097,
+      "sha256": "bda69946fd1b50e83a178c86af141dcd6626d1f43f946fbd746db07c37e62ac2"
     },
     {
       "path": "tests/conftest.py",
@@ -303,8 +303,8 @@
     },
     {
       "path": "tests/test_start_gui.py",
-      "size": 7136,
-      "sha256": "5e2757f03b6637768e58d0c2b87659d4b0daa95e45ad89e117e6a80610ea4de2"
+      "size": 8197,
+      "sha256": "358e970f613a574d549a58b25a6f7e14bf7aa21f92c1be0c11a86249fece1673"
     },
     {
       "path": "tests/test_themes.py",
@@ -328,8 +328,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 8671,
-      "sha256": "8b67114aa5c012ae62f87374916392256f566b73c4ca72638e4f0d8dc702f04a"
+      "size": 8795,
+      "sha256": "cda7ee673f00cdad425dee5fd28d949d008b8561a260461adf0eeaec47413065"
     },
     {
       "path": "videobatch_extra.py",

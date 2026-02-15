@@ -107,3 +107,6 @@
 - [x] Startpfade auf festen Projektroot umgestellt, venv-Strategie auf .videotool_env vereinheitlicht und setup.sh als veralteter Platzhalter markiert
 
 - [x] Launcher-Checkliste um laienfreundliche Begriffserklärungen, konkrete Terminal-Befehle und Debug-Hinweise erweitern
+
+- [x] Optionalen Release-Qualitaetscheck im Launcher ergänzt (Flag --release-check mit klaren Laien-Hinweisen und Tests)
+

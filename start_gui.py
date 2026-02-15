@@ -5,7 +5,7 @@ import importlib
 import subprocess
 import sys
 from pathlib import Path
-from typing import Callable, cast
+from typing import Callable, NoReturn, cast
 
 from core import launcher_checks
 from core.config import apply_simple_mode_defaults, cfg
@@ -31,7 +31,7 @@ def _warn(message: str) -> None:
     print(f"  ⚠️  {message}")
 
 
-def _fail(message: str) -> None:
+def _fail(message: str) -> NoReturn:
     raise LauncherError(message)
 
 
@@ -95,7 +95,7 @@ def _validated_runtime_dirs(
                 "Interner Fehler: Laufzeitordner fehlt oder ist ungültig "
                 f"({key})."
             )
-        validated[key] = value
+        validated[key] = runtime_dirs[key]
     return validated
 
 
@@ -157,6 +157,42 @@ def _print_beginner_tips() -> None:
     print(" - Für schwächere Geräte: python3 start_gui.py --simple-mode")
     print(" - Details/Fehlerbericht: python3 start_gui.py --debug")
     print(" - Selbsttest für CLI: python3 videobatch_extra.py --selftest")
+
+
+def _run_release_quality_check(project_root: Path) -> bool:
+    if not isinstance(project_root, Path):
+        _fail("Interner Fehler: project_root ist kein Path.")
+
+    quality_script = project_root / "scripts" / "quality_check.sh"
+    if not quality_script.exists():
+        _warn(
+            "Release-Qualitätscheck nicht gefunden "
+            f"({quality_script}). Überspringe diesen Schritt."
+        )
+        return False
+
+    cmd = ["bash", str(quality_script)]
+    print("  🔎 Starte Release-Qualitätscheck (scripts/quality_check.sh)")
+    launcher_checks.LOGGER.info("Release-Qualitätscheck gestartet: %s", cmd)
+    completed = subprocess.run(
+        cmd,
+        cwd=project_root,
+        check=False,
+        timeout=900,
+    )
+    if completed.returncode == 0:
+        _ok("Release-Qualitätscheck erfolgreich abgeschlossen")
+        return True
+
+    _warn(
+        "Release-Qualitätscheck meldet Probleme. "
+        "GUI-Start läuft weiter, bitte vor Release beheben."
+    )
+    print(
+        "  💡 Vorschlag: Erst 'scripts/quality_fix.sh' ausführen, "
+        "dann 'scripts/quality_check.sh' wiederholen."
+    )
+    return False
 
 
 def _run_checks(
@@ -257,6 +293,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="ausführliche Konsolenmeldungen aktivieren",
     )
+    parser.add_argument(
+        "--release-check",
+        action="store_true",
+        help=(
+            "führt zusätzlich scripts/quality_check.sh aus "
+            "(empfohlen vor einem Release)"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -316,6 +360,19 @@ def main() -> int:
         _ok("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
 
     _print_release_readiness(PROJECT_ROOT)
+    if getattr(args, "release_check", False):
+        _status(7, steps, "Release-Qualitätscheck ausführen")
+        try:
+            _run_release_quality_check(PROJECT_ROOT)
+        except (OSError, subprocess.SubprocessError) as exc:
+            _warn(
+                "Release-Qualitätscheck konnte nicht vollständig laufen: "
+                f"{exc}"
+            )
+            print(
+                "  💡 Vorschlag: Manuell im Projektordner ausführen: "
+                "bash scripts/quality_check.sh"
+            )
     _print_beginner_tips()
 
     _status(steps, steps, "GUI starten")

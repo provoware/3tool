@@ -247,3 +247,41 @@ def test_safe_run_repairs_wraps_value_error(monkeypatch) -> None:
         assert "Self-Repair" in str(exc)
     else:
         raise AssertionError("LauncherError erwartet")
+
+
+def test_parse_args_supports_release_check(monkeypatch) -> None:
+    monkeypatch.setattr(
+        start_gui.sys,
+        "argv",
+        ["start_gui.py", "--release-check"],
+    )
+
+    args = start_gui.parse_args()
+
+    assert args.release_check is True
+
+
+def test_run_release_quality_check_returns_true_on_success(
+    monkeypatch, tmp_path
+) -> None:
+    scripts_dir = tmp_path / "scripts"
+    scripts_dir.mkdir(parents=True, exist_ok=True)
+    quality_script = scripts_dir / "quality_check.sh"
+    quality_script.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+
+    class Completed:
+        returncode = 0
+
+    monkeypatch.setattr(
+        start_gui.subprocess,
+        "run",
+        lambda *args, **kwargs: Completed(),
+    )
+
+    assert start_gui._run_release_quality_check(tmp_path) is True
+
+
+def test_run_release_quality_check_warns_if_missing(capsys, tmp_path) -> None:
+    assert start_gui._run_release_quality_check(tmp_path) is False
+    output = capsys.readouterr().out
+    assert "Release-Qualitätscheck nicht gefunden" in output
