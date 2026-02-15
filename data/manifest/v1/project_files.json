@@ -123,8 +123,8 @@
     },
     {
       "path": "core/file_manifest.py",
-      "size": 5253,
-      "sha256": "7a4aea57291ed0edee36ee9e243d62c3e35ef0cbb987eb491fa178b650298e41"
+      "size": 5254,
+      "sha256": "ad507dab37099d749cb4c9bd520687094e71964edd07c6f916a0c858bfba387a"
     },
     {
       "path": "core/launcher_checks.py",
@@ -143,8 +143,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 16003,
-      "sha256": "dfa75acf8d357f5ec3218bdc3f10e665733fcc01062d0ea844dc5bca2c0603b3"
+      "size": 17197,
+      "sha256": "9d0502313d441568688b378464c396807dee6d4b50566858cc62649d4fdb2434"
     },
     {
       "path": "core/themes.py",
@@ -178,8 +178,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 48730,
-      "sha256": "424279ba5f3d38208ae7c202a201178f81f0c37b674f1a1c73d752c5ef6707a7"
+      "size": 49707,
+      "sha256": "7bccd4e6b314780f143b1883075d4c4262f7310966241c6736794084baf449c7"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -293,8 +293,8 @@
     },
     {
       "path": "tests/test_qa_preflight.py",
-      "size": 9555,
-      "sha256": "20bd3147be76664913e33068fc4119d074996a3700e4aa34081df7237c96486e"
+      "size": 11376,
+      "sha256": "b60c19b337fa4d329ff611abe041a71cceb126297f27f4ade27b8fc65e8ad769"
     },
     {
       "path": "tests/test_smoke.py",
@@ -328,8 +328,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 8917,
-      "sha256": "baf3e1ea3aa9c0fb73a089cc473a3c5c991485064e9f3e82bf83a6f12d8d23a2"
+      "size": 9049,
+      "sha256": "ff8430553650ecc533fd47990abb1ff792ae1c2b025a6cccb421c87adb74e85c"
     },
     {
       "path": "videobatch_extra.py",

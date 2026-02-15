@@ -45,7 +45,7 @@ def _sha256(path: Path) -> str:
 
 
 def _manifest_file_map(
-    entries: list[dict[str, object]]
+    entries: list[dict[str, object]],
 ) -> dict[str, tuple[int, str]]:
     mapped: dict[str, tuple[int, str]] = {}
     for entry in entries:

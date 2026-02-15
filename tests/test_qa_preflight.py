@@ -317,6 +317,64 @@ def test_run_preflight_fails_when_pip_not_repairable(
     assert result == 1
 
 
+def test_run_preflight_offline_skips_install_when_tools_available(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(qa_preflight, "_network_reachable", lambda *_: False)
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
+
+    called = {"value": False}
+
+    def fail_install(*_args, **_kwargs):
+        called["value"] = True
+        raise AssertionError(
+            "Install should be skipped offline when tools exist"
+        )
+
+    monkeypatch.setattr(qa_preflight, "_run_pip_install", fail_install)
+
+    result = qa_preflight.run_preflight(req, ["pytest"], "python3")
+
+    assert result == 0
+    assert called["value"] is False
+
+
+def test_run_preflight_offline_with_missing_tools_keeps_install_path(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(qa_preflight, "_network_reachable", lambda *_: False)
+
+    calls = {"count": 0}
+
+    def selective_import(module_name: str, _python_cmd: str) -> bool:
+        if module_name != "pytest":
+            return True
+        return calls["count"] > 0
+
+    def mark_install(*_args, **_kwargs) -> None:
+        calls["count"] += 1
+
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", selective_import)
+    monkeypatch.setattr(qa_preflight, "_run_pip_install", mark_install)
+
+    result = qa_preflight.run_preflight(req, ["pytest"], "python3")
+
+    assert result == 0
+    assert calls["count"] == 1
+
+
 def test_run_preflight_warns_when_network_unreachable(
     monkeypatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
