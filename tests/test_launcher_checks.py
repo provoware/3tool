@@ -236,6 +236,60 @@ def test_beginner_recovery_hints_include_actionable_steps():
     assert any("Offline" in hint for hint in hints)
 
 
+def test_run_repairs_repairs_dependency_files(monkeypatch, tmp_path):
+    monkeypatch.setattr(launcher_checks, "has_internet", lambda: False)
+    monkeypatch.setattr(
+        launcher_checks, "ensure_venv", lambda _project_root: None
+    )
+    monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
+    monkeypatch.setattr(
+        launcher_checks.shutil, "which", lambda _: "/usr/bin/tool"
+    )
+    monkeypatch.setattr(launcher_checks, "write_permissions_ok", lambda _: True)
+
+    (tmp_path / "requirements.txt").write_text("PySide6\n", encoding="utf-8")
+    (tmp_path / "requirements-dev.txt").write_text("pytest\n", encoding="utf-8")
+
+    results = launcher_checks.run_repairs("python", tmp_path, tmp_path)
+
+    dependencies = _result_by_key(results, "dependency_files")
+    assert dependencies.ok
+    assert "automatisch repariert" in dependencies.detail
+
+
+def test_run_repairs_dependency_files_failure_hint(monkeypatch, tmp_path):
+    monkeypatch.setattr(launcher_checks, "has_internet", lambda: False)
+    monkeypatch.setattr(
+        launcher_checks, "ensure_venv", lambda _project_root: None
+    )
+    monkeypatch.setattr(launcher_checks, "ensure_pip", lambda py: True)
+    monkeypatch.setattr(
+        launcher_checks.shutil, "which", lambda _: "/usr/bin/tool"
+    )
+    monkeypatch.setattr(launcher_checks, "write_permissions_ok", lambda _: True)
+
+    def _raise_repair(_project_root):
+        raise OSError("readonly")
+
+    monkeypatch.setattr(
+        launcher_checks.dependency_consistency,
+        "check_files",
+        lambda _project_root: launcher_checks.dependency_consistency.DependencyCheck(
+            ok=False, details=["x"]
+        ),
+    )
+    monkeypatch.setattr(
+        launcher_checks.dependency_consistency, "repair_files", _raise_repair
+    )
+
+    results = launcher_checks.run_repairs("python", tmp_path, tmp_path)
+    hints = launcher_checks.beginner_recovery_hints(results)
+
+    dependencies = _result_by_key(results, "dependency_files")
+    assert not dependencies.ok
+    assert any("Abhaengigkeitsdateien" in hint for hint in hints)
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -36,3 +36,18 @@ def test_dependency_check_reports_missing_and_duplicates(
     assert any("Laufzeitpakete" in detail for detail in result.details)
     assert any("Dev-Pakete" in detail for detail in result.details)
     assert any("Doppelte" in detail for detail in result.details)
+
+
+def test_repair_files_restores_expected_content(tmp_path: Path) -> None:
+    (tmp_path / "requirements.txt").write_text("PySide6\n", encoding="utf-8")
+    (tmp_path / "requirements-dev.txt").write_text("pytest\n", encoding="utf-8")
+
+    result = dependency_consistency.repair_files(tmp_path)
+
+    assert result.ok
+    assert (tmp_path / "requirements.txt").read_text(encoding="utf-8") == (
+        "\n".join(dependency_consistency.RUNTIME_PACKAGES) + "\n"
+    )
+    assert (tmp_path / "requirements-dev.txt").read_text(encoding="utf-8") == (
+        "\n".join(dependency_consistency.DEV_PACKAGES) + "\n"
+    )

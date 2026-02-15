@@ -110,3 +110,5 @@
 
 - [x] Optionalen Release-Qualitaetscheck im Launcher ergänzt (Flag --release-check mit klaren Laien-Hinweisen und Tests)
 
+
+- [x] Startroutine: requirements-Dateien automatisch auf Soll-Stand reparieren und Nutzerfeedback mit Befehlen erweitern
