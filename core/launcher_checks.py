@@ -645,6 +645,42 @@ def run_repairs(
     results: list[RepairResult] = []
     online = has_internet()
 
+    dependency_before = dependency_consistency.check_files(project_root)
+    if dependency_before.ok:
+        results.append(
+            RepairResult(
+                "dependency_files",
+                "Abhaengigkeitsdateien (requirements)",
+                True,
+                "requirements-Dateien sind konsistent.",
+            )
+        )
+    else:
+        try:
+            repaired = dependency_consistency.repair_files(project_root)
+            results.append(
+                RepairResult(
+                    "dependency_files",
+                    "Abhaengigkeitsdateien (requirements)",
+                    repaired.ok,
+                    (
+                        "requirements-Dateien wurden automatisch repariert."
+                        if repaired.ok
+                        else "Reparatur ausgefuehrt, aber Inkonsistenzen bestehen weiter."
+                    ),
+                )
+            )
+        except OSError as exc:
+            results.append(
+                RepairResult(
+                    "dependency_files",
+                    "Abhaengigkeitsdateien (requirements)",
+                    False,
+                    "requirements-Dateien konnten nicht repariert werden: "
+                    f"{exc}. Bitte Schreibrechte pruefen.",
+                )
+            )
+
     try:
         ensure_venv(project_root)
         results.append(
@@ -804,6 +840,12 @@ def beginner_recovery_hints(results: Iterable[RepairResult]) -> list[str]:
     result_list = list(results)
     hints: list[str] = []
     failed = {item.key for item in result_list if not item.ok}
+    if "dependency_files" in failed:
+        hints.append(
+            "Die Abhaengigkeitsdateien konnten nicht automatisch repariert "
+            "werden. Bitte Schreibrechte pruefen und den Reparatur-Button "
+            "erneut starten."
+        )
     if "pip" in failed or "packages" in failed:
         hints.append(
             "Python-Pakete konnten nicht vollstaendig installiert werden. "

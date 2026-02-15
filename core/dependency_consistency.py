@@ -22,6 +22,12 @@ class DependencyCheck:
     details: list[str]
 
 
+def _validate_project_root(project_root: Path) -> Path:
+    if not isinstance(project_root, Path):
+        raise TypeError("project_root muss ein Path sein.")
+    return project_root
+
+
 def _read_lines(path: Path) -> list[str]:
     if not path.exists():
         return []
@@ -39,6 +45,7 @@ def _as_name(entry: str) -> str:
 
 
 def check_files(project_root: Path) -> DependencyCheck:
+    project_root = _validate_project_root(project_root)
     req_path = project_root / "requirements.txt"
     req_dev_path = project_root / "requirements-dev.txt"
 
@@ -79,6 +86,17 @@ def check_files(project_root: Path) -> DependencyCheck:
         )
 
     return DependencyCheck(ok=not details, details=details)
+
+
+def repair_files(project_root: Path) -> DependencyCheck:
+    """Schreibt requirements-Dateien auf den definierten Soll-Stand."""
+    project_root = _validate_project_root(project_root)
+    req_path = project_root / "requirements.txt"
+    req_dev_path = project_root / "requirements-dev.txt"
+
+    req_path.write_text("\n".join(RUNTIME_PACKAGES) + "\n", encoding="utf-8")
+    req_dev_path.write_text("\n".join(DEV_PACKAGES) + "\n", encoding="utf-8")
+    return check_files(project_root)
 
 
 def main() -> int:
