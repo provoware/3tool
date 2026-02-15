@@ -123,8 +123,8 @@
     },
     {
       "path": "core/file_manifest.py",
-      "size": 4744,
-      "sha256": "284b329efba493f76372c6641111dbafadf571e75c3f701ee545a1be2be84baa"
+      "size": 5253,
+      "sha256": "7a4aea57291ed0edee36ee9e243d62c3e35ef0cbb987eb491fa178b650298e41"
     },
     {
       "path": "core/launcher_checks.py",
@@ -178,8 +178,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 38456,
-      "sha256": "829b35790a8f74ed3383e3cd4cc9d8c3e9bc4ec37a5eed7ea337f9d7c14e3587"
+      "size": 39181,
+      "sha256": "b94ad0b6fc50415013464608f2fc624e33d9afea21aa4dd4de1465fce4f60184"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -223,8 +223,8 @@
     },
     {
       "path": "scripts/quality_fix.sh",
-      "size": 536,
-      "sha256": "53d85fa8b350549fde449567003287bdfe25a9df5ebe7e5b004e484fa279708c"
+      "size": 603,
+      "sha256": "fdd7ce3afbd7622aeb0130b17b9addb666c31f45a21bfc4b9c304a06c927fd65"
     },
     {
       "path": "setup-sh.txt",
@@ -323,8 +323,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 7719,
-      "sha256": "ef3aaa8f61a292651a0bd25988b236eea2397aab0deee41c548c6d116f8b251e"
+      "size": 7790,
+      "sha256": "99b2ef48bf10eabdfb19b7de39158bddaed02593a541b7e9d464bcae64ae5061"
     },
     {
       "path": "videobatch_extra.py",
