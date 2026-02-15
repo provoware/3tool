@@ -128,8 +128,8 @@
     },
     {
       "path": "core/launcher_checks.py",
-      "size": 25108,
-      "sha256": "e40c488d2136888508c1a380264c9446efcf9b706076880f79b26868cba909a0"
+      "size": 26150,
+      "sha256": "2c7629e631422c7716a5e9b78e259c4c3cb5292fb2a988cdf559cbdda824a02b"
     },
     {
       "path": "core/paths.py",
@@ -140,6 +140,11 @@
       "path": "core/plugins.py",
       "size": 2454,
       "sha256": "8250982e21edffc7995c1ae00ae925f586a883a3d7eb086d9c3356fd37441d4b"
+    },
+    {
+      "path": "core/qa_preflight.py",
+      "size": 5111,
+      "sha256": "33bb53fd493ec24159e4f93ef6e9fc396b0536ab38a6f6959871413090e2ff58"
     },
     {
       "path": "core/themes.py",
@@ -173,8 +178,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 36838,
-      "sha256": "968a4499a5e448bc135797a2c6a407938bf74d636d65ce57632e014f45128df6"
+      "size": 37607,
+      "sha256": "84e1044c7e0d245f135213f9b76e1b557d582c499f19bd657a5f19e66588e91b"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -263,8 +268,8 @@
     },
     {
       "path": "tests/test_launcher_checks.py",
-      "size": 9355,
-      "sha256": "171374a7a01971922053de46a65c328ec5e1145bab116e5cb5361b126661c6ec"
+      "size": 9954,
+      "sha256": "81b9a58bd893b7172b4fb37c937d2ee779ef14cd58f8c808449bba1a5513417e"
     },
     {
       "path": "tests/test_launcher_logging.py",
@@ -280,6 +285,11 @@
       "path": "tests/test_plugins.py",
       "size": 650,
       "sha256": "3ce448432a3bbe7d8e4d6285967a872c4ba3768135d917dc72edc17af7184050"
+    },
+    {
+      "path": "tests/test_qa_preflight.py",
+      "size": 1553,
+      "sha256": "915b88c0cb2c32628745a44e297cecaea17b966cfb6e0e80260c06fa3adccd3c"
     },
     {
       "path": "tests/test_smoke.py",
@@ -313,8 +323,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 7501,
-      "sha256": "37409deaae054513d1e4c6b43e1a520899f23a58ffd5539168aaa595099225e5"
+      "size": 7615,
+      "sha256": "5fdeee718693757005213308beb475db0b5415a1f4cdd0e956973027dc98e894"
     },
     {
       "path": "videobatch_extra.py",

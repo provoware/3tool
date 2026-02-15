@@ -9,8 +9,9 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, TypeVar
 
+from core import dependency_consistency
 from core.dependency_consistency import RUNTIME_PACKAGES
 
 REQ_PKGS = list(RUNTIME_PACKAGES)
@@ -467,10 +468,41 @@ def check_internet() -> CheckResult:
     )
 
 
-def collect_checks(py: str, target_dir: Path) -> list[CheckResult]:
+def check_dependency_file_consistency(
+    project_root: Path = Path.cwd(),
+) -> CheckResult:
+    if not isinstance(project_root, Path):
+        raise TypeError("project_root muss ein Path sein.")
+    result = dependency_consistency.check_files(project_root)
+    ok = result.ok
+    detail = "requirements-Dateien sind konsistent."
+    if not ok:
+        detail = (
+            f"Abweichungen gefunden ({len(result.details)}): "
+            f"{result.details[0]}"
+        )
+    return CheckResult(
+        key="dependency_files",
+        title="Abhaengigkeitsdateien (requirements)",
+        ok=ok,
+        detail=detail,
+        fix_hint=(
+            "Befehl: python3 -m core.dependency_consistency --project-root ."
+            if not ok
+            else None
+        ),
+        blocking=False,
+    )
+
+
+def collect_checks(
+    py: str, target_dir: Path, project_root: Path = Path.cwd()
+) -> list[CheckResult]:
     py = validated_python_command(py)
     if not isinstance(target_dir, Path):
         raise TypeError("target_dir muss ein Path sein.")
+    if not isinstance(project_root, Path):
+        raise TypeError("project_root muss ein Path sein.")
     return [
         check_python_version(),
         check_venv(),
@@ -478,6 +510,7 @@ def collect_checks(py: str, target_dir: Path) -> list[CheckResult]:
         check_packages(py),
         check_ffmpeg(),
         check_write_permissions(target_dir),
+        check_dependency_file_consistency(project_root),
         check_internet(),
     ]
 
@@ -745,11 +778,14 @@ def beginner_recovery_hints(results: Iterable[RepairResult]) -> list[str]:
     return hints
 
 
+TResult = TypeVar("TResult", CheckResult, RepairResult)
+
+
 def _validated_results(
-    results: Iterable[CheckResult | RepairResult],
+    results: Iterable[TResult],
     *,
-    expected_type: type[CheckResult] | type[RepairResult],
-) -> list[CheckResult] | list[RepairResult]:
+    expected_type: type[TResult],
+) -> list[TResult]:
     if not isinstance(results, Iterable):
         raise TypeError("results muss iterierbar sein.")
     result_list = list(results)
