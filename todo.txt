@@ -87,3 +87,5 @@
 - [x] Launcher-Nutzerfeedback um klare Status-Zusammenfassung und nächste Schritte erweitert
 
 - [x] Dashboard-Kennzahlen als kontrastreiche Karten mit validierten Werten umgesetzt und Fehlerhandling im Statusbereich gehaertet
+
+- [x] QA-Skripte vereinheitlicht: gemeinsamer Helper, pytest/mypy in quality_check und quality_fix auf pytest umgestellt

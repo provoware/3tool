@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "🔎 Installiere Prüftools..."
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements-dev.txt
+source "$(dirname "$0")/_quality_common.sh"
 
-echo "✅ Starte Code-Checks..."
-python3 -m compileall -q .
-python3 -m ruff check .
-python3 -m black --check .
-python3 -m unittest discover -s tests -p "test_*.py"
+qb_install_dev_deps "requirements-dev.txt"
+
+qb_print_step "✅" "Starte Code-Checks..."
+qb_run_python_check "Syntax-Check (compileall)" compileall -q .
+qb_run_python_check "Manifest-Integrität prüfen" core.file_manifest --verify
+qb_run_python_check "Linting (ruff)" ruff check .
+qb_run_python_check "Formatprüfung (black --check)" black --check .
+qb_run_python_check "Typprüfung (mypy)" mypy .
+qb_run_python_check "Tests (pytest)" pytest -q
+
+qb_print_step "✅" "Alle Quality-Checks erfolgreich abgeschlossen."
