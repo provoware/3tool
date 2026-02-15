@@ -89,3 +89,4 @@
 - [x] Dashboard-Kennzahlen als kontrastreiche Karten mit validierten Werten umgesetzt und Fehlerhandling im Statusbereich gehaertet
 
 - [x] QA-Skripte vereinheitlicht: gemeinsamer Helper, pytest/mypy in quality_check und quality_fix auf pytest umgestellt
+- [x] Robustheit der Startroutine weiter verbessern (defensive IO-/Netzwerk-Fehlerbehandlung mit Tests)

@@ -148,6 +148,40 @@ def test_collect_checks_rejects_invalid_types(tmp_path):
         launcher_checks.collect_checks("python", "not-a-path")
 
 
+def test_has_internet_rejects_invalid_timeout():
+    with pytest.raises(ValueError):
+        launcher_checks.has_internet(0)
+
+
+def test_parse_os_release_rejects_non_path():
+    with pytest.raises(TypeError):
+        launcher_checks.parse_os_release("/etc/os-release")
+
+
+def test_parse_os_release_handles_directory(tmp_path):
+    result = launcher_checks.parse_os_release(tmp_path)
+
+    assert result == {}
+
+
+def test_write_permissions_ok_rejects_invalid_target_type():
+    with pytest.raises(TypeError):
+        launcher_checks.write_permissions_ok("not-a-path")
+
+
+def test_write_permissions_ok_returns_false_for_missing_path(tmp_path):
+    target = tmp_path / "missing"
+
+    assert not launcher_checks.write_permissions_ok(target)
+
+
+def test_write_permissions_ok_returns_false_for_file(tmp_path):
+    target = tmp_path / "file.txt"
+    target.write_text("x", encoding="utf-8")
+
+    assert not launcher_checks.write_permissions_ok(target)
+
+
 def test_beginner_recovery_hints_include_actionable_steps():
     results = [
         launcher_checks.RepairResult(
