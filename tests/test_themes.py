@@ -1,12 +1,13 @@
 import core.themes as themes
 
 
-def test_theme_catalog_is_limited_to_three_profiles() -> None:
+def test_theme_catalog_is_limited_to_four_profiles() -> None:
     loaded = themes.load_themes()
     assert list(loaded.keys()) == [
         "Modern",
         "Nachtblau Pro",
         "Hochkontrast Hell",
+        "Hochkontrast Dunkel",
     ]
 
 
