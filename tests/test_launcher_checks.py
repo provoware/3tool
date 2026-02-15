@@ -221,3 +221,57 @@ def test_evaluate_release_readiness_ok_when_basics_exist(tmp_path):
     results = launcher_checks.evaluate_release_readiness(tmp_path)
 
     assert all(result.ok for result in results)
+
+
+def test_build_check_feedback_with_blocking_failure():
+    results = [
+        launcher_checks.CheckResult(
+            key="python",
+            title="Python",
+            ok=True,
+            detail="ok",
+        ),
+        launcher_checks.CheckResult(
+            key="packages",
+            title="Pakete",
+            ok=False,
+            detail="fehlt",
+        ),
+        launcher_checks.CheckResult(
+            key="internet",
+            title="Internet",
+            ok=False,
+            detail="offline",
+            blocking=False,
+        ),
+    ]
+
+    feedback = launcher_checks.build_check_feedback(results)
+
+    assert feedback["headline"].startswith("Start noch nicht bereit")
+    assert "1/2" in feedback["summary"]
+    assert any("Reparieren" in step for step in feedback["next_steps"])
+
+
+def test_build_repair_feedback_summarizes_offline_and_hints():
+    results = [
+        launcher_checks.RepairResult(
+            key="packages",
+            title="Pakete",
+            ok=False,
+            detail="offline",
+            skipped_offline=True,
+        ),
+        launcher_checks.RepairResult(
+            key="write_permissions",
+            title="Schreibrechte",
+            ok=True,
+            detail="ok",
+        ),
+    ]
+
+    feedback = launcher_checks.build_repair_feedback(results)
+
+    assert feedback["headline"].startswith("Reparatur abgeschlossen")
+    assert "Offline" in feedback["summary"]
+    assert any("Offline" in hint for hint in feedback["hints"])

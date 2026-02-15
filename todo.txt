@@ -84,3 +84,5 @@
 - [x] Theme-Feldkontrastpruefung und Launcher-Recovery-Hinweise fuer Laien erweitert
 - [x] Seniorenmodus (groessere Schrift/Bedienelemente) und einfache Laien-Hinweise im Launcher erweitern
 - [x] Neues Barrierefrei-Max-Profil und robustere Profilvalidierung mit Logging umgesetzt
+- [x] Launcher-Nutzerfeedback um klare Status-Zusammenfassung und nächste Schritte erweitert
+

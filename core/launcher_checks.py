@@ -716,3 +716,85 @@ def beginner_recovery_hints(results: Iterable[RepairResult]) -> list[str]:
             "werden."
         )
     return hints
+
+
+def _validated_results(
+    results: Iterable[CheckResult | RepairResult],
+    *,
+    expected_type: type[CheckResult] | type[RepairResult],
+) -> list[CheckResult] | list[RepairResult]:
+    if not isinstance(results, Iterable):
+        raise TypeError("results muss iterierbar sein.")
+    result_list = list(results)
+    if any(not isinstance(item, expected_type) for item in result_list):
+        raise TypeError("results enthaelt unerwartete Ergebnistypen.")
+    return result_list
+
+
+def build_check_feedback(results: Iterable[CheckResult]) -> dict[str, object]:
+    check_results = _validated_results(results, expected_type=CheckResult)
+    blocking_total = sum(1 for item in check_results if item.blocking)
+    blocking_ok = sum(1 for item in check_results if item.blocking and item.ok)
+    optional_failed = [
+        item.title
+        for item in check_results
+        if not item.blocking and not item.ok
+    ]
+    blocking_failed = [
+        item.title for item in check_results if item.blocking and not item.ok
+    ]
+
+    headline = (
+        "Start bereit." if not blocking_failed else "Start noch nicht bereit."
+    )
+    next_steps: list[str] = []
+    if blocking_failed:
+        next_steps.append(
+            "Bitte auf 'Reparieren' klicken, damit die Pflicht-Pruefungen "
+            "automatisch behoben werden."
+        )
+    if optional_failed:
+        next_steps.append(
+            "Hinweis: Optionale Punkte sind offen (z. B. Internet). Das Tool "
+            "kann meist trotzdem starten."
+        )
+    if not next_steps:
+        next_steps.append(
+            "Alle Pflichtpunkte sind grün. Sie können jetzt mit 'Starten' "
+            "fortfahren."
+        )
+
+    summary = (
+        f"Pflichtpruefungen erfolgreich: {blocking_ok}/{max(blocking_total, 1)}"
+    )
+    LOGGER.info("Check-Feedback erstellt: %s | %s", headline, summary)
+    return {
+        "headline": headline,
+        "summary": summary,
+        "next_steps": next_steps,
+    }
+
+
+def build_repair_feedback(results: Iterable[RepairResult]) -> dict[str, object]:
+    repair_results = _validated_results(results, expected_type=RepairResult)
+    failed = [item.title for item in repair_results if not item.ok]
+    offline_skips = sum(1 for item in repair_results if item.skipped_offline)
+    hints = beginner_recovery_hints(repair_results)
+
+    headline = "Reparatur erfolgreich abgeschlossen."
+    if failed:
+        headline = "Reparatur abgeschlossen, aber weitere Schritte noetig."
+
+    summary = (
+        f"Erfolgreich: {sum(1 for item in repair_results if item.ok)}/"
+        f"{len(repair_results)}"
+    )
+    if offline_skips:
+        summary += f" | Offline uebersprungen: {offline_skips}"
+
+    LOGGER.info("Reparatur-Feedback erstellt: %s | %s", headline, summary)
+    return {
+        "headline": headline,
+        "summary": summary,
+        "hints": hints,
+    }

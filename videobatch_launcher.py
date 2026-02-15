@@ -275,10 +275,17 @@ def build_wizard():
                     "<ul>" + "".join(tips) + "</ul>"
                 )
 
+            feedback = launcher_checks.build_check_feedback(results)
+            steps_html = "".join(
+                f"<li>{step}</li>" for step in feedback["next_steps"]
+            )
             html = (
-                "<h3>Status-Checkliste</h3><ul>" + "".join(items) + "</ul>"
-                "<p>Mit »Automatisch reparieren« werden die Schritte der Reihe nach "
-                "ausgeführt.</p>" + tips_html
+                f"<h3>{feedback['headline']}</h3>"
+                f"<p><strong>{feedback['summary']}</strong></p>"
+                "<h4>Status-Checkliste</h4><ul>" + "".join(items) + "</ul>"
+                "<h4>Naechste Schritte</h4><ul>" + steps_html + "</ul>"
+                "<p>Mit »Automatisch reparieren« werden die Schritte der Reihe "
+                "nach ausgefuehrt.</p>" + tips_html
             )
             return html, round(pct)
 
@@ -300,21 +307,23 @@ def build_wizard():
                 f"<li>{'✅' if r.ok else '❌'} {r.title}: {r.detail}</li>"
                 for r in results
             ]
-            recovery_hints = launcher_checks.beginner_recovery_hints(results)
+            feedback = launcher_checks.build_repair_feedback(results)
             offline_note = (
                 "<p><strong>Kein Internet, Installation übersprungen.</strong></p>"
                 if offline_skips
                 else ""
             )
             hints_html = ""
-            if recovery_hints:
+            if feedback["hints"]:
                 hints_html = (
                     "<h4>Naechste Schritte (einfach erklaert)</h4><ul>"
-                    + "".join(f"<li>{hint}</li>" for hint in recovery_hints)
+                    + "".join(f"<li>{hint}</li>" for hint in feedback["hints"])
                     + "</ul>"
                 )
             self.info.setHtml(
-                "<h3>Reparatur-Ergebnis</h3><ul>"
+                f"<h3>{feedback['headline']}</h3>"
+                f"<p><strong>{feedback['summary']}</strong></p>"
+                "<h4>Reparatur-Ergebnis</h4><ul>"
                 + "".join(detail_lines)
                 + "</ul>"
                 + offline_note

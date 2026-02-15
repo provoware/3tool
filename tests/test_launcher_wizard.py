@@ -75,3 +75,24 @@ def test_wizard_fix_results_restarts_check(monkeypatch, qapp):
 
     assert started["called"]
     assert "Kein Internet" in wizard.info.toPlainText()
+
+
+def test_wizard_render_results_contains_next_steps(monkeypatch, qapp):
+    Wizard, _ = _build_wizard(monkeypatch)
+    wizard = Wizard()
+    results = [
+        launcher_checks.CheckResult(
+            key="python",
+            title="Python",
+            ok=False,
+            detail="zu alt",
+            fix_hint="Python aktualisieren",
+            blocking=True,
+        )
+    ]
+
+    html, pct = wizard._render_results(results)
+
+    assert "Naechste Schritte" in html
+    assert "Start noch nicht bereit" in html
+    assert pct == 0
