@@ -19,6 +19,11 @@ def test_validate_requirements_path_rejects_missing_file(
         qa_preflight._validate_requirements_path(tmp_path / "missing.txt")
 
 
+def test_validate_debug_mode_requires_bool() -> None:
+    with pytest.raises(TypeError):
+        qa_preflight._validate_debug_mode("ja")  # type: ignore[arg-type]
+
+
 def test_run_preflight_rejects_empty_python_cmd(tmp_path: Path) -> None:
     req = tmp_path / "requirements-dev.txt"
     req.write_text("", encoding="utf-8")
@@ -53,3 +58,28 @@ def test_run_preflight_success(monkeypatch, tmp_path: Path) -> None:
     result = qa_preflight.run_preflight(req, ["pytest", "mypy"], "python3")
 
     assert result == 0
+
+
+def test_run_preflight_debug_mode_prints_debug_lines(
+    monkeypatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(qa_preflight, "_run_pip_install", lambda *_args: None)
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
+
+    result = qa_preflight.run_preflight(
+        req,
+        ["pytest"],
+        "python3",
+        debug_mode=True,
+    )
+
+    assert result == 0
+    captured = capsys.readouterr()
+    assert "🐞 Debug-Modus aktiv" in captured.out
+    assert "🐞 Prüfe Tool-Import: pytest" in captured.out
