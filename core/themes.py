@@ -78,6 +78,23 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
         + BASE_COMPONENT_STYLE
         + ACTIVE_SECTION_STYLE,
     ),
+    (
+        "Hochkontrast Dunkel",
+        "QWidget{background-color:#000000;color:#ffffff;} "
+        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
+        "QPushButton:hover{background-color:#f3f4f6;}"
+        "QPushButton:pressed{background-color:#d1d5db;}"
+        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
+        "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
+        "QHeaderView::section{background-color:#ffffff;color:#000000;}"
+        "QTableView::item:selected,QListView::item:selected{"
+        "background-color:#ffffff;color:#000000;}"
+        "QProgressBar{background-color:#000000;color:#ffffff;border:2px solid #ffffff;} "
+        "QProgressBar::chunk{background-color:#ffffff;} "
+        + FOCUS_STYLE
+        + BASE_COMPONENT_STYLE
+        + ACTIVE_SECTION_STYLE,
+    ),
 )
 
 
