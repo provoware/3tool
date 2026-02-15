@@ -857,6 +857,9 @@ def build_check_feedback(results: Iterable[CheckResult]) -> dict[str, object]:
     blocking_failed = [
         item.title for item in check_results if item.blocking and not item.ok
     ]
+    failed_fix_hints = [
+        item.fix_hint for item in check_results if not item.ok and item.fix_hint
+    ]
 
     headline = (
         "Start bereit." if not blocking_failed else "Start noch nicht bereit."
@@ -878,6 +881,18 @@ def build_check_feedback(results: Iterable[CheckResult]) -> dict[str, object]:
             "fortfahren."
         )
 
+    beginner_terms = [
+        "venv (virtuelle Umgebung): geschützter Python-Bereich nur für dieses Tool.",
+        "pip (Paketmanager): installiert fehlende Python-Bausteine.",
+        "ffmpeg: Werkzeug zum Verarbeiten von Video und Audio.",
+        "Debug-Log: detailliertes Protokoll für die Fehlersuche.",
+    ]
+
+    quick_commands: list[str] = []
+    for hint in failed_fix_hints:
+        if isinstance(hint, str) and hint.startswith("Befehl:"):
+            quick_commands.append(hint.removeprefix("Befehl:").strip())
+
     summary = (
         f"Pflichtpruefungen erfolgreich: {blocking_ok}/{max(blocking_total, 1)}"
     )
@@ -886,6 +901,8 @@ def build_check_feedback(results: Iterable[CheckResult]) -> dict[str, object]:
         "headline": headline,
         "summary": summary,
         "next_steps": next_steps,
+        "beginner_terms": beginner_terms,
+        "quick_commands": quick_commands,
     }
 
 

@@ -288,12 +288,30 @@ def build_wizard():
             steps_html = "".join(
                 f"<li>{step}</li>" for step in feedback["next_steps"]
             )
+            terms_html = "".join(
+                f"<li>{term}</li>" for term in feedback["beginner_terms"]
+            )
+            commands = feedback["quick_commands"]
+            commands_html = "".join(
+                f"<li><code>{cmd}</code></li>" for cmd in commands
+            )
+            command_section = (
+                "<h4>Schnelle Befehle (Terminal)</h4><ul>"
+                + commands_html
+                + "</ul><p>Diese Befehle koennen 1:1 kopiert werden.</p>"
+                if commands
+                else ""
+            )
             html = (
                 f"<h3>{feedback['headline']}</h3>"
                 f"<p><strong>{feedback['summary']}</strong></p>"
                 "<h4>Status-Checkliste</h4><ul>" + "".join(items) + "</ul>"
                 "<h4>Naechste Schritte</h4><ul>" + steps_html + "</ul>"
-                "<p>Mit »Automatisch reparieren« werden die Schritte der Reihe "
+                "<h4>Begriffe einfach erklaert</h4><ul>"
+                + terms_html
+                + "</ul>"
+                + command_section
+                + "<p>Mit »Automatisch reparieren« werden die Schritte der Reihe "
                 "nach ausgefuehrt.</p>" + tips_html
             )
             return html, round(pct)
