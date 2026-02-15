@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import subprocess
 from pathlib import Path
 from typing import Callable, cast
 
@@ -68,6 +69,57 @@ def _prepare_runtime_dirs() -> dict[str, Path]:
                 "Bitte Ordnerrechte prüfen oder anderen Benutzerordner nutzen."
             )
     return required_dirs
+
+
+def _validated_runtime_dirs(
+    runtime_dirs: dict[str, Path], required_keys: tuple[str, ...]
+) -> dict[str, Path]:
+    if not isinstance(runtime_dirs, dict):
+        _fail("Interner Fehler: runtime_dirs ist kein Dictionary.")
+    validated: dict[str, Path] = {}
+    for key in required_keys:
+        value = runtime_dirs.get(key)
+        if not isinstance(value, Path):
+            _fail(
+                "Interner Fehler: Laufzeitordner fehlt oder ist ungültig "
+                f"({key})."
+            )
+        validated[key] = value
+    return validated
+
+
+def _safe_prepare_runtime_dirs() -> dict[str, Path]:
+    try:
+        runtime_dirs = _prepare_runtime_dirs()
+    except OSError as exc:
+        _fail(
+            "Laufzeitordner konnten nicht erstellt werden: "
+            f"{exc}. Bitte Rechte/Speicherplatz prüfen."
+        )
+    return _validated_runtime_dirs(runtime_dirs, ("Nutzerdaten", "Protokolle"))
+
+
+def _safe_ensure_venv() -> str:
+    try:
+        launcher_checks.ensure_venv()
+        return str(launcher_checks.venv_python())
+    except (subprocess.SubprocessError, OSError, ValueError) as exc:
+        _fail(
+            "Python-Umgebung konnte nicht vorbereitet werden: "
+            f"{exc}. Bitte 'python3 -m venv .videotool_env' ausführen."
+        )
+
+
+def _safe_run_checks(
+    py: str, target_dir: Path
+) -> list[launcher_checks.CheckResult]:
+    try:
+        return _run_checks(py, target_dir)
+    except (TypeError, ValueError, OSError) as exc:
+        _fail(
+            "System-Checks konnten nicht abgeschlossen werden: "
+            f"{exc}. Bitte Debug-Modus starten (python3 start_gui.py --debug)."
+        )
 
 
 def _print_release_readiness(project_root: Path) -> bool:
@@ -151,6 +203,18 @@ def _run_repairs(
     return repairs
 
 
+def _safe_run_repairs(
+    py: str, target_dir: Path
+) -> list[launcher_checks.RepairResult]:
+    try:
+        return _run_repairs(py, target_dir)
+    except (TypeError, ValueError, OSError) as exc:
+        _fail(
+            "Self-Repair konnte nicht abgeschlossen werden: "
+            f"{exc}. Bitte erneut mit --debug starten."
+        )
+
+
 def _start_gui(start_func: Callable[[], None]) -> None:
     try:
         start_func()
@@ -193,19 +257,18 @@ def main() -> int:
     _ok("Projektdateien vollständig")
 
     _status(2, steps, "Laufzeitordner vorbereiten")
-    runtime_dirs = _prepare_runtime_dirs()
+    runtime_dirs = _safe_prepare_runtime_dirs()
     launcher_log = runtime_dirs["Protokolle"] / "launcher.log"
     launcher_checks.configure_logging(launcher_log, args.debug)
     launcher_checks.LOGGER.info("Launcher gestartet (debug=%s)", args.debug)
     _ok("Daten-, Config-, Log-, Work- und Cache-Ordner bereit")
 
     _status(3, steps, "Launcher-Umgebung vorbereiten")
-    launcher_checks.ensure_venv()
-    py = str(launcher_checks.venv_python())
+    py = _safe_ensure_venv()
     _ok(f"Python-Umgebung bereit: {py}")
 
     _status(4, steps, "System-Checks ausführen")
-    results = _run_checks(py, runtime_dirs["Nutzerdaten"])
+    results = _safe_run_checks(py, runtime_dirs["Nutzerdaten"])
     _print_check_summary(results)
 
     if not _all_blocking_ok(results):
@@ -214,14 +277,14 @@ def main() -> int:
             _warn(
                 "Blockierende Probleme gefunden. Auto-Reparatur wird jetzt automatisch ausgeführt."
             )
-        repairs = _run_repairs(py, runtime_dirs["Nutzerdaten"])
+        repairs = _safe_run_repairs(py, runtime_dirs["Nutzerdaten"])
         launcher_checks.LOGGER.info(
             "Repair-Hinweise fuer Laien: %s",
             " | ".join(launcher_checks.beginner_recovery_hints(repairs))
             or "keine",
         )
         _status(6, steps, "Checks nach Reparatur wiederholen")
-        results = _run_checks(py, runtime_dirs["Nutzerdaten"])
+        results = _safe_run_checks(py, runtime_dirs["Nutzerdaten"])
         _print_check_summary(results)
 
     if not _all_blocking_ok(results):
