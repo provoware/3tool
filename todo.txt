@@ -95,3 +95,4 @@
 - [x] Launcher-Checks um optionalen Konsistenzcheck fuer requirements-Dateien erweitert und mit Tests abgesichert
 - [x] QA-Preflight um Debug-Modus, strengere Eingabevalidierung und transparente Status-Logs erweitert
 
+- [x] Quality-Fix-Skript um mypy-Validierung nach Auto-Fixes erweitert

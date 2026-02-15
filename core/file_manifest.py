@@ -6,7 +6,7 @@ import json
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 MANIFEST_SCHEMA_VERSION = "1"
 
@@ -42,6 +42,24 @@ def _sha256(path: Path) -> str:
                 break
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _manifest_file_map(
+    entries: list[dict[str, object]]
+) -> dict[str, tuple[int, str]]:
+    mapped: dict[str, tuple[int, str]] = {}
+    for entry in entries:
+        path_value = entry.get("path")
+        size_value = entry.get("size")
+        sha_value = entry.get("sha256")
+        if not isinstance(path_value, str) or not path_value.strip():
+            continue
+        if not isinstance(size_value, int):
+            continue
+        if not isinstance(sha_value, str) or not sha_value.strip():
+            continue
+        mapped[path_value] = (size_value, sha_value)
+    return mapped
 
 
 def build_manifest(
@@ -83,7 +101,9 @@ def verify_manifest(project_root: Path, manifest_path: Path) -> VerifyResult:
     if not manifest_path.exists():
         return VerifyResult(False, [f"Manifest fehlt: {manifest_path}"])
 
-    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    data = cast(
+        dict[str, Any], json.loads(manifest_path.read_text(encoding="utf-8"))
+    )
     expected = build_manifest(
         project_root,
         exclude={manifest_path.relative_to(project_root)},
@@ -95,14 +115,8 @@ def verify_manifest(project_root: Path, manifest_path: Path) -> VerifyResult:
     expected_files = cast(list[dict[str, object]], expected["files"])
     manifest_files = cast(list[dict[str, object]], data.get("files", []))
 
-    current_files = {
-        str(entry["path"]): (int(entry["size"]), str(entry["sha256"]))
-        for entry in expected_files
-    }
-    stored_files = {
-        str(entry["path"]): (int(entry["size"]), str(entry["sha256"]))
-        for entry in manifest_files
-    }
+    current_files = _manifest_file_map(expected_files)
+    stored_files = _manifest_file_map(manifest_files)
 
     missing = sorted(set(current_files) - set(stored_files))
     extra = sorted(set(stored_files) - set(current_files))
@@ -131,12 +145,14 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--project-root",
-        default=".",
+        type=Path,
+        default=Path.cwd(),
         help="Projektwurzel (Standard: aktuelles Verzeichnis).",
     )
     parser.add_argument(
         "--output",
-        default="data/manifest/v1/project_files.json",
+        type=Path,
+        default=Path("data/manifest/v1/project_files.json"),
         help="Pfad der Manifestdatei relativ zur Projektwurzel.",
     )
     parser.add_argument(
@@ -149,7 +165,7 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    project_root = Path(args.project_root).resolve()
+    project_root = args.project_root.resolve()
     output = (project_root / args.output).resolve()
 
     if args.verify:
@@ -157,12 +173,11 @@ def main() -> int:
         if result.ok:
             print(f"Manifest ok: {output}")
             return 0
-        for detail in result.details:
-            print(detail)
+        print("\n".join(result.details))
         return 1
 
-    path = write_manifest(project_root, output)
-    print(f"Manifest geschrieben: {path}")
+    written = write_manifest(project_root, output)
+    print(f"Manifest geschrieben: {written}")
     return 0
 
 
