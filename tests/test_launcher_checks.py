@@ -140,6 +140,24 @@ def test_missing_runtime_packages_checks_pip_and_import(monkeypatch):
     assert missing == ["Pillow", "ffmpeg-python"]
 
 
+def test_check_dependency_file_consistency_reports_issues(tmp_path):
+    (tmp_path / "requirements.txt").write_text("PySide6\n", encoding="utf-8")
+    (tmp_path / "requirements-dev.txt").write_text(
+        "pytest==9.0.2\n", encoding="utf-8"
+    )
+
+    result = launcher_checks.check_dependency_file_consistency(tmp_path)
+
+    assert not result.ok
+    assert result.fix_hint
+    assert "Abweichungen" in result.detail
+
+
+def test_collect_checks_rejects_invalid_project_root(tmp_path):
+    with pytest.raises(TypeError):
+        launcher_checks.collect_checks("python", tmp_path, project_root=".")
+
+
 def test_collect_checks_rejects_invalid_types(tmp_path):
     with pytest.raises(ValueError):
         launcher_checks.collect_checks("", tmp_path)
