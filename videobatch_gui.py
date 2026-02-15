@@ -1414,15 +1414,15 @@ class InfoDashboard(QtWidgets.QWidget):
         self.env_lbl.setAccessibleName("Umgebung")
         self.progress_value = QtWidgets.QLabel("0%")
         self.progress_value.setAccessibleName("Großer Fortschrittswert")
-        self.progress_value.setStyleSheet("font-size: 30px; font-weight: 700;")
+        self.progress_value.setProperty("metricValue", True)
         self.progress = QtWidgets.QProgressBar()
-        self.progress.setMinimumHeight(26)
+        self.progress.setMinimumHeight(28)
         self.progress.setAccessibleName("Fortschritt gesamt")
         self.progress.setFormat("%p%")
         self.mini_log = QtWidgets.QPlainTextEdit()
         self.mini_log.setReadOnly(True)
         self.mini_log.setMaximumBlockCount(300)
-        self.mini_log.setFixedHeight(90)
+        self.mini_log.setMinimumHeight(96)
         self.mini_log.setAccessibleName("Kurzprotokoll")
 
         summary = QtWidgets.QLabel(
@@ -1433,71 +1433,109 @@ class InfoDashboard(QtWidgets.QWidget):
             )
         )
         summary.setObjectName("DashboardSummary")
-        summary.setStyleSheet("font-weight: 600;")
+        summary.setStyleSheet("font-weight: 700;")
 
         self.selection_label = QtWidgets.QLabel()
         self.selection_label.setAccessibleName("Auswahlstatus")
 
-        row = QtWidgets.QHBoxLayout()
-        row.setSpacing(12)
-        for w in (
-            QtWidgets.QLabel(
-                text_with_fallback(
-                    self.texts,
-                    "dashboard.counts.total",
-                    "Gesamt",
-                )
-                + ":"
-            ),
-            self.total_label,
-            QtWidgets.QLabel(
-                text_with_fallback(
-                    self.texts,
-                    "dashboard.counts.done",
-                    "Fertig",
-                )
-                + ":"
-            ),
-            self.done_label,
-            QtWidgets.QLabel(
-                text_with_fallback(
-                    self.texts,
-                    "dashboard.counts.errors",
-                    "Fehler",
-                )
-                + ":"
-            ),
-            self.err_label,
-            QtWidgets.QLabel(
-                text_with_fallback(
-                    self.texts,
-                    "dashboard.counts.progress",
-                    "Fortschritt",
-                )
-                + ":"
-            ),
-            self.progress,
-            self.progress_value,
-            self.ffmpeg_lbl,
-            self.env_lbl,
-        ):
-            row.addWidget(w)
-        row.addStretch(1)
+        cards_layout = QtWidgets.QHBoxLayout()
+        cards_layout.setSpacing(8)
+        cards_layout.addWidget(
+            self._build_metric_card("Gesamt", self.total_label)
+        )
+        cards_layout.addWidget(
+            self._build_metric_card("Fertig", self.done_label)
+        )
+        cards_layout.addWidget(
+            self._build_metric_card("Fehler", self.err_label)
+        )
+        cards_layout.addWidget(
+            self._build_metric_card("Fortschritt", self.progress_value)
+        )
+        cards_layout.addStretch(1)
+
+        status_row = QtWidgets.QHBoxLayout()
+        status_row.setSpacing(10)
+        status_row.addWidget(self.progress, 2)
+        status_row.addWidget(self.ffmpeg_lbl, 1)
+        status_row.addWidget(self.env_lbl, 1)
+
         lay = QtWidgets.QVBoxLayout(self)
+        lay.setSpacing(8)
         lay.addWidget(summary)
         lay.addWidget(self.selection_label)
-        lay.addLayout(row)
+        lay.addLayout(cards_layout)
+        lay.addLayout(status_row)
         lay.addWidget(self.mini_log)
         self.set_selection_counts(0, 0)
 
+    def _safe_non_negative_int(self, value: object, field_name: str) -> int:
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            logger.warning(
+                "Dashboard-Wert '%s' ist ungueltig (%r). Nutze 0.",
+                field_name,
+                value,
+            )
+            return 0
+        if parsed < 0:
+            logger.warning(
+                "Dashboard-Wert '%s' war negativ (%s). Nutze 0.",
+                field_name,
+                parsed,
+            )
+            return 0
+        return parsed
+
+    def _build_metric_card(
+        self, title: str, value_label: QtWidgets.QLabel
+    ) -> QtWidgets.QFrame:
+        title_label = QtWidgets.QLabel(title)
+        title_label.setProperty("metricLabel", True)
+        value_label.setProperty("metricValue", True)
+        value_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+
+        card = QtWidgets.QFrame()
+        card.setProperty("dashboardCard", True)
+        lay = QtWidgets.QVBoxLayout(card)
+        lay.setContentsMargins(8, 6, 8, 6)
+        lay.setSpacing(2)
+        lay.addWidget(title_label)
+        lay.addWidget(value_label)
+        return card
+
     def set_counts(self, t, d, e):
-        self.total_label.setText(str(t))
-        self.done_label.setText(str(d))
-        self.err_label.setText(str(e))
+        total = self._safe_non_negative_int(t, "gesamt")
+        done = self._safe_non_negative_int(d, "fertig")
+        errors = self._safe_non_negative_int(e, "fehler")
+        if done > total:
+            logger.warning(
+                "Dashboard: 'fertig' (%s) groesser als 'gesamt' (%s). Begrenze auf Gesamt.",
+                done,
+                total,
+            )
+            done = total
+        if errors > total:
+            logger.warning(
+                "Dashboard: 'fehler' (%s) groesser als 'gesamt' (%s). Begrenze auf Gesamt.",
+                errors,
+                total,
+            )
+            errors = total
+        self.total_label.setText(str(total))
+        self.done_label.setText(str(done))
+        self.err_label.setText(str(errors))
 
     def set_selection_counts(self, selected_images: int, selected_audios: int):
-        self.selected_images_label.setText(str(selected_images))
-        self.selected_audios_label.setText(str(selected_audios))
+        valid_images = self._safe_non_negative_int(
+            selected_images, "ausgewaehlte Bilder"
+        )
+        valid_audios = self._safe_non_negative_int(
+            selected_audios, "ausgewaehlte Audios"
+        )
+        self.selected_images_label.setText(str(valid_images))
+        self.selected_audios_label.setText(str(valid_audios))
         template = text_with_fallback(
             self.texts,
             "dashboard.selection",
@@ -1505,14 +1543,21 @@ class InfoDashboard(QtWidgets.QWidget):
         )
         self.selection_label.setText(
             template.format(
-                selected_images=selected_images,
-                selected_audios=selected_audios,
+                selected_images=valid_images,
+                selected_audios=valid_audios,
             )
         )
 
     def set_progress(self, v):
-        self.progress.setValue(v)
-        self.progress_value.setText(f"{int(v)}%")
+        progress = self._safe_non_negative_int(v, "fortschritt")
+        if progress > 100:
+            logger.warning(
+                "Dashboard-Fortschritt war groesser als 100 (%s). Begrenze auf 100.",
+                progress,
+            )
+            progress = 100
+        self.progress.setValue(progress)
+        self.progress_value.setText(f"{progress}%")
 
     def set_env(self, ff_ok, imp_ok=True):
         self.ffmpeg_lbl.setText(

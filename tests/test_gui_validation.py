@@ -31,3 +31,24 @@ def test_validate_audio_fields_marks_invalid(qtbot):
 
     assert "#ffd6d6" in win.audio_edit.styleSheet()
     assert "existiert nicht" in win.validation_msg.text()
+
+
+def test_dashboard_counts_are_clamped(qtbot):
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    dashboard.set_counts(2, 5, -1)
+
+    assert dashboard.total_label.text() == "2"
+    assert dashboard.done_label.text() == "2"
+    assert dashboard.err_label.text() == "0"
+
+
+def test_dashboard_progress_is_limited_to_100(qtbot):
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    dashboard.set_progress(160)
+
+    assert dashboard.progress.value() == 100
+    assert dashboard.progress_value.text() == "100%"

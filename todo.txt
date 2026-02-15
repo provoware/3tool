@@ -86,3 +86,4 @@
 - [x] Neues Barrierefrei-Max-Profil und robustere Profilvalidierung mit Logging umgesetzt
 - [x] Launcher-Nutzerfeedback um klare Status-Zusammenfassung und nächste Schritte erweitert
 
+- [x] Dashboard-Kennzahlen als kontrastreiche Karten mit validierten Werten umgesetzt und Fehlerhandling im Statusbereich gehaertet
