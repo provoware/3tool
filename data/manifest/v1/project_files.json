@@ -132,6 +132,11 @@
       "sha256": "578ace55f759733894099207f41c75b260f9ff118dbcc70b795ec7d65e59589c"
     },
     {
+      "path": "core/launcher_theme.py",
+      "size": 2101,
+      "sha256": "938118dc7e30202d4ccbd27115a743871ce74570579ba880bf639c622bde0f94"
+    },
+    {
       "path": "core/paths.py",
       "size": 388,
       "sha256": "eb01a1ba01fd903530b86f480e7409229bef489ef6078b4c80c39ad8729cd147"
@@ -188,8 +193,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 62451,
-      "sha256": "2a43a8e8976928291ef681eea63f327104ae83d252fc7e9282333394893b0ea0"
+      "size": 63284,
+      "sha256": "55ed92fb2b4f02e87beed5f2b847023d5eac56e405e71ef37501b2e2512aad70"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -292,6 +297,11 @@
       "sha256": "cd0e3fe51029e4c9265871dd74dd04f30c0f2a79e986f71faaf01a871b5792d6"
     },
     {
+      "path": "tests/test_launcher_theme.py",
+      "size": 1030,
+      "sha256": "72bb4055061c45a4a051a677d246e7709c5346ffede17ac3803ed3061018b7dc"
+    },
+    {
       "path": "tests/test_launcher_wizard.py",
       "size": 3635,
       "sha256": "fbdb2e7cc89c2ea6af4cc51c87dcb1d9e9c47f5e8fb9712ad0505bf2a0c79826"
@@ -348,8 +358,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 11014,
-      "sha256": "86fd22dc3e77d9118ebe20394cc21958fc461a92389266c1a247bb75105381f6"
+      "size": 11130,
+      "sha256": "06d0f40ad7602e51e81ebb844c89a378c2422e4c0308a59032087fa14bf6c6b2"
     },
     {
       "path": "videobatch_extra.py",
@@ -368,8 +378,8 @@
     },
     {
       "path": "videobatch_launcher.py",
-      "size": 17591,
-      "sha256": "5af62a45b1c9f5f83b7018cd1c2bedc9ca7e6ce2213893d0eeff6c3f59c9b7f8"
+      "size": 17252,
+      "sha256": "3e7f55fd29d6a8bb70b5c207f2c6b31c3b8dd54887fcc88b71c8c33be158b1ab"
     },
     {
       "path": "videobatch_professional.py",
