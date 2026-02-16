@@ -7,6 +7,7 @@ import socket
 import shutil
 import subprocess
 import sys
+import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final
@@ -232,17 +233,30 @@ def _run_quiet(command: list[str], timeout_seconds: int) -> bool:
                 "Jeder Kommando-Teil muss ein nicht-leerer String sein."
             )
 
+    try:
+        return (
+            subprocess.run(
+                command,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+                timeout=_validate_timeout_seconds(
+                    timeout_seconds, "timeout_seconds"
+                ),
+            ).returncode
+            == 0
+        )
+    except (subprocess.SubprocessError, OSError):
+        return False
+
+
+def _build_error_help(exc: BaseException) -> str:
+    if not isinstance(exc, BaseException):
+        raise TypeError("exc muss eine Exception sein.")
     return (
-        subprocess.run(
-            command,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False,
-            timeout=_validate_timeout_seconds(
-                timeout_seconds, "timeout_seconds"
-            ),
-        ).returncode
-        == 0
+        f"{exc.__class__.__name__}: {exc}. "
+        "Bitte Debug-Modus (--debug) nutzen und den letzten Schritt erneut "
+        "ausführen."
     )
 
 
@@ -458,7 +472,7 @@ def _attempt_tool_repair(
     )
     try:
         _run_pip_install_packages(tools_to_repair, python_cmd)
-    except (TypeError, ValueError, subprocess.SubprocessError) as exc:
+    except (TypeError, ValueError, subprocess.SubprocessError, OSError) as exc:
         print_feedback(
             "warn",
             "Automatische Reparatur konnte nicht vollständig ausgeführt "
@@ -592,10 +606,23 @@ def run_preflight(
         _write_preflight_report(report_target, report)
         return 1
 
-    network_ok, network_detail = _network_any_reachable(
-        NETWORK_ENDPOINTS,
-        NETWORK_TIMEOUT_SECONDS,
-    )
+    try:
+        network_ok, network_detail = _network_any_reachable(
+            NETWORK_ENDPOINTS,
+            NETWORK_TIMEOUT_SECONDS,
+        )
+    except (TypeError, ValueError, OSError) as exc:
+        detail = _build_error_help(exc)
+        print_feedback(
+            "warn",
+            "Netzwerk-Check konnte nicht sicher ausgeführt werden. "
+            "Es wird mit Installationsversuch fortgefahren.",
+        )
+        print_debug(f"Netzwerk-Check Fehlerdetail: {detail}", debug_enabled)
+        network_ok = False
+        network_detail = "Prüfung fehlgeschlagen"
+        _push_check("network", "warn", detail)
+
     if network_ok:
         print_feedback(
             "ok", f"Netzwerk-Check: erreichbar über {network_detail}."
@@ -675,13 +702,40 @@ def run_preflight(
             f"Prüfe Tool-Import: {tool} (Modul: {module_name})",
             debug_enabled,
         )
-        if _module_import_ok(module_name, interpreter):
+        tool_check_logged = False
+        try:
+            tool_ready = _module_import_ok(module_name, interpreter)
+        except (
+            TypeError,
+            ValueError,
+            OSError,
+            subprocess.SubprocessError,
+        ) as exc:
+            tool_ready = False
+            detail = _build_error_help(exc)
+            print_feedback(
+                "warn",
+                f"Tool-Prüfung konnte nicht abgeschlossen werden: {tool}",
+            )
+            print_debug(
+                f"Tool-Prüfung Fehlerdetail ({tool}): {detail}",
+                debug_enabled,
+            )
+            _push_check(f"tool:{tool}", "warn", detail)
+            tool_check_logged = True
+
+        if tool_ready:
             print_feedback("ok", f"Tool bereit: {tool}")
             _push_check(f"tool:{tool}", "ok", "Import erfolgreich")
-        else:
+        elif tool not in failed_tools:
             failed_tools.append(tool)
             print_feedback("warn", f"Tool nicht importierbar: {tool}")
-            _push_check(f"tool:{tool}", "warn", "Import fehlgeschlagen")
+            if not tool_check_logged:
+                _push_check(
+                    f"tool:{tool}",
+                    "warn",
+                    "Import fehlgeschlagen",
+                )
 
     if failed_tools:
         failed_tools = _attempt_tool_repair(
@@ -781,6 +835,12 @@ def main() -> int:
             "💡 Lösung: Dateipfade und Tool-Namen prüfen, "
             "z. B. --requirements requirements-dev.txt --tools ruff black"
         )
+        return 1
+    except Exception as exc:  # pragma: no cover - letzte Schutzschicht
+        print("❌ Unerwarteter Fehler im QA-Preflight.")
+        print(f"💡 Ursache: {_build_error_help(exc)}")
+        if "--debug" in sys.argv:
+            print_feedback("debug", traceback.format_exc())
         return 1
 
 
