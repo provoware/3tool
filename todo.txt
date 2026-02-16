@@ -130,3 +130,4 @@
 - [x] Mypy-Qualitätslauf stabilisiert: Launcher/Tests typisiert und GUI-Altlasten gezielt für Mypy ausgeblendet
 
 - [x] QA-Preflight intern bereinigt: Kommando-Validierung zentralisiert und Wiederholungen in Fehlerhilfe-Ausgaben entfernt
+- [x] Release-Audit fuer fehlerfreies Release als Ein-Kommando-Report mit klaren Laienbefehlen und Tests ergänzt
