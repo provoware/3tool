@@ -120,3 +120,4 @@
 
 - [x] QA-Preflight Netzwerkcheck robuster gemacht (mehrere Endpunkte + sichere Kopierbefehle mit Shell-Quoting) und Tests erweitert
 
+- [x] QA-Standards erweitert: flake8/isort/autoflake als Default-Preflight und in quality_check/quality_fix integriert
