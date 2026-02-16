@@ -285,3 +285,81 @@ def test_run_release_quality_check_warns_if_missing(capsys, tmp_path) -> None:
     assert start_gui._run_release_quality_check(tmp_path) is False
     output = capsys.readouterr().out
     assert "Release-Qualitätscheck nicht gefunden" in output
+
+
+def test_print_feedback_block_prints_sections(capsys) -> None:
+    feedback: start_gui.launcher_checks.CheckFeedback = {
+        "headline": "Start bereit.",
+        "summary": "Pflichtpruefungen erfolgreich: 3/3",
+        "next_steps": ["Weiter mit Starten"],
+        "beginner_terms": ["pip (Paketmanager): installiert Pakete."],
+        "quick_commands": ["python3 -m pip --version"],
+    }
+
+    start_gui._print_feedback_block(feedback)
+    output = capsys.readouterr().out
+
+    assert "Start bereit." in output
+    assert "Schnellbefehle" in output
+
+
+def test_dependency_bootstrap_runs_repairs_and_returns_ready(
+    monkeypatch,
+) -> None:
+    first = [
+        start_gui.launcher_checks.CheckResult(
+            key="fail",
+            title="Fail",
+            ok=False,
+            detail="blocked",
+            blocking=True,
+        )
+    ]
+    second = [
+        start_gui.launcher_checks.CheckResult(
+            key="ok",
+            title="OK",
+            ok=True,
+            detail="ready",
+            blocking=True,
+        )
+    ]
+    state = {"count": 0}
+
+    def fake_safe_run_checks(_py: str, _target, _project_root):
+        state["count"] += 1
+        return first if state["count"] == 1 else second
+
+    monkeypatch.setattr(start_gui, "_safe_run_checks", fake_safe_run_checks)
+    monkeypatch.setattr(start_gui, "_safe_run_repairs", lambda *_args: [])
+    monkeypatch.setattr(start_gui, "_print_check_summary", lambda *_args: None)
+    monkeypatch.setattr(start_gui, "_print_feedback_block", lambda *_args: None)
+
+    result = start_gui._dependency_bootstrap("python3", start_gui.Path("."))
+
+    assert result == second
+    assert state["count"] == 2
+
+
+def test_dependency_bootstrap_fails_if_still_blocked(monkeypatch) -> None:
+    blocked = [
+        start_gui.launcher_checks.CheckResult(
+            key="fail",
+            title="Fail",
+            ok=False,
+            detail="blocked",
+            blocking=True,
+        )
+    ]
+
+    monkeypatch.setattr(start_gui, "_safe_run_checks", lambda *_args: blocked)
+    monkeypatch.setattr(start_gui, "_safe_run_repairs", lambda *_args: [])
+    monkeypatch.setattr(start_gui, "_print_check_summary", lambda *_args: None)
+    monkeypatch.setattr(start_gui, "_print_feedback_block", lambda *_args: None)
+
+    try:
+        start_gui._dependency_bootstrap("python3", start_gui.Path("."))
+    except start_gui.LauncherError as exc:
+        assert "Start abgebrochen" in str(exc)
+    else:
+        raise AssertionError("LauncherError erwartet")
