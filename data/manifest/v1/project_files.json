@@ -13,8 +13,8 @@
     },
     {
       "path": "0000-testall",
-      "size": 3820,
-      "sha256": "55621bf97a578763f324b41173c5beed246d42707fb4ece1dc20f66ad9b9b957"
+      "size": 4127,
+      "sha256": "a55fcbc3dce83bfeba4af95ad10d50a0cc5298cee4eaf236d7ea4859f6a03655"
     },
     {
       "path": "AGENTS.md",
@@ -188,8 +188,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 59503,
-      "sha256": "6fe8bdd72a0af8ca7795bc99af29e43337d9714b91c8a86a188cc6c791515688"
+      "size": 59690,
+      "sha256": "38348d36d48d07d00980ca69a487eac221ee6a45aed90de6c94f07f756c7a502"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -218,8 +218,8 @@
     },
     {
       "path": "scripts/_quality_common.sh",
-      "size": 1499,
-      "sha256": "10224165bd7ae0d2d9097d5f03affff7ce65bb9283f2f4c3eb79db15a660cb4b"
+      "size": 2137,
+      "sha256": "8a25fb93ee1427b50d16d7f05f9e8817ccb15aeda7732aa2f79e5eb5a6b2f2c5"
     },
     {
       "path": "scripts/qa.sh",
@@ -228,13 +228,13 @@
     },
     {
       "path": "scripts/quality_check.sh",
-      "size": 946,
-      "sha256": "684406dadb67afb97c7e040ebb80fe235f93ed6fd22f93dba4bdbcf98c706bc0"
+      "size": 1090,
+      "sha256": "9eb7c12f69b119bb782b7e2ebdd250c3ba82ebce791fa1580f1cb59e8214d158"
     },
     {
       "path": "scripts/quality_fix.sh",
-      "size": 942,
-      "sha256": "02eed09e41ba4d3d429eb0374d37327084640ccc8ac3c69f94134c31691cdf96"
+      "size": 1107,
+      "sha256": "176b3c19bdb573927fb9109cf50df57998c9da64c7d3baeccda9fc58fc94e53e"
     },
     {
       "path": "scripts/setup_template.sh",
@@ -348,8 +348,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 10559,
-      "sha256": "3b20a41cbb5d300150c81fef6a0231ccc4cf7c789264ce3e7b30ac56b5dcc7f9"
+      "size": 10684,
+      "sha256": "41cbd0422a4d88a9d197405b713135c64639f7fb79b53582abc449fbfe8a3615"
     },
     {
       "path": "videobatch_extra.py",

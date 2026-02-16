@@ -131,10 +131,15 @@ else
 fi
 
 if [ "$NO_FORMAT" -eq 0 ]; then
-  log_info "\n✨ Wende Auto-Fixes (Formatierung) an..."
-  python -m black .
-  python -m isort .
-  python -m autoflake --in-place --remove-unused-variables -r .
+  log_info "\n✨ Wende Auto-Fixes nur auf getrackte Projektdateien an..."
+  mapfile -t TRACKED_PYTHON_FILES < <(git ls-files "*.py")
+  if [ "${#TRACKED_PYTHON_FILES[@]}" -eq 0 ]; then
+    log_error "Keine getrackten Python-Dateien gefunden. Auto-Fix wird abgebrochen."
+    exit 1
+  fi
+  python -m black "${TRACKED_PYTHON_FILES[@]}"
+  python -m isort "${TRACKED_PYTHON_FILES[@]}"
+  python -m autoflake --in-place --remove-unused-variables "${TRACKED_PYTHON_FILES[@]}"
 else
   log_warn "Formatierung wurde per --no-format uebersprungen."
 fi
