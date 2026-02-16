@@ -546,6 +546,107 @@ def test_validate_report_path_rejects_directory(tmp_path: Path) -> None:
         qa_preflight._validate_report_path(tmp_path)
 
 
+def test_validate_validate_only_requires_bool() -> None:
+    with pytest.raises(TypeError):
+        qa_preflight._validate_validate_only("ja")  # type: ignore[arg-type]
+
+
+def test_resolve_cli_tools_uses_profile_when_tools_not_set() -> None:
+    tools = qa_preflight._resolve_cli_tools("quick", None)
+
+    assert tools == ["ruff", "black", "pytest"]
+
+
+def test_resolve_cli_tools_prefers_explicit_tools() -> None:
+    tools = qa_preflight._resolve_cli_tools("quick", ["pytest", "mypy"])
+
+    assert tools == ["pytest", "mypy"]
+
+
+def test_resolve_cli_tools_rejects_unknown_profile() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._resolve_cli_tools("unknown", None)
+
+
+def test_main_list_tools_outputs_profiles(
+    monkeypatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(
+        qa_preflight,
+        "_parse_args",
+        lambda: type(
+            "Args",
+            (),
+            {
+                "requirements": "requirements-dev.txt",
+                "python": "python3",
+                "tools": None,
+                "profile": "standard",
+                "list_tools": True,
+                "validate_only": False,
+                "debug": False,
+                "report_json": "",
+            },
+        )(),
+    )
+
+    result = qa_preflight.main()
+
+    assert result == 0
+    out = capsys.readouterr().out
+    assert "Unterstützte QA-Tools" in out
+    assert "Profile:" in out
+
+
+def test_run_preflight_validate_only_skips_install_and_repair(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_ensure_pip_with_fallback",
+        lambda *_: (True, "pip ist bereit"),
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_network_any_reachable",
+        lambda *_: (True, "pypi.org:443"),
+    )
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
+
+    install_called = {"value": False}
+    repair_called = {"value": False}
+
+    def fail_install(*_args, **_kwargs):
+        install_called["value"] = True
+        raise AssertionError("Install should not run in validate-only mode")
+
+    def fail_repair(*_args, **_kwargs):
+        repair_called["value"] = True
+        raise AssertionError("Repair should not run in validate-only mode")
+
+    monkeypatch.setattr(
+        qa_preflight, "_install_requirements_with_fallback", fail_install
+    )
+    monkeypatch.setattr(qa_preflight, "_attempt_tool_repair", fail_repair)
+
+    result = qa_preflight.run_preflight(
+        req,
+        ["pytest"],
+        "python3",
+        validate_only=True,
+    )
+
+    assert result == 0
+    assert install_called["value"] is False
+    assert repair_called["value"] is False
+
+
 def test_write_preflight_report_writes_json(tmp_path: Path) -> None:
     report_path = tmp_path / "reports" / "qa_report.json"
 
@@ -617,7 +718,9 @@ def test_run_preflight_writes_json_report_on_failure(
     assert "pip-Unterstützung" in report_text
 
 
-def test_parse_args_uses_full_default_toolset(monkeypatch) -> None:
+def test_parse_args_uses_standard_profile_when_no_tools_are_passed(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(
         qa_preflight.sys,
         "argv",
@@ -626,7 +729,8 @@ def test_parse_args_uses_full_default_toolset(monkeypatch) -> None:
 
     args = qa_preflight._parse_args()
 
-    assert args.tools == qa_preflight.DEFAULT_QA_TOOLS
+    assert args.tools is None
+    assert args.profile == "standard"
     assert args.report_json == ""
 
 

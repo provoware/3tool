@@ -134,3 +134,5 @@
 - [x] Strengeren Mypy-Lauf abgesichert (no-any-return) und Netzwerk-Timeout-Validierung präventiv ergänzt
 
 - [x] GUI-Runtime-Check auf libGL/PySide6 erweitert und GUI-Tests ohne Skip via Diagnosepfad stabilisiert
+- [x] Selbsttest-Fix: QA-Skripte begrenzen Auto-Fixes/Checks auf getrackte Python-Dateien (kein Zugriff auf .videotool_env)
+- [x] CLI-Verbesserung im QA-Preflight: Profile, Tool-Liste und --validate-only mit Tests ergänzt

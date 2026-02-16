@@ -32,6 +32,19 @@ DEFAULT_QA_TOOLS: Final[list[str]] = [
     "isort",
     "autoflake",
 ]
+TOOL_PROFILES: Final[dict[str, list[str]]] = {
+    "standard": DEFAULT_QA_TOOLS,
+    "quick": ["ruff", "black", "pytest"],
+    "strict": [
+        "ruff",
+        "black",
+        "mypy",
+        "pytest",
+        "flake8",
+        "isort",
+        "autoflake",
+    ],
+}
 
 PIP_TIMEOUT_SECONDS: Final[int] = 300
 IMPORT_TIMEOUT_SECONDS: Final[int] = 20
@@ -107,6 +120,28 @@ def _validate_report_path(report_path: Path | None) -> Path | None:
     if report_path.exists() and report_path.is_dir():
         raise ValueError("report_path darf kein Verzeichnis sein.")
     return report_path
+
+
+def _validate_validate_only(validate_only: bool) -> bool:
+    if not isinstance(validate_only, bool):
+        raise TypeError("validate_only muss ein bool sein.")
+    return validate_only
+
+
+def _resolve_cli_tools(profile: str, cli_tools: list[str] | None) -> list[str]:
+    if not isinstance(profile, str) or not profile.strip():
+        raise ValueError("profile muss ein nicht-leerer String sein.")
+    normalized_profile = profile.strip().lower()
+    if normalized_profile not in TOOL_PROFILES:
+        allowed_profiles = ", ".join(sorted(TOOL_PROFILES))
+        raise ValueError(
+            f"Unbekanntes Profil '{normalized_profile}'. Erlaubt: {allowed_profiles}"
+        )
+
+    if cli_tools is None:
+        return _validate_tool_names(list(TOOL_PROFILES[normalized_profile]))
+
+    return _validate_tool_names(cli_tools)
 
 
 def _validate_package_names(package_names: list[str]) -> list[str]:
@@ -550,12 +585,14 @@ def run_preflight(
     python_cmd: str,
     debug_mode: bool = False,
     report_path: Path | None = None,
+    validate_only: bool = False,
 ) -> int:
     _validate_requirements_path(requirements)
     selected_tools = _validate_tool_names(tool_names)
     interpreter = _validate_python_cmd(python_cmd)
     debug_enabled = _validate_debug_mode(debug_mode)
     report_target = _validate_report_path(report_path)
+    validation_only = _validate_validate_only(validate_only)
     started_at = datetime.now(UTC).isoformat()
     report: dict[str, object] = {
         "started_at_utc": started_at,
@@ -582,6 +619,11 @@ def run_preflight(
 
     print_feedback("ok", f"Requirements-Datei gefunden: {requirements}")
     print_feedback("info", f"Validierte Prüftools: {', '.join(selected_tools)}")
+    if validation_only:
+        print_feedback(
+            "info",
+            "Validierungsmodus aktiv: Es werden keine Pakete installiert oder repariert.",
+        )
     print_debug(
         f"Debug-Modus aktiv. Interpreter-Kandidat: {interpreter}",
         debug_enabled,
@@ -659,8 +701,13 @@ def run_preflight(
             "Nicht erreichbar: " + network_detail,
         )
     print_feedback("info", f"Starte QA-Preflight mit {interpreter}")
-    if not network_ok:
-        if _can_skip_install_when_offline(
+    if validation_only:
+        install_ok = True
+        install_message = (
+            "Installationsschritt bewusst übersprungen (--validate-only)."
+        )
+    else:
+        if not network_ok and _can_skip_install_when_offline(
             selected_tools,
             interpreter,
             debug_enabled,
@@ -679,18 +726,19 @@ def run_preflight(
             _write_preflight_report(report_target, report)
             return 0
 
-    print_debug(
-        f"Installiere Abhängigkeiten aus: {requirements}",
-        debug_enabled,
-    )
-    install_ok, install_message = _install_requirements_with_fallback(
-        requirements,
-        interpreter,
-        debug_enabled,
-    )
+        print_debug(
+            f"Installiere Abhängigkeiten aus: {requirements}",
+            debug_enabled,
+        )
+        install_ok, install_message = _install_requirements_with_fallback(
+            requirements,
+            interpreter,
+            debug_enabled,
+        )
     if install_ok:
-        print_feedback("ok", install_message)
-        _push_check("requirements_install", "ok", install_message)
+        install_status = "warn" if validation_only else "ok"
+        print_feedback("ok" if not validation_only else "warn", install_message)
+        _push_check("requirements_install", install_status, install_message)
     else:
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
         print(f"💡 Ursache: {install_message}")
@@ -747,7 +795,7 @@ def run_preflight(
                     "Import fehlgeschlagen",
                 )
 
-    if failed_tools:
+    if failed_tools and not validation_only:
         failed_tools = _attempt_tool_repair(
             failed_tools,
             interpreter,
@@ -798,8 +846,30 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--tools",
         nargs="+",
-        default=DEFAULT_QA_TOOLS,
+        default=None,
         help="Zu validierende Prüftools.",
+    )
+    parser.add_argument(
+        "--profile",
+        default="standard",
+        choices=sorted(TOOL_PROFILES),
+        help=(
+            "Tool-Profil für typische Szenarien: "
+            "quick (schnell), standard (Standard), strict (streng)."
+        ),
+    )
+    parser.add_argument(
+        "--list-tools",
+        action="store_true",
+        help="Zeigt unterstützte Tools und Profile an und beendet das Programm.",
+    )
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help=(
+            "Prüft nur, ob Tools verfügbar sind (keine Installation/Reparatur). "
+            "Ideal für reine Statuskontrolle."
+        ),
     )
     parser.add_argument(
         "--debug",
@@ -823,12 +893,27 @@ def _parse_args() -> argparse.Namespace:
 def main() -> int:
     args = _parse_args()
     try:
+        if args.list_tools:
+            print("Unterstützte QA-Tools:")
+            for tool_name in sorted(TOOL_MODULES):
+                print(f"- {tool_name}")
+            print("\nProfile:")
+            for profile_name, tools in TOOL_PROFILES.items():
+                print(f"- {profile_name}: {', '.join(tools)}")
+            print(
+                "\nTipp: --profile quick für schnellen Check oder "
+                "--validate-only für reine Prüfung ohne Installation."
+            )
+            return 0
+
+        selected_tools = _resolve_cli_tools(args.profile, args.tools)
         return run_preflight(
             Path(args.requirements),
-            args.tools,
+            selected_tools,
             args.python,
             debug_mode=args.debug,
             report_path=Path(args.report_json) if args.report_json else None,
+            validate_only=args.validate_only,
         )
     except (TypeError, ValueError) as exc:
         print(f"❌ Ungültige QA-Preflight-Eingabe: {exc}")

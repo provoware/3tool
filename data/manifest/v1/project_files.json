@@ -13,8 +13,8 @@
     },
     {
       "path": "0000-testall",
-      "size": 3820,
-      "sha256": "55621bf97a578763f324b41173c5beed246d42707fb4ece1dc20f66ad9b9b957"
+      "size": 4127,
+      "sha256": "a55fcbc3dce83bfeba4af95ad10d50a0cc5298cee4eaf236d7ea4859f6a03655"
     },
     {
       "path": "AGENTS.md",
@@ -143,8 +143,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 26726,
-      "sha256": "bc65e41449fadaa921f674e7aae78f7e66f15e65c0b820a46059449aa663004f"
+      "size": 29730,
+      "sha256": "ed8ea2a2ba1ba2f4a25494f28c17ac7ee7e72fa5dd633980f6fa3d9129feb681"
     },
     {
       "path": "core/release_audit.py",
@@ -188,8 +188,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 60610,
-      "sha256": "7069bc2c0aaa8fce337471c0649559bb82314b9ddab86310cd32737d187962a8"
+      "size": 60272,
+      "sha256": "57c155541583213a7a73a47eacf128b7c4bae74c8a860942ee576ba1139054b0"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -218,8 +218,8 @@
     },
     {
       "path": "scripts/_quality_common.sh",
-      "size": 1499,
-      "sha256": "10224165bd7ae0d2d9097d5f03affff7ce65bb9283f2f4c3eb79db15a660cb4b"
+      "size": 2137,
+      "sha256": "8a25fb93ee1427b50d16d7f05f9e8817ccb15aeda7732aa2f79e5eb5a6b2f2c5"
     },
     {
       "path": "scripts/qa.sh",
@@ -228,13 +228,13 @@
     },
     {
       "path": "scripts/quality_check.sh",
-      "size": 946,
-      "sha256": "684406dadb67afb97c7e040ebb80fe235f93ed6fd22f93dba4bdbcf98c706bc0"
+      "size": 1090,
+      "sha256": "9eb7c12f69b119bb782b7e2ebdd250c3ba82ebce791fa1580f1cb59e8214d158"
     },
     {
       "path": "scripts/quality_fix.sh",
-      "size": 942,
-      "sha256": "02eed09e41ba4d3d429eb0374d37327084640ccc8ac3c69f94134c31691cdf96"
+      "size": 1107,
+      "sha256": "176b3c19bdb573927fb9109cf50df57998c9da64c7d3baeccda9fc58fc94e53e"
     },
     {
       "path": "scripts/setup_template.sh",
@@ -303,8 +303,8 @@
     },
     {
       "path": "tests/test_qa_preflight.py",
-      "size": 18211,
-      "sha256": "0d4ae866eef9faea3a838b5af7451768dee7fd560210b679837c6f94c0ef6441"
+      "size": 21154,
+      "sha256": "7f0d2fdb33b89633d02e449558799366406088d5b030a2182ee90d9bf8c14357"
     },
     {
       "path": "tests/test_release_audit.py",
@@ -348,8 +348,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 10666,
-      "sha256": "54c682d81198f6b83db75454294260a7edf37642fdd1e441df45b5fa5bf460b0"
+      "size": 10659,
+      "sha256": "9032392f9b096466ac19211b91f10e3bc1efab1c3e74a17bc2c5180de597650d"
     },
     {
       "path": "videobatch_extra.py",
