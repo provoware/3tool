@@ -128,8 +128,8 @@
     },
     {
       "path": "core/launcher_checks.py",
-      "size": 30984,
-      "sha256": "7ce642dec44e8d39397a3385d5490d521afaa23038c5f92b3b95990dda3bd454"
+      "size": 33932,
+      "sha256": "578ace55f759733894099207f41c75b260f9ff118dbcc70b795ec7d65e59589c"
     },
     {
       "path": "core/paths.py",
@@ -258,8 +258,8 @@
     },
     {
       "path": "tests/conftest.py",
-      "size": 484,
-      "sha256": "f703ee5b7ffa33da888cd423c235330a33e1586d0f7cf3c384823356e4fc33fb"
+      "size": 843,
+      "sha256": "91486907b52a8421f3820e85ae2640734b319999a66b24578a3ffe638ca5e172"
     },
     {
       "path": "tests/test_dependency_consistency.py",
@@ -278,13 +278,13 @@
     },
     {
       "path": "tests/test_gui_validation.py",
-      "size": 1516,
-      "sha256": "062f3bf17630d245a4a731deb38ae7f1fda6b8eaebfd60030b791a369eb242dc"
+      "size": 2906,
+      "sha256": "48860f9bed9be90f75620bd83dea9fac76a6b149b1ddf75ad5b6b1ab1c2c0ac9"
     },
     {
       "path": "tests/test_launcher_checks.py",
-      "size": 14785,
-      "sha256": "7be48991abd9b03d544c42aaaa655951e4a4dcfafdcefccebbadd0a604bc24fc"
+      "size": 15634,
+      "sha256": "e0407a566ec62a78d38cb293b9a7777b0711ccef31b1ca050a9a989d4ae69d4f"
     },
     {
       "path": "tests/test_launcher_logging.py",
@@ -293,8 +293,8 @@
     },
     {
       "path": "tests/test_launcher_wizard.py",
-      "size": 2659,
-      "sha256": "ba8f9ac5c68447b7d581a116efe76e2fde50694bc42d9928a027a7319d81a4ec"
+      "size": 3635,
+      "sha256": "fbdb2e7cc89c2ea6af4cc51c87dcb1d9e9c47f5e8fb9712ad0505bf2a0c79826"
     },
     {
       "path": "tests/test_plugins.py",
@@ -313,8 +313,8 @@
     },
     {
       "path": "tests/test_smoke.py",
-      "size": 282,
-      "sha256": "a4fbee8181d9bbcc9ab45d7052b7c662ba37fc1362311e61c2f7530bd17680e9"
+      "size": 468,
+      "sha256": "3061e9449018545221df18aabb6885155b2bb2b3ee00aca46748a6abc28f4365"
     },
     {
       "path": "tests/test_start_gui.py",

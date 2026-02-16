@@ -12,7 +12,18 @@ def _build_wizard(monkeypatch):
     return Wizard, QtWidgets
 
 
-def test_wizard_handle_results_updates_buttons(monkeypatch, qapp):
+def test_wizard_handle_results_updates_buttons(
+    monkeypatch,
+    request,
+    gui_runtime_available,
+    gui_runtime_error,
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    request.getfixturevalue("qapp")
     Wizard, _ = _build_wizard(monkeypatch)
     wizard = Wizard()
 
@@ -39,7 +50,18 @@ def test_wizard_handle_results_updates_buttons(monkeypatch, qapp):
     assert wizard.btn_start.isEnabled()
 
 
-def test_wizard_toggle_debug_signal_updates_env(monkeypatch, qapp):
+def test_wizard_toggle_debug_signal_updates_env(
+    monkeypatch,
+    request,
+    gui_runtime_available,
+    gui_runtime_error,
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    request.getfixturevalue("qapp")
     monkeypatch.setattr(videobatch_launcher, "setup_logging", lambda _: None)
     os.environ.pop("VT_DEBUG", None)
     Wizard, _ = _build_wizard(monkeypatch)
@@ -52,7 +74,18 @@ def test_wizard_toggle_debug_signal_updates_env(monkeypatch, qapp):
     assert os.environ.get("VT_DEBUG") == "1"
 
 
-def test_wizard_fix_results_restarts_check(monkeypatch, qapp):
+def test_wizard_fix_results_restarts_check(
+    monkeypatch,
+    request,
+    gui_runtime_available,
+    gui_runtime_error,
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    request.getfixturevalue("qapp")
     Wizard, _ = _build_wizard(monkeypatch)
     wizard = Wizard()
     started = {"called": False}
@@ -77,7 +110,18 @@ def test_wizard_fix_results_restarts_check(monkeypatch, qapp):
     assert "Kein Internet" in wizard.info.toPlainText()
 
 
-def test_wizard_render_results_contains_next_steps(monkeypatch, qapp):
+def test_wizard_render_results_contains_next_steps(
+    monkeypatch,
+    request,
+    gui_runtime_available,
+    gui_runtime_error,
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    request.getfixturevalue("qapp")
     Wizard, _ = _build_wizard(monkeypatch)
     wizard = Wizard()
     results = [

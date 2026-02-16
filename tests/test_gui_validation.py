@@ -1,22 +1,38 @@
 import importlib
+import sys
 
-import pytest
-
-
-try:
-    videobatch_gui = importlib.import_module("videobatch_gui")
-except ImportError as exc:  # pragma: no cover - depends on system GUI libs
-    pytestmark = pytest.mark.skip(reason=f"GUI-Abhängigkeit fehlt: {exc}")
+from core import launcher_checks
 
 
-def _new_mainwindow(qtbot):
-    window = videobatch_gui.MainWindow()
-    qtbot.addWidget(window)
-    return window
+def _import_gui_module():
+    return importlib.import_module("videobatch_gui")
 
 
-def test_validate_image_fields_marks_invalid(qtbot):
-    win = _new_mainwindow(qtbot)
+def test_gui_runtime_reports_missing_libgl_if_unavailable(gui_runtime_error):
+    if gui_runtime_error is None:
+        result = launcher_checks.check_gui_runtime(sys.executable)
+        assert result.ok
+        return
+
+    result = launcher_checks.check_gui_runtime(sys.executable)
+    assert not result.ok
+    assert "GUI-Import fehlgeschlagen" in result.detail
+    assert "libGL.so.1" in result.detail
+    assert result.fix_hint
+
+
+def test_validate_image_fields_marks_invalid(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
     win.image_edit.setText("/tmp/not-existing-image.jpg")
     win.validate_image_fields()
 
@@ -24,8 +40,18 @@ def test_validate_image_fields_marks_invalid(qtbot):
     assert "existiert nicht" in win.validation_msg.text()
 
 
-def test_validate_audio_fields_marks_invalid(qtbot):
-    win = _new_mainwindow(qtbot)
+def test_validate_audio_fields_marks_invalid(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
     win.audio_edit.setText("/tmp/not-existing-audio.mp3")
     win.validate_audio_fields()
 
@@ -33,7 +59,16 @@ def test_validate_audio_fields_marks_invalid(qtbot):
     assert "existiert nicht" in win.validation_msg.text()
 
 
-def test_dashboard_counts_are_clamped(qtbot):
+def test_dashboard_counts_are_clamped(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
     dashboard = videobatch_gui.InfoDashboard()
     qtbot.addWidget(dashboard)
 
@@ -44,7 +79,16 @@ def test_dashboard_counts_are_clamped(qtbot):
     assert dashboard.err_label.text() == "0"
 
 
-def test_dashboard_progress_is_limited_to_100(qtbot):
+def test_dashboard_progress_is_limited_to_100(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
     dashboard = videobatch_gui.InfoDashboard()
     qtbot.addWidget(dashboard)
 
