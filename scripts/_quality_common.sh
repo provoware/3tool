@@ -58,3 +58,26 @@ qb_run_python_check() {
   qb_print_step "🧪" "${label}"
   python3 -m "$@"
 }
+
+qb_repo_root() {
+  qb_require_command git
+  local root
+  root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -z "${root}" ]]; then
+    echo "❌ Konnte Projektwurzel nicht bestimmen (git rev-parse fehlgeschlagen)." >&2
+    return 1
+  fi
+  echo "${root}"
+}
+
+qb_tracked_python_files() {
+  local root
+  root="$(qb_repo_root)" || return 1
+
+  mapfile -t QB_TRACKED_PYTHON_FILES < <(git -C "${root}" ls-files '*.py')
+  if [[ "${#QB_TRACKED_PYTHON_FILES[@]}" -eq 0 ]]; then
+    echo "❌ Keine getrackten Python-Dateien gefunden." >&2
+    echo "💡 Bitte Repository-Zustand prüfen und erneut starten." >&2
+    return 1
+  fi
+}
