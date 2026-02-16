@@ -20,6 +20,15 @@ TOOL_MODULES: Final[dict[str, str]] = {
     "isort": "isort",
     "autoflake": "autoflake",
 }
+DEFAULT_QA_TOOLS: Final[list[str]] = [
+    "ruff",
+    "black",
+    "mypy",
+    "pytest",
+    "flake8",
+    "isort",
+    "autoflake",
+]
 
 PIP_TIMEOUT_SECONDS: Final[int] = 300
 IMPORT_TIMEOUT_SECONDS: Final[int] = 20
@@ -585,7 +594,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--tools",
         nargs="+",
-        default=["ruff", "black", "mypy", "pytest"],
+        default=DEFAULT_QA_TOOLS,
         help="Zu validierende Prüftools.",
     )
     parser.add_argument(

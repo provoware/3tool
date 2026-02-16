@@ -467,3 +467,22 @@ def test_run_preflight_warns_when_network_unreachable(
     assert result == 0
     captured = capsys.readouterr()
     assert "Netzwerk-Check: Ziele nicht erreichbar" in captured.out
+
+
+def test_parse_args_uses_full_default_toolset(monkeypatch) -> None:
+    monkeypatch.setattr(
+        qa_preflight.sys,
+        "argv",
+        ["qa_preflight"],
+    )
+
+    args = qa_preflight._parse_args()
+
+    assert args.tools == qa_preflight.DEFAULT_QA_TOOLS
+
+
+def test_default_qa_tools_are_supported() -> None:
+    assert (
+        qa_preflight._validate_tool_names(qa_preflight.DEFAULT_QA_TOOLS)
+        == qa_preflight.DEFAULT_QA_TOOLS
+    )

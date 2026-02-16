@@ -143,8 +143,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 19177,
-      "sha256": "fc495431be0eb43ff8087d08dd6ba3b3bd93b3ce045c1e52a35c26056ed10ba6"
+      "size": 19294,
+      "sha256": "828930ec2c9c1eae095ea5c55856fc6da463e720d83986f6045357082035dce5"
     },
     {
       "path": "core/themes.py",
@@ -183,8 +183,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 51110,
-      "sha256": "b09edefceee0277fa99bd54be76fb06362e10e2556b80911af41b8cb28ec2aa9"
+      "size": 52818,
+      "sha256": "09f9adc7b761c9a833bfe12bef7d8f2c94c04e10dfa994b48af368a18a3bed12"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -223,13 +223,13 @@
     },
     {
       "path": "scripts/quality_check.sh",
-      "size": 709,
-      "sha256": "cd95792cf59779dd1ad935953979822fdfe4beea15ee1ffc0f520ce5e4b425fb"
+      "size": 894,
+      "sha256": "17222f2aa6049ba53c5c314161da3d3d8c860b4e064810290c2f870d99fc9203"
     },
     {
       "path": "scripts/quality_fix.sh",
-      "size": 603,
-      "sha256": "fdd7ce3afbd7622aeb0130b17b9addb666c31f45a21bfc4b9c304a06c927fd65"
+      "size": 890,
+      "sha256": "1502a881d40c926d949f01eeebe6c238a4113a1b4f94661cbd41e5dbf5dd03ba"
     },
     {
       "path": "scripts/setup_template.sh",
@@ -298,8 +298,8 @@
     },
     {
       "path": "tests/test_qa_preflight.py",
-      "size": 13437,
-      "sha256": "e99177e768297baeabafe133782183ddfeaad9417f8609e4854e4f3acf0ab406"
+      "size": 13887,
+      "sha256": "2be9f7c7c33893cd4303b51b16cc1efc08dae7e2c2ecc1f5119f195b2c2a0000"
     },
     {
       "path": "tests/test_smoke.py",
@@ -338,8 +338,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 9257,
-      "sha256": "1d6b3cf32c1ecf8c50015f39b855a18b240890695446ab32de2eff880d2cb217"
+      "size": 9510,
+      "sha256": "a9f8cf83a85da106ab392acb8d818a23e3235b97ed8623d78436145496297b72"
     },
     {
       "path": "videobatch_extra.py",
