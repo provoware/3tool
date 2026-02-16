@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+from http import HTTPStatus
 from typing import Iterable, TypedDict, TypeVar
 
 from core import dependency_consistency
@@ -255,8 +256,12 @@ def install_missing_packages_with_retries(
 
 
 def _dns_reachable(timeout: float) -> bool:
+    if not isinstance(timeout, (int, float)):
+        raise TypeError("timeout muss eine Zahl sein.")
+    if timeout <= 0:
+        raise ValueError("timeout muss groesser als 0 sein.")
     try:
-        with socket.create_connection(("1.1.1.1", 53), timeout=timeout):
+        with socket.create_connection(("1.1.1.1", 53), timeout=float(timeout)):
             return True
     except OSError:
         return False
@@ -265,10 +270,17 @@ def _dns_reachable(timeout: float) -> bool:
 def _https_head_reachable(url: str, timeout: float) -> bool:
     if not isinstance(url, str) or not url.strip():
         raise ValueError("url muss ein nicht-leerer String sein.")
+    if not isinstance(timeout, (int, float)):
+        raise TypeError("timeout muss eine Zahl sein.")
+    if timeout <= 0:
+        raise ValueError("timeout muss groesser als 0 sein.")
     request = urllib.request.Request(url=url, method="HEAD")
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            return response.status < 500
+        with urllib.request.urlopen(
+            request, timeout=float(timeout)
+        ) as response:
+            status = int(response.status)
+            return status < int(HTTPStatus.INTERNAL_SERVER_ERROR)
     except (urllib.error.URLError, TimeoutError, OSError):
         return False
 

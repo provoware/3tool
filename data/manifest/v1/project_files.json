@@ -128,8 +128,8 @@
     },
     {
       "path": "core/launcher_checks.py",
-      "size": 30483,
-      "sha256": "b4d50a34b5a9083a2f6833af2f62b67377245f1f67023a34c938ec210db6dbf5"
+      "size": 30984,
+      "sha256": "7ce642dec44e8d39397a3385d5490d521afaa23038c5f92b3b95990dda3bd454"
     },
     {
       "path": "core/paths.py",
@@ -147,9 +147,14 @@
       "sha256": "bc65e41449fadaa921f674e7aae78f7e66f15e65c0b820a46059449aa663004f"
     },
     {
+      "path": "core/release_audit.py",
+      "size": 2892,
+      "sha256": "592fe3053a1b70a52e3363c79071292eac8f12139de820427ebee8692bdfb393"
+    },
+    {
       "path": "core/themes.py",
-      "size": 9515,
-      "sha256": "507d20a00a3348f0cd59908483924b9758061bb9fe12496e017b851847de9c9b"
+      "size": 9522,
+      "sha256": "748ff3a0da7b04a9c452e5a9b4e5843238dffc32ee13218cb13a3bd8d7c52d2a"
     },
     {
       "path": "core/ui_profiles.py",
@@ -183,8 +188,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 58324,
-      "sha256": "29cb47d212872f0d7177df7fde07ce6879feb9c03bcb23cf7e4f14d1620e86d2"
+      "size": 59503,
+      "sha256": "6fe8bdd72a0af8ca7795bc99af29e43337d9714b91c8a86a188cc6c791515688"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -278,8 +283,8 @@
     },
     {
       "path": "tests/test_launcher_checks.py",
-      "size": 14121,
-      "sha256": "f31550938c17a5107455667db5796fb19285706b34abc18bcff38059a7ab8940"
+      "size": 14785,
+      "sha256": "7be48991abd9b03d544c42aaaa655951e4a4dcfafdcefccebbadd0a604bc24fc"
     },
     {
       "path": "tests/test_launcher_logging.py",
@@ -300,6 +305,11 @@
       "path": "tests/test_qa_preflight.py",
       "size": 18211,
       "sha256": "0d4ae866eef9faea3a838b5af7451768dee7fd560210b679837c6f94c0ef6441"
+    },
+    {
+      "path": "tests/test_release_audit.py",
+      "size": 1387,
+      "sha256": "4f1468424ee265056cf76e76ada1240b05c8094d8df62355a3780709bfb49bfc"
     },
     {
       "path": "tests/test_smoke.py",
@@ -338,8 +348,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 10337,
-      "sha256": "414cb1d4c027cda6b3b3dc307dc73ac19298b35e45471d97dbd6dc52f49d3f3a"
+      "size": 10559,
+      "sha256": "3b20a41cbb5d300150c81fef6a0231ccc4cf7c789264ce3e7b30ac56b5dcc7f9"
     },
     {
       "path": "videobatch_extra.py",
