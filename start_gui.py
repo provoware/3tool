@@ -225,6 +225,78 @@ def _all_blocking_ok(results: list[launcher_checks.CheckResult]) -> bool:
     return all(result.ok for result in results if result.blocking)
 
 
+def _print_feedback_block(feedback: launcher_checks.CheckFeedback) -> None:
+    if not isinstance(feedback, dict):
+        _fail("Interner Fehler: feedback ist kein Dictionary.")
+
+    print(f"  🧾 {feedback['headline']} | {feedback['summary']}")
+    next_steps = feedback.get("next_steps", [])
+    if isinstance(next_steps, list) and next_steps:
+        print("  👉 Nächste Schritte:")
+        for step in next_steps:
+            print(f"     - {step}")
+
+    beginner_terms = feedback.get("beginner_terms", [])
+    if isinstance(beginner_terms, list) and beginner_terms:
+        print("  📘 Kurz erklärt:")
+        for term in beginner_terms:
+            print(f"     - {term}")
+
+    quick_commands = feedback.get("quick_commands", [])
+    if isinstance(quick_commands, list) and quick_commands:
+        print("  ⚙️ Schnellbefehle:")
+        for command in quick_commands:
+            print(f"     - {command}")
+
+
+def _dependency_bootstrap(
+    py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
+) -> list[launcher_checks.CheckResult]:
+    if not isinstance(target_dir, Path):
+        _fail("Interner Fehler: target_dir ist kein Path.")
+    if not isinstance(project_root, Path):
+        _fail("Interner Fehler: project_root ist kein Path.")
+
+    print("  🔄 Präventiver Start-Bootstrap: Prüfungen und Auto-Reparatur")
+    results = _safe_run_checks(py, target_dir, project_root)
+    _print_check_summary(results)
+    _print_feedback_block(launcher_checks.build_check_feedback(results))
+
+    if _all_blocking_ok(results):
+        launcher_checks.LOGGER.info(
+            "Bootstrap abgeschlossen: alle Pflichtpruefungen erfolgreich."
+        )
+        return results
+
+    _warn(
+        "Pflichtpruefungen nicht bestanden. Starte automatische Reparatur "
+        "mit laienfreundlichem Feedback."
+    )
+    repairs = _safe_run_repairs(py, target_dir, project_root)
+    repair_feedback = launcher_checks.build_repair_feedback(repairs)
+    print(
+        "  🛠️ " f"{repair_feedback['headline']} | {repair_feedback['summary']}"
+    )
+    for hint in repair_feedback.get("hints", []):
+        print(f"     - {hint}")
+
+    print("  🔁 Wiederhole Pflichtprüfungen nach Reparatur")
+    results = _safe_run_checks(py, target_dir, project_root)
+    _print_check_summary(results)
+    _print_feedback_block(launcher_checks.build_check_feedback(results))
+
+    if not _all_blocking_ok(results):
+        _fail(
+            "Start abgebrochen: Umgebung ist noch nicht bereit. "
+            "Bitte Hinweise oben ausführen und erneut starten."
+        )
+
+    launcher_checks.LOGGER.info(
+        "Bootstrap erfolgreich: Pflichtpruefungen nach Reparatur erfolgreich."
+    )
+    return results
+
+
 def _run_repairs(
     py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
 ) -> list[launcher_checks.RepairResult]:
@@ -324,35 +396,8 @@ def main() -> int:
     py = _safe_ensure_venv(PROJECT_ROOT)
     _ok(f"Python-Umgebung bereit: {py}")
 
-    _status(4, steps, "System-Checks ausführen")
-    results = _safe_run_checks(py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT)
-    _print_check_summary(results)
-
-    if not _all_blocking_ok(results):
-        _status(5, steps, "Self-Repair ausführen")
-        if not args.auto_repair:
-            _warn(
-                "Blockierende Probleme gefunden. Auto-Reparatur wird jetzt automatisch ausgeführt."
-            )
-        repairs = _safe_run_repairs(
-            py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT
-        )
-        launcher_checks.LOGGER.info(
-            "Repair-Hinweise fuer Laien: %s",
-            " | ".join(launcher_checks.beginner_recovery_hints(repairs))
-            or "keine",
-        )
-        _status(6, steps, "Checks nach Reparatur wiederholen")
-        results = _safe_run_checks(
-            py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT
-        )
-        _print_check_summary(results)
-
-    if not _all_blocking_ok(results):
-        _fail(
-            "Start abgebrochen: Umgebung ist noch nicht bereit. "
-            "Bitte Hinweise oben ausführen und erneut starten."
-        )
+    _status(4, steps, "Präventiven Start-Bootstrap ausführen")
+    _dependency_bootstrap(py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT)
 
     if args.simple_mode:
         _status(6, steps, "Simple-Modus aktivieren")
