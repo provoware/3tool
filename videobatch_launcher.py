@@ -14,6 +14,7 @@ import shutil
 import sys
 
 from core import launcher_checks
+from core.launcher_theme import log_theme_selection, resolve_launcher_theme
 from core.paths import log_dir, user_data_dir
 
 SELF = Path(__file__).resolve()
@@ -377,50 +378,45 @@ def build_wizard():
             )
 
         def _apply_theme(self, theme_name: str):
-            if theme_name == "Dunkel":
-                palette = QtGui.QPalette()
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Window, QtGui.QColor("#1f1f1f")
+            try:
+                resolved_theme = log_theme_selection(
+                    theme_name,
+                    launcher_checks.LOGGER,
                 )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.WindowText, QtGui.QColor("#f2f2f2")
+                palette_values = resolve_launcher_theme(resolved_theme)
+            except (TypeError, ValueError) as exc:
+                launcher_checks.LOGGER.warning(
+                    "Ungueltiger Theme-Wechsel: %s", exc
                 )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Base, QtGui.QColor("#2b2b2b")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Text, QtGui.QColor("#f2f2f2")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Button, QtGui.QColor("#333333")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor("#f2f2f2")
-                )
-                self.setPalette(palette)
-            elif theme_name == "Hoher Kontrast":
-                palette = QtGui.QPalette()
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Window, QtGui.QColor("#000000")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.WindowText, QtGui.QColor("#ffffff")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Base, QtGui.QColor("#000000")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Text, QtGui.QColor("#ffffff")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.Button, QtGui.QColor("#000000")
-                )
-                palette.setColor(
-                    QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor("#ffffff")
-                )
-                self.setPalette(palette)
-            else:
                 self.setPalette(self.style().standardPalette())
+                return
+
+            palette = QtGui.QPalette()
+            palette.setColor(
+                QtGui.QPalette.ColorRole.Window,
+                QtGui.QColor(palette_values["window"]),
+            )
+            palette.setColor(
+                QtGui.QPalette.ColorRole.WindowText,
+                QtGui.QColor(palette_values["window_text"]),
+            )
+            palette.setColor(
+                QtGui.QPalette.ColorRole.Base,
+                QtGui.QColor(palette_values["base"]),
+            )
+            palette.setColor(
+                QtGui.QPalette.ColorRole.Text,
+                QtGui.QColor(palette_values["text"]),
+            )
+            palette.setColor(
+                QtGui.QPalette.ColorRole.Button,
+                QtGui.QColor(palette_values["button"]),
+            )
+            palette.setColor(
+                QtGui.QPalette.ColorRole.ButtonText,
+                QtGui.QColor(palette_values["button_text"]),
+            )
+            self.setPalette(palette)
 
     return Wizard, QtWidgets, QtCore, QtGui
 
