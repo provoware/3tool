@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import shlex
 import socket
 import shutil
 import subprocess
@@ -23,6 +24,10 @@ TOOL_MODULES: Final[dict[str, str]] = {
 PIP_TIMEOUT_SECONDS: Final[int] = 300
 IMPORT_TIMEOUT_SECONDS: Final[int] = 20
 NETWORK_TIMEOUT_SECONDS: Final[int] = 3
+NETWORK_ENDPOINTS: Final[tuple[tuple[str, int], ...]] = (
+    ("pypi.org", 443),
+    ("files.pythonhosted.org", 443),
+)
 
 
 def _validate_requirements_path(path: Path) -> None:
@@ -104,14 +109,20 @@ def _manual_recovery_commands(
     _validate_requirements_path(requirements)
     valid_tools = _validate_tool_names(failed_tools)
 
+    quoted_interpreter = shlex.quote(interpreter)
+    quoted_requirements = shlex.quote(str(requirements))
     command_list = [
-        f"{interpreter} -m pip install --upgrade pip",
-        f"{interpreter} -m pip install -r {requirements}",
-        f"{interpreter} -m pip install --user -r {requirements}",
+        f"{quoted_interpreter} -m pip install --upgrade pip",
+        (f"{quoted_interpreter} -m pip install -r " f"{quoted_requirements}"),
+        (
+            f"{quoted_interpreter} -m pip install --user -r "
+            f"{quoted_requirements}"
+        ),
     ]
     if valid_tools:
+        quoted_tools = " ".join(shlex.quote(tool) for tool in valid_tools)
         command_list.append(
-            f"{interpreter} -m pip install --upgrade {' '.join(valid_tools)}"
+            f"{quoted_interpreter} -m pip install --upgrade {quoted_tools}"
         )
 
     return command_list
@@ -319,6 +330,31 @@ def _network_reachable(host: str, port: int, timeout_seconds: int) -> bool:
         return False
 
 
+def _network_any_reachable(
+    endpoints: tuple[tuple[str, int], ...],
+    timeout_seconds: int,
+) -> tuple[bool, str]:
+    if not isinstance(endpoints, tuple) or not endpoints:
+        raise ValueError("endpoints muss ein nicht-leeres Tuple sein.")
+
+    timeout_value = _validate_timeout_seconds(
+        timeout_seconds,
+        "timeout_seconds",
+    )
+
+    for endpoint in endpoints:
+        if not isinstance(endpoint, tuple) or len(endpoint) != 2:
+            raise ValueError(
+                "Jeder Endpoint muss ein Tuple aus host und port sein."
+            )
+        host, port = endpoint
+        if _network_reachable(host, port, timeout_value):
+            return True, f"{host}:{port}"
+
+    checked_hosts = ", ".join(f"{host}:{port}" for host, port in endpoints)
+    return False, checked_hosts
+
+
 def _attempt_tool_repair(
     failed_tools: list[str], python_cmd: str, debug_mode: bool
 ) -> list[str]:
@@ -441,13 +477,18 @@ def run_preflight(
         )
         return 1
 
-    network_ok = _network_reachable("pypi.org", 443, NETWORK_TIMEOUT_SECONDS)
+    network_ok, network_detail = _network_any_reachable(
+        NETWORK_ENDPOINTS,
+        NETWORK_TIMEOUT_SECONDS,
+    )
     if network_ok:
-        print_feedback("ok", "Netzwerk-Check: pypi.org erreichbar.")
+        print_feedback(
+            "ok", f"Netzwerk-Check: erreichbar über {network_detail}."
+        )
     else:
         print_feedback(
             "warn",
-            "Netzwerk-Check: pypi.org aktuell nicht erreichbar. "
+            f"Netzwerk-Check: Ziele nicht erreichbar ({network_detail}). "
             "Falls Installation fehlschlaegt, bitte Internet pruefen "
             "oder spaeter erneut starten.",
         )

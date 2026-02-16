@@ -117,3 +117,6 @@
 
 - [x] Konsolen-Feedback vereinheitlicht: zentrale Ausgabehilfe in core/ eingefuehrt und QA-Preflight darauf umgestellt
 - [x] QA-Preflight zeigt bei Fehlern kopierbare manuelle Reparaturbefehle fuer Laien an
+
+- [x] QA-Preflight Netzwerkcheck robuster gemacht (mehrere Endpunkte + sichere Kopierbefehle mit Shell-Quoting) und Tests erweitert
+

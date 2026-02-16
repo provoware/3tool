@@ -54,6 +54,62 @@ def test_manual_recovery_commands_include_expected_entries(
     assert commands[3] == "python3 -m pip install --upgrade pytest mypy"
 
 
+def test_manual_recovery_commands_quotes_paths_and_tools(
+    tmp_path: Path,
+) -> None:
+    req = tmp_path / "requirements with spaces.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    commands = qa_preflight._manual_recovery_commands(
+        "python3",
+        req,
+        ["pytest", "black"],
+    )
+
+    assert "requirements with spaces.txt" in commands[1]
+    assert "'" in commands[1]
+    assert commands[3].endswith("pytest black")
+
+
+def test_network_any_reachable_validates_endpoints() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._network_any_reachable((), 3)
+
+
+def test_network_any_reachable_returns_first_reachable(monkeypatch) -> None:
+    monkeypatch.setattr(
+        qa_preflight,
+        "_network_reachable",
+        lambda host, _port, _timeout: host == "files.pythonhosted.org",
+    )
+
+    ok, detail = qa_preflight._network_any_reachable(
+        (("pypi.org", 443), ("files.pythonhosted.org", 443)),
+        3,
+    )
+
+    assert ok is True
+    assert detail == "files.pythonhosted.org:443"
+
+
+def test_network_any_reachable_returns_checked_hosts_when_none_reachable(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        qa_preflight,
+        "_network_reachable",
+        lambda *_args: False,
+    )
+
+    ok, detail = qa_preflight._network_any_reachable(
+        (("pypi.org", 443), ("files.pythonhosted.org", 443)),
+        3,
+    )
+
+    assert ok is False
+    assert detail == "pypi.org:443, files.pythonhosted.org:443"
+
+
 def test_run_quiet_rejects_invalid_command() -> None:
     with pytest.raises(ValueError):
         qa_preflight._run_quiet([], 1)
@@ -410,4 +466,4 @@ def test_run_preflight_warns_when_network_unreachable(
 
     assert result == 0
     captured = capsys.readouterr()
-    assert "Netzwerk-Check: pypi.org aktuell nicht erreichbar" in captured.out
+    assert "Netzwerk-Check: Ziele nicht erreichbar" in captured.out

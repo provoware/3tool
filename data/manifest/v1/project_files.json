@@ -143,8 +143,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 17880,
-      "sha256": "52c4701d43054f3be0750301896279011da1e4d0f68a0637d4378c43bbd6635b"
+      "size": 19177,
+      "sha256": "fc495431be0eb43ff8087d08dd6ba3b3bd93b3ce045c1e52a35c26056ed10ba6"
     },
     {
       "path": "core/themes.py",
@@ -298,8 +298,8 @@
     },
     {
       "path": "tests/test_qa_preflight.py",
-      "size": 11959,
-      "sha256": "8070c93d48cf0f7279d4cc00bcaa5a43ee552ff686c8360eab3dc035423a5da8"
+      "size": 13437,
+      "sha256": "e99177e768297baeabafe133782183ddfeaad9417f8609e4854e4f3acf0ab406"
     },
     {
       "path": "tests/test_smoke.py",
