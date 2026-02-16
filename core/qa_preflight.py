@@ -50,6 +50,7 @@ def _validate_tool_names(tool_names: list[str]) -> list[str]:
     if not isinstance(tool_names, list):
         raise TypeError("tool_names muss eine Liste sein.")
     cleaned: list[str] = []
+    seen: set[str] = set()
     for name in tool_names:
         if not isinstance(name, str) or not name.strip():
             raise ValueError(
@@ -61,7 +62,14 @@ def _validate_tool_names(tool_names: list[str]) -> list[str]:
             raise ValueError(
                 f"Unbekanntes Tool '{normalized}'. Erlaubt: {supported}"
             )
+        if normalized in seen:
+            continue
+        seen.add(normalized)
         cleaned.append(normalized)
+
+    if not cleaned:
+        raise ValueError("Mindestens ein Tool-Name ist erforderlich.")
+
     return cleaned
 
 

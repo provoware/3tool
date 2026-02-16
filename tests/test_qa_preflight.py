@@ -13,6 +13,20 @@ def test_validate_tool_names_rejects_unknown_tool() -> None:
         qa_preflight._validate_tool_names(["unknown"])
 
 
+def test_validate_tool_names_rejects_empty_list() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._validate_tool_names([])
+
+
+def test_validate_tool_names_deduplicates_preserving_order() -> None:
+    assert qa_preflight._validate_tool_names(
+        ["pytest", " pytest ", "mypy"]
+    ) == [
+        "pytest",
+        "mypy",
+    ]
+
+
 def test_validate_requirements_path_rejects_missing_file(
     tmp_path: Path,
 ) -> None:
