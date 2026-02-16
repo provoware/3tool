@@ -116,3 +116,4 @@
 - [x] QA-Preflight Offline-Fallback: bei fehlendem Netz Installation ueberspringen wenn Tools bereits verfuegbar sind, inkl. Tests
 
 - [x] Konsolen-Feedback vereinheitlicht: zentrale Ausgabehilfe in core/ eingefuehrt und QA-Preflight darauf umgestellt
+- [x] QA-Preflight zeigt bei Fehlern kopierbare manuelle Reparaturbefehle fuer Laien an

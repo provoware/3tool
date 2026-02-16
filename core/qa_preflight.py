@@ -97,6 +97,26 @@ def _validate_package_names(package_names: list[str]) -> list[str]:
     return cleaned_packages
 
 
+def _manual_recovery_commands(
+    python_cmd: str, requirements: Path, failed_tools: list[str]
+) -> list[str]:
+    interpreter = _validate_python_cmd(python_cmd)
+    _validate_requirements_path(requirements)
+    valid_tools = _validate_tool_names(failed_tools)
+
+    command_list = [
+        f"{interpreter} -m pip install --upgrade pip",
+        f"{interpreter} -m pip install -r {requirements}",
+        f"{interpreter} -m pip install --user -r {requirements}",
+    ]
+    if valid_tools:
+        command_list.append(
+            f"{interpreter} -m pip install --upgrade {' '.join(valid_tools)}"
+        )
+
+    return command_list
+
+
 def _run_checked_call(command: list[str], timeout_seconds: int) -> None:
     if not isinstance(command, list) or not command:
         raise ValueError("command muss eine nicht-leere Liste sein.")
@@ -389,6 +409,11 @@ def run_preflight(
 
     print_feedback("ok", f"Requirements-Datei gefunden: {requirements}")
     print_feedback("info", f"Validierte Prüftools: {', '.join(selected_tools)}")
+    recovery_commands = _manual_recovery_commands(
+        interpreter,
+        requirements,
+        selected_tools,
+    )
     print_debug(
         f"Debug-Modus aktiv. Interpreter-Kandidat: {interpreter}",
         debug_enabled,
@@ -453,14 +478,9 @@ def run_preflight(
     else:
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
         print(f"💡 Ursache: {install_message}")
-        print(
-            "💡 Lösung: Internet, Rechte und Requirements-Datei prüfen; "
-            f"Befehl manuell testen: {interpreter} -m pip install -r {requirements}"
-        )
-        print(
-            "💡 Falls Rechte fehlen, probiere ohne Admin-Rechte: "
-            f"{interpreter} -m pip install --user -r {requirements}"
-        )
+        print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
+        for command in recovery_commands[:3]:
+            print(f"   - {command}")
         return 1
 
     failed_tools: list[str] = []
@@ -488,10 +508,13 @@ def run_preflight(
             "❌ QA-Preflight unvollständig. Fehlende Tools: "
             + ", ".join(failed_tools)
         )
-        print(
-            "💡 Lösung: Starte erneut oder installiere manuell: "
-            f"{interpreter} -m pip install --upgrade {' '.join(failed_tools)}"
-        )
+        print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
+        for command in _manual_recovery_commands(
+            interpreter,
+            requirements,
+            failed_tools,
+        ):
+            print(f"   - {command}")
         return 1
 
     print_feedback(
