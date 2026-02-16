@@ -246,8 +246,8 @@ def cli_video(
     ]
     res = run_ffmpeg(cmd)
     if res.returncode != 0:
-        err = res.stderr.strip().splitlines()
-        msg = err[-1] if err else "unbekannt"
+        err_lines = res.stderr.strip().splitlines()
+        msg = err_lines[-1] if err_lines else "unbekannt"
         print("FFmpeg-Fehler:", msg)
         return 1
     print("Fertig: 1/1")
@@ -515,8 +515,8 @@ def cli_slideshow(
         except FileNotFoundError:
             pass
     if res.returncode != 0:
-        err = res.stderr.strip().splitlines()
-        msg = err[-1] if err else "unbekannt"
+        err_lines = res.stderr.strip().splitlines()
+        msg = err_lines[-1] if err_lines else "unbekannt"
         print("FFmpeg-Fehler:", msg)
         return 1
     print("Fertig: 1/1")
@@ -704,7 +704,7 @@ def main() -> None:
             p.strip() for p in args.image_extensions.split(",") if p.strip()
         ]
         if not patterns:
-            patterns = None
+            patterns = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.webp"]
         sys.exit(
             cli_slideshow(
                 args.img[0],

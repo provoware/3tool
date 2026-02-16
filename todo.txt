@@ -127,5 +127,6 @@
 - [x] Dateibenennung gehaertet: sichere Defaults, einheitliche Namen, Laengenlimit und automatische Tests ergänzt
 - [x] QA-Preflight erstellt optionalen JSON-Statusbericht und QA-Skripte speichern letzten Laufbericht fuer automatische Auswertung
 - [x] QA-Preflight Debug-Fehlerpfade gehaertet (robuste Exception-Guards + klare Laienhinweise bei Netzwerk/Tool-Check)
+- [x] Mypy-Qualitätslauf stabilisiert: Launcher/Tests typisiert und GUI-Altlasten gezielt für Mypy ausgeblendet
 
 - [x] QA-Preflight intern bereinigt: Kommando-Validierung zentralisiert und Wiederholungen in Fehlerhilfe-Ausgaben entfernt

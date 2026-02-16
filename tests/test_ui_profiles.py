@@ -1,3 +1,4 @@
+from typing import Any, cast
 from core.ui_profiles import (
     INTERFACE_PROFILES,
     SPACING_PROFILES,
@@ -55,5 +56,7 @@ def test_interface_profile_supports_max_accessible_mode() -> None:
 
 
 def test_interface_profile_invalid_large_controls_falls_back() -> None:
-    profile = resolve_interface_profile("Standard", large_controls="ja")
+    profile = resolve_interface_profile(
+        "Standard", large_controls=cast(Any, "ja")
+    )
     assert profile == INTERFACE_PROFILES["Standard"]

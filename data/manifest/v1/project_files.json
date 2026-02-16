@@ -128,8 +128,8 @@
     },
     {
       "path": "core/launcher_checks.py",
-      "size": 30233,
-      "sha256": "9eb7f7a99b33be279376721e460083d53ac2fb8ce87a3ca38113d7539378b5f7"
+      "size": 30483,
+      "sha256": "b4d50a34b5a9083a2f6833af2f62b67377245f1f67023a34c938ec210db6dbf5"
     },
     {
       "path": "core/paths.py",
@@ -193,8 +193,8 @@
     },
     {
       "path": "mypy.ini",
-      "size": 85,
-      "sha256": "2956c72a4f1810552fdb24cbdb7acb6ab1bea9c553fc83cd4dd3791f359a3f1d"
+      "size": 129,
+      "sha256": "d4d27bf623e00d7c6f975848df22c8a37cbcec6ced35aab8f3288a4447ff915e"
     },
     {
       "path": "pyproject.toml",
@@ -278,8 +278,8 @@
     },
     {
       "path": "tests/test_launcher_checks.py",
-      "size": 14026,
-      "sha256": "4d1899534535d2a2d2262196893b603cda91e1ce9314f83fa2ed08611279e2df"
+      "size": 14121,
+      "sha256": "f31550938c17a5107455667db5796fb19285706b34abc18bcff38059a7ab8940"
     },
     {
       "path": "tests/test_launcher_logging.py",
@@ -318,8 +318,8 @@
     },
     {
       "path": "tests/test_ui_profiles.py",
-      "size": 2261,
-      "sha256": "d23be2ecf88c6500a6470a815857cafb60b5c9b48ae95d097ec34e73a69ca565"
+      "size": 2315,
+      "sha256": "505f8c20632d2c1752450b661965d4ad0da81b72afa35bf39a33f02c156d9e5c"
     },
     {
       "path": "tests/test_user_feedback.py",
@@ -343,8 +343,8 @@
     },
     {
       "path": "videobatch_extra.py",
-      "size": 23523,
-      "sha256": "515ad9f0ace0c43aba9c6052f9082ea3312b8e1abba8f673c550a37f2e18d227"
+      "size": 23602,
+      "sha256": "5c3d8fe359ca41cfdd6897bce75779ee613fda941064bdde926a688f5d8463a1"
     },
     {
       "path": "videobatch_extra_improved.py",
@@ -358,8 +358,8 @@
     },
     {
       "path": "videobatch_launcher.py",
-      "size": 17165,
-      "sha256": "839e6ac9e27fd09ada2d6f80f129e4f2b0cf97a2bd75ac844ddff88a4a5628d8"
+      "size": 17591,
+      "sha256": "5af62a45b1c9f5f83b7018cd1c2bedc9ca7e6ce2213893d0eeff6c3f59c9b7f8"
     },
     {
       "path": "videobatch_professional.py",
