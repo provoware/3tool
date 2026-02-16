@@ -1,4 +1,5 @@
 import unittest
+from typing import Any, cast
 from pathlib import Path
 import subprocess
 
@@ -160,7 +161,9 @@ def test_check_dependency_file_consistency_reports_issues(tmp_path):
 
 def test_collect_checks_rejects_invalid_project_root(tmp_path):
     with pytest.raises(TypeError):
-        launcher_checks.collect_checks("python", tmp_path, project_root=".")
+        launcher_checks.collect_checks(
+            "python", tmp_path, project_root=cast(Any, ".")
+        )
 
 
 def test_collect_checks_rejects_invalid_types(tmp_path):
@@ -168,7 +171,7 @@ def test_collect_checks_rejects_invalid_types(tmp_path):
         launcher_checks.collect_checks("", tmp_path)
 
     with pytest.raises(TypeError):
-        launcher_checks.collect_checks("python", "not-a-path")
+        launcher_checks.collect_checks("python", cast(Any, "not-a-path"))
 
 
 def test_has_internet_rejects_invalid_timeout():
@@ -178,7 +181,7 @@ def test_has_internet_rejects_invalid_timeout():
 
 def test_parse_os_release_rejects_non_path():
     with pytest.raises(TypeError):
-        launcher_checks.parse_os_release("/etc/os-release")
+        launcher_checks.parse_os_release(cast(Any, "/etc/os-release"))
 
 
 def test_parse_os_release_handles_directory(tmp_path):
@@ -189,7 +192,7 @@ def test_parse_os_release_handles_directory(tmp_path):
 
 def test_write_permissions_ok_rejects_invalid_target_type():
     with pytest.raises(TypeError):
-        launcher_checks.write_permissions_ok("not-a-path")
+        launcher_checks.write_permissions_ok(cast(Any, "not-a-path"))
 
 
 def test_write_permissions_ok_returns_false_for_missing_path(tmp_path):

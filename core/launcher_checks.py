@@ -11,7 +11,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, TypeVar
+from typing import Iterable, TypedDict, TypeVar
 
 from core import dependency_consistency
 from core.dependency_consistency import RUNTIME_PACKAGES
@@ -874,6 +874,20 @@ def beginner_recovery_hints(results: Iterable[RepairResult]) -> list[str]:
 TResult = TypeVar("TResult", CheckResult, RepairResult)
 
 
+class CheckFeedback(TypedDict):
+    headline: str
+    summary: str
+    next_steps: list[str]
+    beginner_terms: list[str]
+    quick_commands: list[str]
+
+
+class RepairFeedback(TypedDict):
+    headline: str
+    summary: str
+    hints: list[str]
+
+
 def _validated_results(
     results: Iterable[TResult],
     *,
@@ -887,7 +901,7 @@ def _validated_results(
     return result_list
 
 
-def build_check_feedback(results: Iterable[CheckResult]) -> dict[str, object]:
+def build_check_feedback(results: Iterable[CheckResult]) -> CheckFeedback:
     check_results = _validated_results(results, expected_type=CheckResult)
     blocking_total = sum(1 for item in check_results if item.blocking)
     blocking_ok = sum(1 for item in check_results if item.blocking and item.ok)
@@ -948,7 +962,7 @@ def build_check_feedback(results: Iterable[CheckResult]) -> dict[str, object]:
     }
 
 
-def build_repair_feedback(results: Iterable[RepairResult]) -> dict[str, object]:
+def build_repair_feedback(results: Iterable[RepairResult]) -> RepairFeedback:
     repair_results = _validated_results(results, expected_type=RepairResult)
     failed = [item.title for item in repair_results if not item.ok]
     offline_skips = sum(1 for item in repair_results if item.skipped_offline)
