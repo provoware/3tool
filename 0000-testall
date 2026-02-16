@@ -101,7 +101,7 @@ else
   log_warn "requirements.txt nicht gefunden. Grundpakete werden uebersprungen."
 fi
 
-python -m core.qa_preflight --requirements requirements-dev.txt --tools flake8 mypy ruff black isort autoflake pytest
+python -m core.qa_preflight --requirements requirements-dev.txt --tools flake8 mypy ruff black isort autoflake pytest --report-json data/runtime/qa_preflight_report.json
 
 log_info "\n🔍 Versionen der Prueftools:"
 python -m flake8 --version || log_warn "flake8 nicht verfuegbar."

@@ -3,7 +3,7 @@ set -euo pipefail
 
 source "$(dirname "$0")/_quality_common.sh"
 
-qb_run_python_check "QA-Preflight (Abhaengigkeiten + Tool-Importe)" core.qa_preflight --requirements requirements-dev.txt --tools ruff black mypy pytest flake8 isort autoflake
+qb_run_python_check "QA-Preflight (Abhaengigkeiten + Tool-Importe)" core.qa_preflight --requirements requirements-dev.txt --tools ruff black mypy pytest flake8 isort autoflake --report-json data/runtime/qa_preflight_report.json
 
 qb_print_step "✅" "Starte Code-Checks..."
 qb_run_python_check "Syntax-Check (compileall)" compileall -q .

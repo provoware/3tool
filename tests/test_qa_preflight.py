@@ -515,6 +515,82 @@ def test_run_preflight_warns_when_network_unreachable(
     assert "Netzwerk-Check: Ziele nicht erreichbar" in captured.out
 
 
+def test_validate_report_path_rejects_directory(tmp_path: Path) -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._validate_report_path(tmp_path)
+
+
+def test_write_preflight_report_writes_json(tmp_path: Path) -> None:
+    report_path = tmp_path / "reports" / "qa_report.json"
+
+    qa_preflight._write_preflight_report(
+        report_path,
+        {"result": "success", "checks": []},
+    )
+
+    assert report_path.exists()
+    written = report_path.read_text(encoding="utf-8")
+    assert '"result": "success"' in written
+
+
+def test_run_preflight_writes_json_report_on_success(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+    report_path = tmp_path / "qa_report.json"
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(qa_preflight, "_network_reachable", lambda *_: True)
+    monkeypatch.setattr(qa_preflight, "_run_pip_install", lambda *_args: None)
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
+
+    result = qa_preflight.run_preflight(
+        req,
+        ["pytest"],
+        "python3",
+        report_path=report_path,
+    )
+
+    assert result == 0
+    assert report_path.exists()
+    report_text = report_path.read_text(encoding="utf-8")
+    assert '"result": "success"' in report_text
+    assert '"tool:pytest"' in report_text
+
+
+def test_run_preflight_writes_json_report_on_failure(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+    report_path = tmp_path / "qa_report_failed.json"
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_ensure_pip_with_fallback",
+        lambda *_: (False, "pip kaputt"),
+    )
+
+    result = qa_preflight.run_preflight(
+        req,
+        ["pytest"],
+        "python3",
+        report_path=report_path,
+    )
+
+    assert result == 1
+    assert report_path.exists()
+    report_text = report_path.read_text(encoding="utf-8")
+    assert '"result": "failed"' in report_text
+    assert "pip-Unterstützung" in report_text
+
+
 def test_parse_args_uses_full_default_toolset(monkeypatch) -> None:
     monkeypatch.setattr(
         qa_preflight.sys,
@@ -525,6 +601,7 @@ def test_parse_args_uses_full_default_toolset(monkeypatch) -> None:
     args = qa_preflight._parse_args()
 
     assert args.tools == qa_preflight.DEFAULT_QA_TOOLS
+    assert args.report_json == ""
 
 
 def test_default_qa_tools_are_supported() -> None:
