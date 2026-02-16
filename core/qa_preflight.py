@@ -145,6 +145,40 @@ def _manual_recovery_commands(
     return command_list
 
 
+def _novice_recovery_steps(
+    title: str,
+    python_cmd: str,
+    requirements: Path,
+    failed_tools: list[str],
+) -> list[str]:
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("title muss ein nicht-leerer String sein.")
+
+    interpreter = _validate_python_cmd(python_cmd)
+    _validate_requirements_path(requirements)
+    valid_tools = _validate_tool_names(failed_tools)
+    commands = _manual_recovery_commands(
+        interpreter,
+        requirements,
+        valid_tools,
+    )
+
+    quoted_interpreter = shlex.quote(interpreter)
+    return [
+        title.strip(),
+        "1) Interpreter (Python-Starter) testen:",
+        f"   - {quoted_interpreter} --version",
+        "2) Paketverwaltung (pip = Installationswerkzeug) testen:",
+        f"   - {quoted_interpreter} -m pip --version",
+        "3) Abhaengigkeiten neu installieren:",
+        f"   - {commands[1]}",
+        "4) Falls Rechte fehlen, ohne Adminrechte wiederholen:",
+        f"   - {commands[2]}",
+        "5) Fehlende QA-Tools gezielt reparieren:",
+        f"   - {commands[3]}",
+    ]
+
+
 def _run_checked_call(command: list[str], timeout_seconds: int) -> None:
     if not isinstance(command, list) or not command:
         raise ValueError("command muss eine nicht-leere Liste sein.")
@@ -462,11 +496,6 @@ def run_preflight(
 
     print_feedback("ok", f"Requirements-Datei gefunden: {requirements}")
     print_feedback("info", f"Validierte Prüftools: {', '.join(selected_tools)}")
-    recovery_commands = _manual_recovery_commands(
-        interpreter,
-        requirements,
-        selected_tools,
-    )
     print_debug(
         f"Debug-Modus aktiv. Interpreter-Kandidat: {interpreter}",
         debug_enabled,
@@ -537,8 +566,13 @@ def run_preflight(
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
         print(f"💡 Ursache: {install_message}")
         print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
-        for command in recovery_commands[:3]:
-            print(f"   - {command}")
+        for step in _novice_recovery_steps(
+            "Bitte nacheinander ausführen:",
+            interpreter,
+            requirements,
+            selected_tools,
+        ):
+            print(step)
         return 1
 
     failed_tools: list[str] = []
@@ -567,12 +601,13 @@ def run_preflight(
             + ", ".join(failed_tools)
         )
         print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
-        for command in _manual_recovery_commands(
+        for step in _novice_recovery_steps(
+            "Bitte nacheinander ausführen:",
             interpreter,
             requirements,
             failed_tools,
         ):
-            print(f"   - {command}")
+            print(step)
         return 1
 
     print_feedback(

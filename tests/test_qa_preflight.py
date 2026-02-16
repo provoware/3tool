@@ -85,6 +85,38 @@ def test_manual_recovery_commands_quotes_paths_and_tools(
     assert commands[3].endswith("pytest black")
 
 
+def test_novice_recovery_steps_include_simple_explanations(
+    tmp_path: Path,
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    steps = qa_preflight._novice_recovery_steps(
+        "Bitte nacheinander ausführen:",
+        "python3",
+        req,
+        ["pytest", "mypy"],
+    )
+
+    assert steps[0] == "Bitte nacheinander ausführen:"
+    assert "Interpreter (Python-Starter)" in steps[1]
+    assert "pip = Installationswerkzeug" in steps[3]
+    assert "python3 -m pip install --upgrade pytest mypy" in steps[-1]
+
+
+def test_novice_recovery_steps_reject_empty_title(tmp_path: Path) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        qa_preflight._novice_recovery_steps(
+            "   ",
+            "python3",
+            req,
+            ["pytest"],
+        )
+
+
 def test_network_any_reachable_validates_endpoints() -> None:
     with pytest.raises(ValueError):
         qa_preflight._network_any_reachable((), 3)

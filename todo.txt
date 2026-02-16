@@ -123,3 +123,4 @@
 - [x] QA-Standards erweitert: flake8/isort/autoflake als Default-Preflight und in quality_check/quality_fix integriert
 
 - [x] QA-Preflight Toollisten-Härtung: leere/duplizierte Toolnamen validieren und mit Tests absichern
+- [x] QA-Preflight Fehlerhilfe um laienfreundliche Schritt-fuer-Schritt-Reparatur mit Begriffserklaerungen erweitert
