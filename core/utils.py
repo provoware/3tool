@@ -13,6 +13,9 @@ import ffmpeg
 from .config import cfg
 
 
+MAX_FILENAME_LENGTH = 120
+
+
 def human_time(seconds: float) -> str:
     seconds = int(seconds)
     minutes, seconds = divmod(seconds, 60)
@@ -25,12 +28,33 @@ def human_time(seconds: float) -> str:
 
 
 def _sanitize_filename(name: str) -> str:
-    name = name.strip()
-    if not name:
+    value = (name or "").strip()
+    if not value:
         return "output.mp4"
-    name = name.replace("/", "_").replace("\\", "_")
-    name = re.sub(r'[<>:"|?*]', "_", name)
-    return name or "output.mp4"
+
+    value = value.replace("/", "_").replace("\\", "_")
+    value = re.sub(r'[<>:"|?*]', "_", value)
+    value = re.sub(r"\s+", "_", value)
+    value = re.sub(r"_+", "_", value)
+    if value.startswith("."):
+        value = f"output{value}"
+    value = value.strip(" ._")
+    if not value:
+        return "output.mp4"
+
+    suffix = ""
+    stem = value
+    if "." in value:
+        stem, suffix = value.rsplit(".", 1)
+        suffix = f".{suffix.strip(' ._')}" if suffix.strip(" ._") else ""
+    stem = stem.strip(" ._") or "output"
+
+    allowed_stem_length = MAX_FILENAME_LENGTH - len(suffix)
+    if allowed_stem_length < 1:
+        suffix = ""
+        allowed_stem_length = MAX_FILENAME_LENGTH
+    stem = stem[:allowed_stem_length]
+    return f"{stem}{suffix}" or "output.mp4"
 
 
 def linux_safe_stem(raw_value: str, fallback: str = "wert") -> str:

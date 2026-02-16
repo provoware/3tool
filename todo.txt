@@ -124,3 +124,4 @@
 
 - [x] QA-Preflight Toollisten-Härtung: leere/duplizierte Toolnamen validieren und mit Tests absichern
 - [x] QA-Preflight Fehlerhilfe um laienfreundliche Schritt-fuer-Schritt-Reparatur mit Begriffserklaerungen erweitert
+- [x] Dateibenennung gehaertet: sichere Defaults, einheitliche Namen, Laengenlimit und automatische Tests ergänzt

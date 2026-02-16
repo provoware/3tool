@@ -33,3 +33,26 @@ def test_mark_used_filename_appends_suffix() -> None:
     result = mark_used_filename(Path("Urlaub Foto.PNG"))
 
     assert result == "urlaub_foto_benutzt.png"
+
+
+def test_build_out_name_normalizes_spaces_and_repeated_underscores() -> None:
+    out_dir = Path("/tmp/out")
+    result = build_out_name(
+        "musik.mp3",
+        out_dir,
+        template="  Mein   Export  __Final  ",
+    )
+    assert result == out_dir / "Mein_Export_Final.mp4"
+
+
+def test_build_out_name_replaces_hidden_prefix_with_safe_default() -> None:
+    out_dir = Path("/tmp/out")
+    result = build_out_name("musik.mp3", out_dir, template=".env")
+    assert result == out_dir / "output.env.mp4"
+
+
+def test_build_out_name_limits_filename_length() -> None:
+    out_dir = Path("/tmp/out")
+    result = build_out_name("musik.mp3", out_dir, template="a" * 200)
+
+    assert len(result.name) <= 124
