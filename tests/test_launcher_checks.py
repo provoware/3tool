@@ -166,6 +166,12 @@ def test_collect_checks_rejects_invalid_project_root(tmp_path):
         )
 
 
+def test_collect_checks_contains_gui_runtime_check(tmp_path):
+    results = launcher_checks.collect_checks("python", tmp_path, tmp_path)
+
+    assert any(result.key == "gui_runtime" for result in results)
+
+
 def test_collect_checks_rejects_invalid_types(tmp_path):
     with pytest.raises(ValueError):
         launcher_checks.collect_checks("", tmp_path)
@@ -226,6 +232,33 @@ def test_write_permissions_ok_returns_false_for_file(tmp_path):
     target.write_text("x", encoding="utf-8")
 
     assert not launcher_checks.write_permissions_ok(target)
+
+
+def test_check_gui_runtime_reports_import_error(monkeypatch):
+    monkeypatch.setattr(
+        launcher_checks,
+        "gui_import_error",
+        lambda _py: "ImportError: libGL.so.1 fehlt",
+    )
+
+    result = launcher_checks.check_gui_runtime("python")
+
+    assert not result.ok
+    assert result.fix_hint
+    assert "OpenGL-Systembibliothek fehlt" in result.detail
+
+
+def test_check_gui_runtime_ok(monkeypatch):
+    monkeypatch.setattr(
+        launcher_checks,
+        "gui_import_error",
+        lambda _py: None,
+    )
+
+    result = launcher_checks.check_gui_runtime("python")
+
+    assert result.ok
+    assert result.fix_hint is None
 
 
 def test_beginner_recovery_hints_include_actionable_steps():

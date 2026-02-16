@@ -132,3 +132,5 @@
 - [x] QA-Preflight intern bereinigt: Kommando-Validierung zentralisiert und Wiederholungen in Fehlerhilfe-Ausgaben entfernt
 - [x] Release-Audit fuer fehlerfreies Release als Ein-Kommando-Report mit klaren Laienbefehlen und Tests ergänzt
 - [x] Strengeren Mypy-Lauf abgesichert (no-any-return) und Netzwerk-Timeout-Validierung präventiv ergänzt
+
+- [x] GUI-Runtime-Check auf libGL/PySide6 erweitert und GUI-Tests ohne Skip via Diagnosepfad stabilisiert

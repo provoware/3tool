@@ -158,6 +158,42 @@ def module_import_ok(py: str, module_name: str) -> bool:
     )
 
 
+def module_import_error(py: str, module_name: str) -> str | None:
+    py = validated_python_command(py)
+    if not isinstance(module_name, str) or not module_name.strip():
+        raise ValueError("module_name muss ein nicht-leerer String sein.")
+    result = subprocess.run(
+        [py, "-c", f"import {module_name}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        return None
+    detail = (result.stderr or result.stdout or "").strip()
+    return detail or "Unbekannter Importfehler."
+
+
+def gui_import_error(py: str) -> str | None:
+    py = validated_python_command(py)
+    probe_code = (
+        "from PySide6 import QtCore, QtGui, QtMultimedia, QtWidgets\n"
+        "print('ok')"
+    )
+    result = subprocess.run(
+        [py, "-c", probe_code],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        return None
+    detail = (result.stderr or result.stdout or "").strip()
+    return detail or "Unbekannter GUI-Importfehler."
+
+
 def missing_runtime_packages(py: str) -> list[str]:
     py = validated_python_command(py)
     missing: list[str] = []
@@ -483,6 +519,63 @@ def check_packages(py: str) -> CheckResult:
     )
 
 
+def _linux_libgl_install_hint() -> str:
+    manager = linux_package_manager()
+    if manager is None:
+        return (
+            "Installiere libGL manuell (z. B. Paketname libgl1 oder "
+            "mesa-libGL je nach Distribution)."
+        )
+    package_name = "libgl1"
+    lowered = manager.name.lower()
+    if "dnf" in lowered or "yum" in lowered:
+        package_name = "mesa-libGL"
+    if manager.update_cmd:
+        return (
+            "Befehl ("
+            f"{manager.name}): {format_command(manager.update_cmd)} && "
+            f"{format_command(manager.install_cmd + [package_name])}"
+        )
+    return (
+        f"Befehl ({manager.name}): "
+        f"{format_command(manager.install_cmd + [package_name])}"
+    )
+
+
+def gui_runtime_fix_hint() -> str:
+    if sys.platform.startswith("linux"):
+        return _linux_libgl_install_hint()
+    return (
+        "Installiere OpenGL-Systembibliotheken und pruefe danach erneut: "
+        "python3 -c 'from PySide6 import QtWidgets'"
+    )
+
+
+def check_gui_runtime(py: str) -> CheckResult:
+    py = validated_python_command(py)
+    import_error = gui_import_error(py)
+    if import_error is None:
+        return CheckResult(
+            key="gui_runtime",
+            title="GUI-Laufzeit (PySide6 + Systembibliotheken)",
+            ok=True,
+            detail="GUI-Abhaengigkeiten sind importierbar.",
+            blocking=False,
+        )
+
+    detail = f"GUI-Import fehlgeschlagen: {import_error}"
+    if "libGL.so.1" in import_error:
+        detail += " | Ursache: OpenGL-Systembibliothek fehlt."
+    return CheckResult(
+        key="gui_runtime",
+        title="GUI-Laufzeit (PySide6 + Systembibliotheken)",
+        ok=False,
+        detail=detail,
+        fix_hint=gui_runtime_fix_hint(),
+        blocking=False,
+    )
+
+
 def check_ffmpeg() -> CheckResult:
     ok = bool(shutil.which("ffmpeg") and shutil.which("ffprobe"))
     detail = "ffmpeg und ffprobe gefunden." if ok else "ffmpeg/ffprobe fehlen."
@@ -567,6 +660,7 @@ def collect_checks(
         check_venv(project_root),
         check_pip(py),
         check_packages(py),
+        check_gui_runtime(py),
         check_ffmpeg(),
         check_write_permissions(target_dir),
         check_dependency_file_consistency(project_root),
