@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shlex
 import socket
 import shutil
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final
 
@@ -96,6 +98,16 @@ def _validate_timeout_seconds(timeout_seconds: int, name: str) -> int:
     return timeout_seconds
 
 
+def _validate_report_path(report_path: Path | None) -> Path | None:
+    if report_path is None:
+        return None
+    if not isinstance(report_path, Path):
+        raise TypeError("report_path muss ein Path oder None sein.")
+    if report_path.exists() and report_path.is_dir():
+        raise ValueError("report_path darf kein Verzeichnis sein.")
+    return report_path
+
+
 def _validate_package_names(package_names: list[str]) -> list[str]:
     if not isinstance(package_names, list):
         raise TypeError("package_names muss eine Liste sein.")
@@ -143,6 +155,23 @@ def _manual_recovery_commands(
         )
 
     return command_list
+
+
+def _write_preflight_report(
+    report_path: Path | None,
+    report_data: dict[str, object],
+) -> None:
+    target_path = _validate_report_path(report_path)
+    if target_path is None:
+        return
+    if not isinstance(report_data, dict):
+        raise TypeError("report_data muss ein Dictionary sein.")
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    target_path.write_text(
+        json.dumps(report_data, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _novice_recovery_steps(
@@ -488,11 +517,36 @@ def run_preflight(
     tool_names: list[str],
     python_cmd: str,
     debug_mode: bool = False,
+    report_path: Path | None = None,
 ) -> int:
     _validate_requirements_path(requirements)
     selected_tools = _validate_tool_names(tool_names)
     interpreter = _validate_python_cmd(python_cmd)
     debug_enabled = _validate_debug_mode(debug_mode)
+    report_target = _validate_report_path(report_path)
+    started_at = datetime.now(UTC).isoformat()
+    report: dict[str, object] = {
+        "started_at_utc": started_at,
+        "requirements": str(requirements),
+        "python_cmd": interpreter,
+        "debug_mode": debug_enabled,
+        "selected_tools": selected_tools,
+        "checks": [],
+        "result": "failed",
+        "help": [],
+    }
+
+    def _push_check(name: str, status: str, detail: str) -> None:
+        checks = report["checks"]
+        if not isinstance(checks, list):
+            raise TypeError("report['checks'] muss eine Liste sein.")
+        checks.append(
+            {
+                "name": name,
+                "status": status,
+                "detail": detail,
+            }
+        )
 
     print_feedback("ok", f"Requirements-Datei gefunden: {requirements}")
     print_feedback("info", f"Validierte Prüftools: {', '.join(selected_tools)}")
@@ -504,9 +558,15 @@ def run_preflight(
     if shutil.which(interpreter) is None:
         print(f"❌ Python-Interpreter nicht gefunden: {interpreter}")
         print("💡 Bitte Python installieren oder den Interpreterpfad prüfen.")
+        _push_check("python", "error", f"Interpreter fehlt: {interpreter}")
+        report["help"] = [
+            "Python installieren oder korrekten Interpreterpfad mit --python setzen."
+        ]
+        _write_preflight_report(report_target, report)
         return 1
 
     print_feedback("ok", f"Python-Interpreter gefunden: {interpreter}")
+    _push_check("python", "ok", f"Interpreter gefunden: {interpreter}")
 
     pip_ok, pip_message = _ensure_pip_with_fallback(
         interpreter,
@@ -514,6 +574,7 @@ def run_preflight(
     )
     if pip_ok:
         print_feedback("ok", pip_message)
+        _push_check("pip", "ok", pip_message)
     else:
         print("❌ pip konnte nicht automatisch vorbereitet werden.")
         print(f"💡 Ursache: {pip_message}")
@@ -521,6 +582,14 @@ def run_preflight(
             "💡 Lösung: Python mit pip-Unterstützung installieren oder manuell "
             f"testen: {interpreter} -m ensurepip --upgrade"
         )
+        _push_check("pip", "error", pip_message)
+        report["help"] = [
+            (
+                "Python mit pip-Unterstützung installieren oder ensurepip "
+                "manuell ausführen."
+            )
+        ]
+        _write_preflight_report(report_target, report)
         return 1
 
     network_ok, network_detail = _network_any_reachable(
@@ -531,12 +600,18 @@ def run_preflight(
         print_feedback(
             "ok", f"Netzwerk-Check: erreichbar über {network_detail}."
         )
+        _push_check("network", "ok", f"Erreichbar: {network_detail}")
     else:
         print_feedback(
             "warn",
             f"Netzwerk-Check: Ziele nicht erreichbar ({network_detail}). "
             "Falls Installation fehlschlaegt, bitte Internet pruefen "
             "oder spaeter erneut starten.",
+        )
+        _push_check(
+            "network",
+            "warn",
+            "Nicht erreichbar: " + network_detail,
         )
     print_feedback("info", f"Starte QA-Preflight mit {interpreter}")
     if not network_ok:
@@ -549,6 +624,14 @@ def run_preflight(
                 "ok",
                 "QA-Preflight erfolgreich ohne Neuinstallation (Offline-Modus).",
             )
+            _push_check(
+                "requirements_install",
+                "ok",
+                "Offline-Skip: Tools bereits verfügbar.",
+            )
+            report["result"] = "success"
+            report["finished_at_utc"] = datetime.now(UTC).isoformat()
+            _write_preflight_report(report_target, report)
             return 0
 
     print_debug(
@@ -562,6 +645,7 @@ def run_preflight(
     )
     if install_ok:
         print_feedback("ok", install_message)
+        _push_check("requirements_install", "ok", install_message)
     else:
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
         print(f"💡 Ursache: {install_message}")
@@ -573,6 +657,15 @@ def run_preflight(
             selected_tools,
         ):
             print(step)
+        _push_check("requirements_install", "error", install_message)
+        report["help"] = _novice_recovery_steps(
+            "Bitte nacheinander ausführen:",
+            interpreter,
+            requirements,
+            selected_tools,
+        )
+        report["finished_at_utc"] = datetime.now(UTC).isoformat()
+        _write_preflight_report(report_target, report)
         return 1
 
     failed_tools: list[str] = []
@@ -584,9 +677,11 @@ def run_preflight(
         )
         if _module_import_ok(module_name, interpreter):
             print_feedback("ok", f"Tool bereit: {tool}")
+            _push_check(f"tool:{tool}", "ok", "Import erfolgreich")
         else:
             failed_tools.append(tool)
             print_feedback("warn", f"Tool nicht importierbar: {tool}")
+            _push_check(f"tool:{tool}", "warn", "Import fehlgeschlagen")
 
     if failed_tools:
         failed_tools = _attempt_tool_repair(
@@ -608,12 +703,23 @@ def run_preflight(
             failed_tools,
         ):
             print(step)
+        report["help"] = _novice_recovery_steps(
+            "Bitte nacheinander ausführen:",
+            interpreter,
+            requirements,
+            failed_tools,
+        )
+        report["finished_at_utc"] = datetime.now(UTC).isoformat()
+        _write_preflight_report(report_target, report)
         return 1
 
     print_feedback(
         "ok",
         "QA-Preflight erfolgreich: alle benötigten Prüftools sind nutzbar.",
     )
+    report["result"] = "success"
+    report["finished_at_utc"] = datetime.now(UTC).isoformat()
+    _write_preflight_report(report_target, report)
     return 0
 
 
@@ -648,6 +754,14 @@ def _parse_args() -> argparse.Namespace:
             "zusätzlichen Zwischenschritten für die Fehlersuche."
         ),
     )
+    parser.add_argument(
+        "--report-json",
+        default="",
+        help=(
+            "Optionaler Pfad für einen JSON-Statusbericht "
+            "(maschinenlesbares Ergebnisprotokoll)."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -659,6 +773,7 @@ def main() -> int:
             args.tools,
             args.python,
             debug_mode=args.debug,
+            report_path=Path(args.report_json) if args.report_json else None,
         )
     except (TypeError, ValueError) as exc:
         print(f"❌ Ungültige QA-Preflight-Eingabe: {exc}")

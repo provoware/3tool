@@ -13,8 +13,8 @@
     },
     {
       "path": "0000-testall",
-      "size": 3768,
-      "sha256": "4afa021b01a84b0c0eb458635f6bb4980a96ef468c796bc8b6f09b87a5310911"
+      "size": 3820,
+      "sha256": "55621bf97a578763f324b41173c5beed246d42707fb4ece1dc20f66ad9b9b957"
     },
     {
       "path": "AGENTS.md",
@@ -143,8 +143,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 20616,
-      "sha256": "4a3b29ec23615bed684b6ed4794b52bbf7381f2f2a34ba0679d51cfe76c781ab"
+      "size": 24859,
+      "sha256": "c983ae5e4e5d22d8c93d6bfa3ccfbfd9216427471aa3a65eb83d8b483f1b6933"
     },
     {
       "path": "core/themes.py",
@@ -183,8 +183,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 54765,
-      "sha256": "accc1c5784508974cdb718dac50f01dcfba14dc9bfb7d77f363525334242854b"
+      "size": 55664,
+      "sha256": "bdd313a5e46d6124380f33b8b1da8279f7dd72010e78e2c949d6c5117bef3e4c"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -218,18 +218,18 @@
     },
     {
       "path": "scripts/qa.sh",
-      "size": 284,
-      "sha256": "d77508f0c55b2780ec057494ac76499049f4f7634a5a9b3f83abb49fc26170ca"
+      "size": 359,
+      "sha256": "f09b7b2440164e25a745e264f6c3d829a912df3f17c875622adf79c882ff82c3"
     },
     {
       "path": "scripts/quality_check.sh",
-      "size": 894,
-      "sha256": "17222f2aa6049ba53c5c314161da3d3d8c860b4e064810290c2f870d99fc9203"
+      "size": 946,
+      "sha256": "684406dadb67afb97c7e040ebb80fe235f93ed6fd22f93dba4bdbcf98c706bc0"
     },
     {
       "path": "scripts/quality_fix.sh",
-      "size": 890,
-      "sha256": "1502a881d40c926d949f01eeebe6c238a4113a1b4f94661cbd41e5dbf5dd03ba"
+      "size": 942,
+      "sha256": "02eed09e41ba4d3d429eb0374d37327084640ccc8ac3c69f94134c31691cdf96"
     },
     {
       "path": "scripts/setup_template.sh",
@@ -298,8 +298,8 @@
     },
     {
       "path": "tests/test_qa_preflight.py",
-      "size": 15176,
-      "sha256": "c83b2c5ee38d215f5e9efd5d538537ed75ba2583e24854cfb10f80335d740404"
+      "size": 17496,
+      "sha256": "4b81b740869bf39cc8eee32ac6055b7c60e60af5aec832d8fe59cc63918c1832"
     },
     {
       "path": "tests/test_smoke.py",
@@ -338,8 +338,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 9846,
-      "sha256": "841b118842ae190c84a51c3b9f0a5a3deafbdbcb4a0df51e4c9f71fb2d9c5872"
+      "size": 9979,
+      "sha256": "865b67fe4d30c6e0e64af14a2c72e122ac2f50d22c6a6e2bcc6fc54169eaad69"
     },
     {
       "path": "videobatch_extra.py",
