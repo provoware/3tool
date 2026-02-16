@@ -179,6 +179,26 @@ def test_has_internet_rejects_invalid_timeout():
         launcher_checks.has_internet(0)
 
 
+def test_dns_reachable_rejects_invalid_timeout_type():
+    with pytest.raises(TypeError):
+        launcher_checks._dns_reachable("1")  # type: ignore[arg-type]
+
+
+def test_dns_reachable_rejects_non_positive_timeout():
+    with pytest.raises(ValueError):
+        launcher_checks._dns_reachable(0)
+
+
+def test_https_head_reachable_rejects_invalid_timeout_type():
+    with pytest.raises(TypeError):
+        launcher_checks._https_head_reachable("https://pypi.org/", "1")  # type: ignore[arg-type]
+
+
+def test_https_head_reachable_rejects_non_positive_timeout():
+    with pytest.raises(ValueError):
+        launcher_checks._https_head_reachable("https://pypi.org/", 0)
+
+
 def test_parse_os_release_rejects_non_path():
     with pytest.raises(TypeError):
         launcher_checks.parse_os_release(cast(Any, "/etc/os-release"))

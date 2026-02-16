@@ -239,7 +239,7 @@ def _relative_luminance(rgb: Tuple[int, int, int]) -> float:
         value = c / 255.0
         if value <= 0.03928:
             return value / 12.92
-        return ((value + 0.055) / 1.055) ** 2.4
+        return float(((value + 0.055) / 1.055) ** 2.4)
 
     r, g, b = rgb
     return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
