@@ -36,6 +36,24 @@ def test_validate_package_names_rejects_empty_and_duplicates() -> None:
     assert result == ["pytest", "mypy"]
 
 
+def test_manual_recovery_commands_include_expected_entries(
+    tmp_path: Path,
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    commands = qa_preflight._manual_recovery_commands(
+        "python3",
+        req,
+        ["pytest", "mypy"],
+    )
+
+    assert commands[0] == "python3 -m pip install --upgrade pip"
+    assert commands[1] == f"python3 -m pip install -r {req}"
+    assert commands[2] == f"python3 -m pip install --user -r {req}"
+    assert commands[3] == "python3 -m pip install --upgrade pytest mypy"
+
+
 def test_run_quiet_rejects_invalid_command() -> None:
     with pytest.raises(ValueError):
         qa_preflight._run_quiet([], 1)
