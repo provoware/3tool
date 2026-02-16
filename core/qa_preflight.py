@@ -209,34 +209,39 @@ def _novice_recovery_steps(
     ]
 
 
+def _print_novice_recovery_steps(
+    python_cmd: str,
+    requirements: Path,
+    failed_tools: list[str],
+) -> list[str]:
+    steps = _novice_recovery_steps(
+        "Bitte nacheinander ausführen:",
+        python_cmd,
+        requirements,
+        failed_tools,
+    )
+    print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
+    for step in steps:
+        print(step)
+    return steps
+
+
 def _run_checked_call(command: list[str], timeout_seconds: int) -> None:
-    if not isinstance(command, list) or not command:
-        raise ValueError("command muss eine nicht-leere Liste sein.")
-    for part in command:
-        if not isinstance(part, str) or not part.strip():
-            raise ValueError(
-                "Jeder Kommando-Teil muss ein nicht-leerer String sein."
-            )
+    validated_command = _validate_command(command)
 
     subprocess.check_call(
-        command,
+        validated_command,
         timeout=_validate_timeout_seconds(timeout_seconds, "timeout_seconds"),
     )
 
 
 def _run_quiet(command: list[str], timeout_seconds: int) -> bool:
-    if not isinstance(command, list) or not command:
-        raise ValueError("command muss eine nicht-leere Liste sein.")
-    for part in command:
-        if not isinstance(part, str) or not part.strip():
-            raise ValueError(
-                "Jeder Kommando-Teil muss ein nicht-leerer String sein."
-            )
+    validated_command = _validate_command(command)
 
     try:
         return (
             subprocess.run(
-                command,
+                validated_command,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 check=False,
@@ -248,6 +253,19 @@ def _run_quiet(command: list[str], timeout_seconds: int) -> bool:
         )
     except (subprocess.SubprocessError, OSError):
         return False
+
+
+def _validate_command(command: list[str]) -> list[str]:
+    if not isinstance(command, list) or not command:
+        raise ValueError("command muss eine nicht-leere Liste sein.")
+    validated_parts: list[str] = []
+    for part in command:
+        if not isinstance(part, str) or not part.strip():
+            raise ValueError(
+                "Jeder Kommando-Teil muss ein nicht-leerer String sein."
+            )
+        validated_parts.append(part.strip())
+    return validated_parts
 
 
 def _build_error_help(exc: BaseException) -> str:
@@ -676,21 +694,13 @@ def run_preflight(
     else:
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
         print(f"💡 Ursache: {install_message}")
-        print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
-        for step in _novice_recovery_steps(
-            "Bitte nacheinander ausführen:",
-            interpreter,
-            requirements,
-            selected_tools,
-        ):
-            print(step)
-        _push_check("requirements_install", "error", install_message)
-        report["help"] = _novice_recovery_steps(
-            "Bitte nacheinander ausführen:",
+        help_steps = _print_novice_recovery_steps(
             interpreter,
             requirements,
             selected_tools,
         )
+        _push_check("requirements_install", "error", install_message)
+        report["help"] = help_steps
         report["finished_at_utc"] = datetime.now(UTC).isoformat()
         _write_preflight_report(report_target, report)
         return 1
@@ -749,16 +759,7 @@ def run_preflight(
             "❌ QA-Preflight unvollständig. Fehlende Tools: "
             + ", ".join(failed_tools)
         )
-        print("💡 Lösungsvorschläge (Kopieren + Einfügen):")
-        for step in _novice_recovery_steps(
-            "Bitte nacheinander ausführen:",
-            interpreter,
-            requirements,
-            failed_tools,
-        ):
-            print(step)
-        report["help"] = _novice_recovery_steps(
-            "Bitte nacheinander ausführen:",
+        report["help"] = _print_novice_recovery_steps(
             interpreter,
             requirements,
             failed_tools,

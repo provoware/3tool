@@ -161,6 +161,32 @@ def test_run_quiet_rejects_invalid_command() -> None:
         qa_preflight._run_quiet([], 1)
 
 
+def test_validate_command_strips_parts() -> None:
+    assert qa_preflight._validate_command([" python3 ", " -m ", " pip "]) == [
+        "python3",
+        "-m",
+        "pip",
+    ]
+
+
+def test_print_novice_recovery_steps_prints_and_returns(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    steps = qa_preflight._print_novice_recovery_steps(
+        "python3",
+        req,
+        ["pytest"],
+    )
+
+    assert steps[0] == "Bitte nacheinander ausführen:"
+    out = capsys.readouterr().out
+    assert "Lösungsvorschläge" in out
+    assert "python3 -m pip install --upgrade pytest" in out
+
+
 def test_run_preflight_rejects_empty_python_cmd(tmp_path: Path) -> None:
     req = tmp_path / "requirements-dev.txt"
     req.write_text("", encoding="utf-8")
