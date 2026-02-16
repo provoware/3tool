@@ -143,8 +143,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 17197,
-      "sha256": "9d0502313d441568688b378464c396807dee6d4b50566858cc62649d4fdb2434"
+      "size": 17256,
+      "sha256": "3d1636917e6bd35ade1ea336142780e274fe033e0da1491658fde4e12f7f0da8"
     },
     {
       "path": "core/themes.py",
@@ -160,6 +160,11 @@
       "path": "core/ui_texts.py",
       "size": 1287,
       "sha256": "bcd071974eec3026fe1b941014d1ee73a25d135b27e283ddd5c116356ed973f0"
+    },
+    {
+      "path": "core/user_feedback.py",
+      "size": 1330,
+      "sha256": "b6f62d44e205ec61106b61c724612898faf6d1ca208853d8d205f7216663dff3"
     },
     {
       "path": "core/utils.py",
@@ -178,8 +183,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 49707,
-      "sha256": "7bccd4e6b314780f143b1883075d4c4262f7310966241c6736794084baf449c7"
+      "size": 50342,
+      "sha256": "ff8f1405ba0627339b49901eef54712d83d45ec12d4c9f4369f53f5b88832d02"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -317,6 +322,11 @@
       "sha256": "d23be2ecf88c6500a6470a815857cafb60b5c9b48ae95d097ec34e73a69ca565"
     },
     {
+      "path": "tests/test_user_feedback.py",
+      "size": 1256,
+      "sha256": "46c93042e88a7cd6f95b89ca5d34bb268916e5272dffc7c9aee59a86b0e0508f"
+    },
+    {
       "path": "tests/test_utils.py",
       "size": 990,
       "sha256": "c44472fcca0d0c883414ca40c1871c7806df21f24568362f6a17dccff3e41c1b"
@@ -328,8 +338,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 9049,
-      "sha256": "ff8430553650ecc533fd47990abb1ff792ae1c2b025a6cccb421c87adb74e85c"
+      "size": 9169,
+      "sha256": "a9103583706fda276d6f936491a275cfd95aea64a28f42fc8825b0d6da56fb21"
     },
     {
       "path": "videobatch_extra.py",

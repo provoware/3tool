@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from typing import Final
 
+from core.user_feedback import print_debug, print_feedback
+
 TOOL_MODULES: Final[dict[str, str]] = {
     "black": "black",
     "ruff": "ruff",
@@ -133,23 +135,6 @@ def _run_quiet(command: list[str], timeout_seconds: int) -> bool:
     )
 
 
-def _print_info(message: str) -> None:
-    print(f"ℹ️  {message}")
-
-
-def _print_ok(message: str) -> None:
-    print(f"✅ {message}")
-
-
-def _print_warn(message: str) -> None:
-    print(f"⚠️  {message}")
-
-
-def _print_debug(message: str, debug_mode: bool) -> None:
-    if debug_mode:
-        print(f"🐞 {message}")
-
-
 def _run_pip_install(requirements: Path, python_cmd: str) -> None:
     timeout_seconds = _validate_timeout_seconds(
         PIP_TIMEOUT_SECONDS,
@@ -193,11 +178,12 @@ def _install_requirements_with_fallback(
         _run_pip_install(requirements, interpreter)
         return True, "Standard-Installation erfolgreich."
     except (subprocess.SubprocessError, OSError) as exc:
-        _print_warn(
+        print_feedback(
+            "warn",
             "Standard-Installation fehlgeschlagen. "
-            "Starte Fallback ohne Admin-Rechte (--user)."
+            "Starte Fallback ohne Admin-Rechte (--user).",
         )
-        _print_debug(f"Fehler in Standard-Installation: {exc}", debug_enabled)
+        print_debug(f"Fehler in Standard-Installation: {exc}", debug_enabled)
 
     try:
         _run_pip_install_user(requirements, interpreter)
@@ -258,11 +244,12 @@ def _ensure_pip_with_fallback(
     if _pip_available(interpreter):
         return True, "pip ist bereit."
 
-    _print_warn(
+    print_feedback(
+        "warn",
         "pip ist aktuell nicht verfuegbar. Starte automatische Selbstreparatur "
-        "mit ensurepip."
+        "mit ensurepip.",
     )
-    _print_debug(
+    print_debug(
         "Führe ensurepip --upgrade aus, um pip wiederherzustellen.",
         debug_enabled,
     )
@@ -324,20 +311,22 @@ def _attempt_tool_repair(
     if not tools_to_repair:
         return []
 
-    _print_info(
+    print_feedback(
+        "info",
         "Starte automatische Reparatur für fehlende Prüftools: "
-        + ", ".join(tools_to_repair)
+        + ", ".join(tools_to_repair),
     )
-    _print_debug(
+    print_debug(
         "Auto-Reparatur nutzt pip --upgrade auf fehlenden Tools.",
         debug_mode,
     )
     try:
         _run_pip_install_packages(tools_to_repair, python_cmd)
     except (TypeError, ValueError, subprocess.SubprocessError) as exc:
-        _print_warn(
+        print_feedback(
+            "warn",
             "Automatische Reparatur konnte nicht vollständig ausgeführt "
-            f"werden: {exc}"
+            f"werden: {exc}",
         )
         return tools_to_repair
 
@@ -345,10 +334,12 @@ def _attempt_tool_repair(
     for tool in tools_to_repair:
         module_name = TOOL_MODULES[tool]
         if _module_import_ok(module_name, python_cmd):
-            _print_ok(f"Tool nach Reparatur bereit: {tool}")
+            print_feedback("ok", f"Tool nach Reparatur bereit: {tool}")
         else:
             unresolved_tools.append(tool)
-            _print_warn(f"Tool trotz Reparatur nicht importierbar: {tool}")
+            print_feedback(
+                "warn", f"Tool trotz Reparatur nicht importierbar: {tool}"
+            )
 
     return unresolved_tools
 
@@ -370,16 +361,17 @@ def _can_skip_install_when_offline(
             missing_tools.append(tool)
 
     if missing_tools:
-        _print_debug(
+        print_debug(
             "Offline-Weiterlauf nicht möglich. Fehlende Tools: "
             + ", ".join(missing_tools),
             debug_enabled,
         )
         return False
 
-    _print_ok(
+    print_feedback(
+        "ok",
         "Offline erkannt, aber alle Prüftools sind bereits verfügbar. "
-        "Installation wird übersprungen."
+        "Installation wird übersprungen.",
     )
     return True
 
@@ -395,9 +387,9 @@ def run_preflight(
     interpreter = _validate_python_cmd(python_cmd)
     debug_enabled = _validate_debug_mode(debug_mode)
 
-    _print_ok(f"Requirements-Datei gefunden: {requirements}")
-    _print_info(f"Validierte Prüftools: {', '.join(selected_tools)}")
-    _print_debug(
+    print_feedback("ok", f"Requirements-Datei gefunden: {requirements}")
+    print_feedback("info", f"Validierte Prüftools: {', '.join(selected_tools)}")
+    print_debug(
         f"Debug-Modus aktiv. Interpreter-Kandidat: {interpreter}",
         debug_enabled,
     )
@@ -407,14 +399,14 @@ def run_preflight(
         print("💡 Bitte Python installieren oder den Interpreterpfad prüfen.")
         return 1
 
-    _print_ok(f"Python-Interpreter gefunden: {interpreter}")
+    print_feedback("ok", f"Python-Interpreter gefunden: {interpreter}")
 
     pip_ok, pip_message = _ensure_pip_with_fallback(
         interpreter,
         debug_enabled,
     )
     if pip_ok:
-        _print_ok(pip_message)
+        print_feedback("ok", pip_message)
     else:
         print("❌ pip konnte nicht automatisch vorbereitet werden.")
         print(f"💡 Ursache: {pip_message}")
@@ -426,26 +418,28 @@ def run_preflight(
 
     network_ok = _network_reachable("pypi.org", 443, NETWORK_TIMEOUT_SECONDS)
     if network_ok:
-        _print_ok("Netzwerk-Check: pypi.org erreichbar.")
+        print_feedback("ok", "Netzwerk-Check: pypi.org erreichbar.")
     else:
-        _print_warn(
+        print_feedback(
+            "warn",
             "Netzwerk-Check: pypi.org aktuell nicht erreichbar. "
             "Falls Installation fehlschlaegt, bitte Internet pruefen "
-            "oder spaeter erneut starten."
+            "oder spaeter erneut starten.",
         )
-    _print_info(f"Starte QA-Preflight mit {interpreter}")
+    print_feedback("info", f"Starte QA-Preflight mit {interpreter}")
     if not network_ok:
         if _can_skip_install_when_offline(
             selected_tools,
             interpreter,
             debug_enabled,
         ):
-            _print_ok(
-                "QA-Preflight erfolgreich ohne Neuinstallation (Offline-Modus)."
+            print_feedback(
+                "ok",
+                "QA-Preflight erfolgreich ohne Neuinstallation (Offline-Modus).",
             )
             return 0
 
-    _print_debug(
+    print_debug(
         f"Installiere Abhängigkeiten aus: {requirements}",
         debug_enabled,
     )
@@ -455,7 +449,7 @@ def run_preflight(
         debug_enabled,
     )
     if install_ok:
-        _print_ok(install_message)
+        print_feedback("ok", install_message)
     else:
         print("❌ Abhängigkeiten konnten nicht vollständig installiert werden.")
         print(f"💡 Ursache: {install_message}")
@@ -472,15 +466,15 @@ def run_preflight(
     failed_tools: list[str] = []
     for tool in selected_tools:
         module_name = TOOL_MODULES[tool]
-        _print_debug(
+        print_debug(
             f"Prüfe Tool-Import: {tool} (Modul: {module_name})",
             debug_enabled,
         )
         if _module_import_ok(module_name, interpreter):
-            _print_ok(f"Tool bereit: {tool}")
+            print_feedback("ok", f"Tool bereit: {tool}")
         else:
             failed_tools.append(tool)
-            _print_warn(f"Tool nicht importierbar: {tool}")
+            print_feedback("warn", f"Tool nicht importierbar: {tool}")
 
     if failed_tools:
         failed_tools = _attempt_tool_repair(
@@ -500,8 +494,9 @@ def run_preflight(
         )
         return 1
 
-    _print_ok(
-        "QA-Preflight erfolgreich: alle benötigten Prüftools sind nutzbar."
+    print_feedback(
+        "ok",
+        "QA-Preflight erfolgreich: alle benötigten Prüftools sind nutzbar.",
     )
     return 0
 
