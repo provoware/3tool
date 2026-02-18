@@ -547,3 +547,68 @@ def test_resize_event_batches_ui_recalc_with_debounce(
 
     assert called["action"] == 1
     assert called["hint"] == 1
+
+
+def test_workflow_shortcut_focuses_target_section(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.show()
+    qtbot.waitExposed(win)
+
+    win._focus_workflow_section("Protokoll", win.log_edit)
+
+    assert win._active_section_name == "Protokoll"
+    assert win.focus_hint_label.text().startswith("Aktiver Bereich: Protokoll")
+
+
+def test_workflow_tab_order_is_defined_with_core_sequence(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win._init_workflow_tab_order()
+
+    expected_chain = [
+        win.pool_tabs,
+        win.out_dir_edit,
+        win.project_dir_edit,
+        win.crf_spin,
+        win.preset_combo,
+        win.width_spin,
+        win.height_spin,
+        win.abitrate_edit,
+        win.output_template_edit,
+        win.mode_combo,
+        win.parallel_jobs_spin,
+        win.btn_add_images,
+        win.btn_add_audios,
+        win.btn_auto_pair,
+        win.btn_encode,
+        win.table,
+        win.help_pane,
+        win.log_edit,
+    ]
+    assert win._tab_order_chain == expected_chain

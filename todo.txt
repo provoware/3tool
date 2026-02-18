@@ -214,8 +214,8 @@
 - [ ] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
   - [ ] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
   - [ ] Fokusdarstellung auch für Tabellenzellen ergänzen
-  - [ ] Workflow-basierte Tab-Order vollständig definieren
-  - [ ] Tastatur-Sprunglinks ergänzen (z. B. „Zu Pairing“, „Zu Export“)
+  - [x] Workflow-basierte Tab-Order vollständig definieren
+  - [x] Tastatur-Sprunglinks ergänzen (z. B. „Zu Pairing“, „Zu Export“)
   - [ ] Screenreader-Rollen und Live-Statusfeld für kurze Status-/Fehlermeldungen ergänzen
   - [ ] Bei Fehlern Fokus auf Fehlkarte setzen und Kurztext vorlesen lassen
   - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
@@ -242,7 +242,7 @@
   - [ ] Kompaktmodus via QStackedWidget statt Orientation-Flip einführen
   - [ ] Theme: starre Pixel-Min-Heights entfernen und skalierbar machen
   - [ ] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen
-  - [ ] Workflow-Tab-Order verbindlich definieren
+  - [x] Workflow-Tab-Order verbindlich definieren
   - [ ] Klickbares Status-Dashboard mit Ampel-Karten liefern
   - [ ] Tabellen auf Master-Detail umstellen
   - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren

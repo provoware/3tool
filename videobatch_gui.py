@@ -1107,18 +1107,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_list.itemSelectionChanged.connect(self._update_counts)
         self.audio_list.itemSelectionChanged.connect(self._update_counts)
 
-        pool_tabs = QtWidgets.QTabWidget()
-        pool_tabs.setAccessibleName("Datei-Register")
-        pool_tabs.setAccessibleDescription(
+        self.pool_tabs = QtWidgets.QTabWidget()
+        self.pool_tabs.setAccessibleName("Datei-Register")
+        self.pool_tabs.setAccessibleDescription(
             "Register für Bilder, Audios und Favoriten"
         )
-        pool_tabs.addTab(self.image_list, "Bilder")
-        pool_tabs.addTab(self.audio_list, "Audios")
-        pool_tabs.addTab(self.favorite_list, "Favoriten")
+        self.pool_tabs.addTab(self.image_list, "Bilder")
+        self.pool_tabs.addTab(self.audio_list, "Audios")
+        self.pool_tabs.addTab(self.favorite_list, "Favoriten")
 
         pool_box = QtWidgets.QGroupBox("Dateilisten")
         pb_lay = QtWidgets.QVBoxLayout(pool_box)
-        pb_lay.addWidget(pool_tabs)
+        pb_lay.addWidget(self.pool_tabs)
 
         # optionale Seitenleiste (Zusatzinfos)
         self.sidebar = QtWidgets.QDockWidget("Schnellhilfe", self)
@@ -1769,7 +1769,7 @@ class MainWindow(QtWidgets.QMainWindow):
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(dashboard_header)
         self.focus_hint_label = QtWidgets.QLabel(
-            "Tipp: Wählen Sie ein Farbschema mit hohem Kontrast. Der aktive Bereich wird größer und bleibt klar fokussiert (Fokus = sichtbare Hervorhebung)."
+            "Tipp: Wählen Sie ein Farbschema mit hohem Kontrast. Der aktive Bereich bleibt klar fokussiert (Fokus = sichtbare Hervorhebung). Sprunglinks: Strg+1 bis Strg+6."
         )
         self.focus_hint_label.setAccessibleName("Hinweis aktiver Bereich")
         self.focus_hint_label.setWordWrap(True)
@@ -1858,6 +1858,8 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("F5"), self).activated.connect(
             self._start_encode
         )
+        self._init_workflow_shortcuts()
+        self._init_workflow_tab_order()
         self._refresh_structure_view()
         self._section_boxes = {
             "Dateilisten": pool_box,
@@ -1884,6 +1886,66 @@ class MainWindow(QtWidgets.QMainWindow):
     # ----- UI helpers -----
     def _ui_text(self, key: str, fallback: str) -> str:
         return text_with_fallback(UI_TEXTS, key, fallback)
+
+    def _init_workflow_shortcuts(self) -> None:
+        section_shortcuts = (
+            ("Ctrl+1", "Dateilisten", self.pool_tabs),
+            ("Ctrl+2", "Einstellungen", self.settings_widget),
+            ("Ctrl+3", "Aktionen", self.btn_encode),
+            ("Ctrl+4", "Paare", self.table),
+            ("Ctrl+5", "Hilfe", self.help_pane),
+            ("Ctrl+6", "Protokoll", self.log_edit),
+        )
+        self._workflow_shortcuts: List[QtGui.QShortcut] = []
+        for key, section_name, widget in section_shortcuts:
+            shortcut = QtGui.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(Qt.WidgetWithChildrenShortcut)
+            shortcut.setWhatsThis(f"Springt direkt zum Bereich {section_name}.")
+            shortcut.activated.connect(
+                lambda name=section_name, target=widget: self._focus_workflow_section(
+                    name, target
+                )
+            )
+            self._workflow_shortcuts.append(shortcut)
+
+    def _focus_workflow_section(
+        self,
+        section_name: str,
+        target: QtWidgets.QWidget,
+    ) -> None:
+        if target is None:
+            return
+        target.setFocus(Qt.ShortcutFocusReason)
+        self._on_focus_changed(None, target)
+        self.statusBar().showMessage(
+            f"Sprunglink aktiv: {section_name} fokussiert.",
+            4000,
+        )
+
+    def _init_workflow_tab_order(self) -> None:
+        tab_chain = [
+            self.pool_tabs,
+            self.out_dir_edit,
+            self.project_dir_edit,
+            self.crf_spin,
+            self.preset_combo,
+            self.width_spin,
+            self.height_spin,
+            self.abitrate_edit,
+            self.output_template_edit,
+            self.mode_combo,
+            self.parallel_jobs_spin,
+            self.btn_add_images,
+            self.btn_add_audios,
+            self.btn_auto_pair,
+            self.btn_encode,
+            self.table,
+            self.help_pane,
+            self.log_edit,
+        ]
+        self._tab_order_chain = list(tab_chain)
+        for first, second in zip(tab_chain, tab_chain[1:]):
+            self.setTabOrder(first, second)
 
     def _build_menus(self):
         menubar = self.menuBar()
@@ -2307,7 +2369,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if active_name:
             self._active_section_name = active_name
             self.focus_hint_label.setText(
-                f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, dann den nächsten Schritt starten."
+                f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, dann den nächsten Schritt starten. Sprunglinks: Strg+1 bis Strg+6."
             )
 
     def _apply_log_level(self, level_name: str) -> None:
