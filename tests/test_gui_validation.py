@@ -327,3 +327,64 @@ def test_focus_change_keeps_workflow_geometry_stable(
             initial_column_sizes,
         )
     )
+
+
+def test_workflow_reflows_to_vertical_stack_on_small_width(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.resize(820, 740)
+
+    win._update_workflow_section_constraints()
+    win._request_workflow_rebalance(force=True)
+    qtbot.wait(win.WORKFLOW_REBALANCE_DEBOUNCE_MS + 80)
+
+    assert win.workflow_columns.orientation() == videobatch_gui.Qt.Vertical
+    assert all(
+        section.minimumWidth() <= win.workflow_columns.width()
+        for section in win._workflow_sections
+    )
+
+
+def test_workflow_min_size_clamps_for_large_font_profile(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.resize(980, 760)
+    win._set_font(34)
+
+    win._update_workflow_section_constraints()
+    min_width, min_height = win._compute_workflow_min_size()
+
+    assert min_width <= win.workflow_columns.width()
+    assert min_height <= win.workflow_columns.height()
+    assert all(
+        section.minimumWidth() == min_width
+        for section in win._workflow_sections
+    )
+    assert all(
+        section.minimumHeight() == min_height
+        for section in win._workflow_sections
+    )
