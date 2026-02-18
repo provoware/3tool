@@ -2,6 +2,8 @@ import json
 import logging
 from pathlib import Path
 
+import pytest
+
 from core import ui_texts
 
 
@@ -42,3 +44,20 @@ def test_load_ui_texts_flattens_nested_json(
 
     assert texts["menu.file"] == "Datei"
     assert texts["title"] == "Titel"
+
+
+def test_text_with_format_formats_template() -> None:
+    value = ui_texts.text_with_format(
+        {"a.b": "Hallo {name}"},
+        "a.b",
+        "Fallback {name}",
+        name="Welt",
+    )
+    assert value == "Hallo Welt"
+
+
+def test_text_with_format_raises_for_missing_field() -> None:
+    with pytest.raises(ValueError):
+        ui_texts.text_with_format(
+            {"a.b": "Hallo {name}"}, "a.b", "Fallback", other="X"
+        )

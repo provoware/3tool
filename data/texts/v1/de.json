@@ -21,5 +21,36 @@
   "messages": {
     "selection_images": "{count} Bild(er) ausgewählt",
     "selection_audios": "{count} Audio(s) ausgewählt"
+  },
+  "launcher": {
+    "feedback": {
+      "repair_hints": {
+        "dependency_files": "Die Abhaengigkeitsdateien konnten nicht automatisch repariert werden. Bitte Schreibrechte pruefen und den Reparatur-Button erneut starten.",
+        "packages_or_pip": "Python-Pakete konnten nicht vollstaendig installiert werden. Bitte Internet, Rechte und danach den Button 'Reparieren' noch einmal pruefen.",
+        "ffmpeg": "Video-Werkzeuge fehlen noch. Nutzen Sie den angezeigten Befehl fuer Ihr System (Paketmanager = Software-Verwalter).",
+        "write_permissions": "Es fehlen Schreibrechte im Projektordner. Starten Sie das Tool in einem eigenen Benutzerordner oder passen Sie Rechte an.",
+        "offline": "Offline erkannt: Nach Verbindungsaufbau bitte Reparatur erneut starten, damit fehlende Pakete automatisch nachinstalliert werden."
+      },
+      "check": {
+        "headline_ready": "Start bereit.",
+        "headline_not_ready": "Start noch nicht bereit.",
+        "next_step_repair": "Bitte auf 'Reparieren' klicken, damit die Pflicht-Pruefungen automatisch behoben werden.",
+        "next_step_optional": "Hinweis: Optionale Punkte sind offen (z. B. Internet). Das Tool kann meist trotzdem starten.",
+        "next_step_continue": "Alle Pflichtpunkte sind grün. Sie können jetzt mit 'Starten' fortfahren.",
+        "summary": "Pflichtpruefungen erfolgreich: {blocking_ok}/{blocking_total}"
+      },
+      "terms": {
+        "venv": "venv (virtuelle Umgebung): geschützter Python-Bereich nur für dieses Tool.",
+        "pip": "pip (Paketmanager): installiert fehlende Python-Bausteine.",
+        "ffmpeg": "ffmpeg: Werkzeug zum Verarbeiten von Video und Audio.",
+        "debug_log": "Debug-Log: detailliertes Protokoll für die Fehlersuche."
+      },
+      "repair": {
+        "headline_ok": "Reparatur erfolgreich abgeschlossen.",
+        "headline_followup": "Reparatur abgeschlossen, aber weitere Schritte noetig.",
+        "summary": "Erfolgreich: {ok_count}/{total_count}",
+        "summary_offline_suffix": " | Offline uebersprungen: {offline_skips}"
+      }
+    }
   }
 }
