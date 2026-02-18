@@ -1961,6 +1961,10 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         form = QtWidgets.QFormLayout()
+        form.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
+        form.setRowWrapPolicy(QtWidgets.QFormLayout.WrapLongRows)
+        form.setFormAlignment(Qt.AlignTop | Qt.AlignLeft)
+        form.setLabelAlignment(Qt.AlignTop | Qt.AlignLeft)
         out_wrap_layout = QtWidgets.QHBoxLayout()
         out_wrap_layout.setContentsMargins(0, 0, 0, 0)
         out_wrap_layout.addWidget(self.out_dir_edit)
@@ -2079,7 +2083,16 @@ class MainWindow(QtWidgets.QMainWindow):
         form.addRow("", self.large_controls_toggle)
 
         settings_box = QtWidgets.QGroupBox("Einstellungen")
-        settings_box.setLayout(form)
+        settings_content = QtWidgets.QWidget()
+        settings_content.setLayout(form)
+        settings_scroll = QtWidgets.QScrollArea()
+        settings_scroll.setWidgetResizable(True)
+        settings_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        settings_scroll.setWidget(settings_content)
+        settings_layout = QtWidgets.QVBoxLayout(settings_box)
+        settings_layout.setContentsMargins(6, 6, 6, 6)
+        settings_layout.addWidget(settings_scroll)
+        self.settings_scroll = settings_scroll
 
         self.settings_widget = settings_box
 
@@ -2281,6 +2294,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.WORKFLOW_SECTION_MIN_WIDTH,
                 self.WORKFLOW_SECTION_MIN_HEIGHT,
             )
+        self._workflow_sections = (
+            pool_box,
+            self.settings_widget,
+            btn_box,
+            table_box,
+            help_box,
+            self.log_box,
+        )
 
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(dashboard_header)
@@ -2510,6 +2531,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if hasattr(self, "font_value_label"):
             self.font_value_label.setText(str(size))
         self.settings.setValue("ui/font_size", size)
+        self._update_workflow_section_constraints()
         self._log(f"Schriftgröße gesetzt auf {size}")
 
     def _apply_font(self):
@@ -2778,6 +2800,12 @@ class MainWindow(QtWidgets.QMainWindow):
         wrappers = getattr(self, "_action_button_wrappers", [])
         if not wrappers:
             return
+        if not isinstance(available_width, int):
+            self._log(
+                "Interner Layout-Hinweis: verfügbare Breite ist ungültig, nutze sicheren Standard.",
+                logging.WARNING,
+            )
+            available_width = 0
         while self.top_buttons_layout.count():
             item = self.top_buttons_layout.takeAt(0)
             widget = item.widget()
@@ -2789,15 +2817,25 @@ class MainWindow(QtWidgets.QMainWindow):
             available_width - margins.left() - margins.right(),
             240,
         )
-        min_cell_width = max(
-            max((w.minimumWidth() for w in wrappers), default=190), 160
+        button_font = QtGui.QFontMetrics(self.btn_encode.font())
+        dynamic_min_width = max(
+            160,
+            button_font.horizontalAdvance("Gespeichertes Projekt laden") + 60,
         )
-        columns = max(1, min(3, usable_width // (min_cell_width + spacing)))
+        min_cell_width = max(
+            max((w.minimumWidth() for w in wrappers), default=190),
+            dynamic_min_width,
+        )
+        max_columns = 4 if usable_width >= 1100 else 3
+        columns = max(
+            1,
+            min(max_columns, usable_width // max(min_cell_width + spacing, 1)),
+        )
         for i, wrapper in enumerate(wrappers):
             row = i // columns
             col = i % columns
             self.top_buttons_layout.addWidget(wrapper, row, col)
-        for i in range(3):
+        for i in range(max_columns):
             stretch = 1 if i < columns else 0
             self.top_buttons_layout.setColumnStretch(i, stretch)
 
@@ -4077,6 +4115,24 @@ class MainWindow(QtWidgets.QMainWindow):
             ui_profile.table_row_height
         )
         self.log_edit.setFont(QtGui.QFont("DejaVu Sans", font_size))
+        self._update_workflow_section_constraints()
+
+    def _update_workflow_section_constraints(self) -> None:
+        if not hasattr(self, "_workflow_sections"):
+            return
+        base_font = max(10, min(36, int(self._font_size)))
+        scale = max(1.0, base_font / 13.0)
+        min_width = int(max(220, min(460, 220 * scale)))
+        min_height = int(max(170, min(340, 170 * scale)))
+        for section in self._workflow_sections:
+            section.setMinimumSize(min_width, min_height)
+        logger.debug(
+            "Layout-Skalierung aktualisiert: font=%s scale=%.2f min=%sx%s",
+            base_font,
+            scale,
+            min_width,
+            min_height,
+        )
 
     def _global_exception(self, etype, value, tb):
         import traceback
