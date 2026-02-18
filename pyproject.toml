@@ -6,6 +6,19 @@ skip-string-normalization = false
 line-length = 80
 extend-exclude = [".videotool_env", "dist", "build"]
 
+[tool.ruff.lint]
+extend-select = ["C901"]
+ignore = ["E402", "E731"]
+
+[tool.ruff.lint.per-file-ignores]
+"core/qa_preflight.py" = ["C901"]
+"videobatch_extra.py" = ["C901"]
+"videobatch_gui.py" = ["C901"]
+"videobatch_launcher.py" = ["C901"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]

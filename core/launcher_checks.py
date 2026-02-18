@@ -3,19 +3,43 @@ from __future__ import annotations
 import logging
 import os
 import shutil
-import socket
 import subprocess
 import sys
-import tempfile
-import urllib.error
-import urllib.request
-from dataclasses import dataclass
 from pathlib import Path
-from http import HTTPStatus
-from typing import Iterable, TypedDict, TypeVar
+from typing import Iterable
 
 from core import dependency_consistency
 from core.dependency_consistency import RUNTIME_PACKAGES
+from core.launcher.checks import (
+    ffmpeg_available,
+    ffmpeg_install_hint,
+    format_command,
+    linux_package_manager,
+    write_permissions_ok,
+)
+from core.launcher.feedback import (
+    beginner_recovery_hints as _beginner_recovery_hints,
+)
+from core.launcher.feedback import (
+    build_check_feedback as _build_check_feedback,
+)
+from core.launcher.feedback import (
+    build_repair_feedback as _build_repair_feedback,
+)
+from core.launcher.models import (
+    CheckFeedback as _CheckFeedback,
+    CheckResult,
+    PackageManagerInfo as _PackageManagerInfo,
+    ReleaseReadinessResult,
+    RepairFeedback as _RepairFeedback,
+    RepairResult,
+)
+from core.launcher.network import dns_reachable, https_head_reachable
+from core.launcher.network import (
+    detect_linux_distribution as _detect_linux_distribution,
+)
+from core.launcher.network import parse_os_release as _parse_os_release
+from core.launcher.repairs import env_dir, ensure_venv, in_venv
 
 REQ_PKGS = list(RUNTIME_PACKAGES)
 PACKAGE_IMPORT_NAMES = {
@@ -23,10 +47,22 @@ PACKAGE_IMPORT_NAMES = {
     "Pillow": "PIL",
     "ffmpeg-python": "ffmpeg",
 }
-ENV_DIR_NAME = ".videotool_env"
 MIN_PYTHON = (3, 8)
 
 LOGGER = logging.getLogger("videobatch_launcher")
+
+
+def parse_os_release(path: Path = Path("/etc/os-release")) -> dict[str, str]:
+    return _parse_os_release(path)
+
+
+def detect_linux_distribution() -> dict[str, str]:
+    return _detect_linux_distribution()
+
+
+CheckFeedback = _CheckFeedback
+RepairFeedback = _RepairFeedback
+PackageManagerInfo = _PackageManagerInfo
 
 
 def configure_logging(log_file: Path, debug: bool = False) -> None:
@@ -52,56 +88,6 @@ def configure_logging(log_file: Path, debug: bool = False) -> None:
     LOGGER.addHandler(stream_handler)
 
 
-@dataclass(frozen=True)
-class PackageManagerInfo:
-    name: str
-    update_cmd: list[str] | None
-    install_cmd: list[str]
-
-
-@dataclass(frozen=True)
-class CheckResult:
-    key: str
-    title: str
-    ok: bool
-    detail: str
-    fix_hint: str | None = None
-    blocking: bool = True
-
-
-@dataclass(frozen=True)
-class RepairResult:
-    key: str
-    title: str
-    ok: bool
-    detail: str
-    skipped_offline: bool = False
-
-
-@dataclass(frozen=True)
-class ReleaseReadinessResult:
-    key: str
-    title: str
-    ok: bool
-    detail: str
-    recommendation: str
-    blocking: bool = True
-
-
-def in_venv() -> bool:
-    return (
-        hasattr(sys, "real_prefix")
-        or getattr(sys, "base_prefix", sys.prefix) != sys.prefix
-        or bool(os.environ.get("VIRTUAL_ENV"))
-    )
-
-
-def env_dir(project_root: Path = Path.cwd()) -> Path:
-    if not isinstance(project_root, Path):
-        raise TypeError("project_root muss ein Path sein.")
-    return (project_root / ENV_DIR_NAME).resolve()
-
-
 def venv_python(project_root: Path = Path.cwd()) -> Path:
     """Return path to launcher venv or current interpreter if missing."""
     path = (
@@ -110,12 +96,6 @@ def venv_python(project_root: Path = Path.cwd()) -> Path:
         / "python"
     )
     return path if path.exists() else Path(sys.executable)
-
-
-def ensure_venv(project_root: Path = Path.cwd()) -> None:
-    target = env_dir(project_root)
-    if not target.exists():
-        subprocess.check_call([sys.executable, "-m", "venv", str(target)])
 
 
 def pip_ok(py: str) -> bool:
@@ -233,92 +213,25 @@ def pip_install(py: str, pkgs: Iterable[str]) -> None:
 def install_missing_packages_with_retries(
     py: str, missing_packages: Iterable[str]
 ) -> tuple[bool, str]:
-    """Install missing packages with a fallback strategy and clear feedback."""
-    py = validated_python_command(py)
-    packages = [pkg for pkg in missing_packages if isinstance(pkg, str) and pkg]
-    if not packages:
-        LOGGER.info("Keine fehlenden Pakete erkannt.")
-        return True, "Alle Pakete vorhanden."
+    from core.launcher.repairs import (
+        install_missing_packages_with_retries as _impl,
+    )
 
-    try:
-        pip_install(py, packages)
-    except subprocess.SubprocessError as exc:
-        if in_venv():
-            LOGGER.error(
-                "Installation in venv fehlgeschlagen; --user ist im venv deaktiviert: %s",
-                exc,
-            )
-            return (
-                False,
-                "Installation in der virtuellen Umgebung fehlgeschlagen. "
-                "Bitte zuerst pip/venv reparieren (python -m ensurepip --upgrade, "
-                "danach venv neu erstellen) und erneut starten.",
-            )
-        LOGGER.warning(
-            "Standard-Installation fehlgeschlagen, nutze Fallback mit --user: %s",
-            exc,
-        )
-        try:
-            subprocess.check_call(
-                [py, "-m", "pip", "install", "--upgrade", "--user"] + packages
-            )
-        except subprocess.SubprocessError as fallback_exc:
-            LOGGER.error(
-                "Fallback-Installation fehlgeschlagen: %s", fallback_exc
-            )
-            return (
-                False,
-                "Pakete konnten nicht installiert werden. "
-                "Bitte Internet, Rechte und den Befehl "
-                f"'{py} -m pip install --upgrade {' '.join(packages)}' prüfen.",
-            )
-
-    unresolved = missing_runtime_packages(py)
-    if unresolved:
-        LOGGER.error(
-            "Paket-Reparatur abgeschlossen, aber weiter fehlend: %s",
-            ", ".join(unresolved),
-        )
-        return (
-            False,
-            "Installation lief, aber folgende Pakete fehlen weiter: "
-            + ", ".join(unresolved),
-        )
-
-    LOGGER.info("Paket-Reparatur erfolgreich: %s", ", ".join(packages))
-    return True, "Pakete installiert und erfolgreich geprüft: " + ", ".join(
-        packages
+    return _impl(
+        validated_python_command(py),
+        missing_packages,
+        pip_install=pip_install,
+        missing_runtime_packages=missing_runtime_packages,
+        in_venv_check=in_venv,
     )
 
 
 def _dns_reachable(timeout: float) -> bool:
-    if not isinstance(timeout, (int, float)):
-        raise TypeError("timeout muss eine Zahl sein.")
-    if timeout <= 0:
-        raise ValueError("timeout muss groesser als 0 sein.")
-    try:
-        with socket.create_connection(("1.1.1.1", 53), timeout=float(timeout)):
-            return True
-    except OSError:
-        return False
+    return dns_reachable(timeout)
 
 
 def _https_head_reachable(url: str, timeout: float) -> bool:
-    if not isinstance(url, str) or not url.strip():
-        raise ValueError("url muss ein nicht-leerer String sein.")
-    if not isinstance(timeout, (int, float)):
-        raise TypeError("timeout muss eine Zahl sein.")
-    if timeout <= 0:
-        raise ValueError("timeout muss groesser als 0 sein.")
-    request = urllib.request.Request(url=url, method="HEAD")
-    try:
-        with urllib.request.urlopen(
-            request, timeout=float(timeout)
-        ) as response:
-            status = int(response.status)
-            return status < int(HTTPStatus.INTERNAL_SERVER_ERROR)
-    except (urllib.error.URLError, TimeoutError, OSError):
-        return False
+    return https_head_reachable(url, timeout)
 
 
 def has_internet(timeout: float = 2.0) -> bool:
@@ -335,121 +248,10 @@ def has_internet(timeout: float = 2.0) -> bool:
     return dns_ok or https_ok
 
 
-def parse_os_release(path: Path = Path("/etc/os-release")) -> dict[str, str]:
-    if not isinstance(path, Path):
-        raise TypeError("path muss ein Path sein.")
-    if not path.exists():
-        LOGGER.debug("os-release nicht gefunden: %s", path)
-        return {}
-    if path.is_dir():
-        LOGGER.warning("os-release Pfad ist ein Ordner statt Datei: %s", path)
-        return {}
-    data: dict[str, str] = {}
-    try:
-        content = path.read_text(encoding="utf-8")
-    except OSError as exc:
-        LOGGER.warning("os-release konnte nicht gelesen werden: %s", exc)
-        return {}
-
-    for line in content.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        value = value.strip().strip('"')
-        data[key] = value
-    return data
-
-
-def detect_linux_distribution() -> dict[str, str]:
-    data = parse_os_release()
-    return {
-        "id": data.get("ID", ""),
-        "name": data.get("NAME", ""),
-        "like": data.get("ID_LIKE", ""),
-    }
-
-
-def linux_package_manager() -> PackageManagerInfo | None:
-    info = detect_linux_distribution()
-    distro_id = info["id"].lower()
-    distro_like = info["like"].lower().split()
-    candidates = [distro_id] + distro_like
-    if any(value in candidates for value in ["debian", "ubuntu"]):
-        return PackageManagerInfo(
-            name="apt (Paketmanager/Software-Verwalter)",
-            update_cmd=["sudo", "apt", "update"],
-            install_cmd=["sudo", "apt", "install", "-y", "ffmpeg"],
-        )
-    if "fedora" in candidates:
-        return PackageManagerInfo(
-            name="dnf (Paketmanager/Software-Verwalter)",
-            update_cmd=None,
-            install_cmd=["sudo", "dnf", "install", "-y", "ffmpeg"],
-        )
-    if "arch" in candidates:
-        return PackageManagerInfo(
-            name="pacman (Paketmanager/Software-Verwalter)",
-            update_cmd=None,
-            install_cmd=["sudo", "pacman", "-S", "--noconfirm", "ffmpeg"],
-        )
-    if any(value in candidates for value in ["suse", "opensuse"]):
-        return PackageManagerInfo(
-            name="zypper (Paketmanager/Software-Verwalter)",
-            update_cmd=None,
-            install_cmd=["sudo", "zypper", "install", "-y", "ffmpeg"],
-        )
-    return None
-
-
-def format_command(command: list[str]) -> str:
-    return " ".join(command)
-
-
 def validated_python_command(py: str) -> str:
     if not isinstance(py, str) or not py.strip():
         raise ValueError("py muss ein nicht-leerer String sein.")
     return py
-
-
-def ffmpeg_install_hint() -> str:
-    if not sys.platform.startswith("linux"):
-        return "Bitte ffmpeg manuell installieren."
-    manager = linux_package_manager()
-    if not manager:
-        return (
-            "Linux-Distribution nicht erkannt. Bitte ffmpeg manuell "
-            "installieren."
-        )
-    if manager.update_cmd:
-        combined = (
-            f"{format_command(manager.update_cmd)} && "
-            f"{format_command(manager.install_cmd)}"
-        )
-    else:
-        combined = format_command(manager.install_cmd)
-    return f"Befehl ({manager.name}): {combined}"
-
-
-def write_permissions_ok(target_dir: Path) -> bool:
-    if not isinstance(target_dir, Path):
-        raise TypeError("target_dir muss ein Path sein.")
-    if not target_dir.exists():
-        LOGGER.warning(
-            "Schreibtest nicht moeglich: Zielordner fehlt (%s)", target_dir
-        )
-        return False
-    if not target_dir.is_dir():
-        LOGGER.warning(
-            "Schreibtest nicht moeglich: Ziel ist kein Ordner (%s)",
-            target_dir,
-        )
-        return False
-    try:
-        with tempfile.NamedTemporaryFile(dir=target_dir, delete=True):
-            return True
-    except OSError:
-        return False
 
 
 def check_python_version() -> CheckResult:
@@ -577,7 +379,7 @@ def check_gui_runtime(py: str) -> CheckResult:
 
 
 def check_ffmpeg() -> CheckResult:
-    ok = bool(shutil.which("ffmpeg") and shutil.which("ffprobe"))
+    ok = ffmpeg_available()
     detail = "ffmpeg und ffprobe gefunden." if ok else "ffmpeg/ffprobe fehlen."
     hint = ffmpeg_install_hint()
     return CheckResult(
@@ -943,151 +745,12 @@ def run_repairs(
 
 
 def beginner_recovery_hints(results: Iterable[RepairResult]) -> list[str]:
-    result_list = list(results)
-    hints: list[str] = []
-    failed = {item.key for item in result_list if not item.ok}
-    if "dependency_files" in failed:
-        hints.append(
-            "Die Abhaengigkeitsdateien konnten nicht automatisch repariert "
-            "werden. Bitte Schreibrechte pruefen und den Reparatur-Button "
-            "erneut starten."
-        )
-    if "pip" in failed or "packages" in failed:
-        hints.append(
-            "Python-Pakete konnten nicht vollstaendig installiert werden. "
-            "Bitte Internet, Rechte und danach den Button 'Reparieren' "
-            "noch einmal pruefen."
-        )
-    if "ffmpeg" in failed:
-        hints.append(
-            "Video-Werkzeuge fehlen noch. Nutzen Sie den angezeigten "
-            "Befehl fuer Ihr System (Paketmanager = Software-Verwalter)."
-        )
-    if "write_permissions" in failed:
-        hints.append(
-            "Es fehlen Schreibrechte im Projektordner. Starten Sie das Tool "
-            "in einem eigenen Benutzerordner oder passen Sie Rechte an."
-        )
-    if any(item.skipped_offline for item in result_list):
-        hints.append(
-            "Offline erkannt: Nach Verbindungsaufbau bitte Reparatur erneut "
-            "starten, damit fehlende Pakete automatisch nachinstalliert "
-            "werden."
-        )
-    return hints
+    return _beginner_recovery_hints(results)
 
 
-TResult = TypeVar("TResult", CheckResult, RepairResult)
+def build_check_feedback(results):
+    return _build_check_feedback(results)
 
 
-class CheckFeedback(TypedDict):
-    headline: str
-    summary: str
-    next_steps: list[str]
-    beginner_terms: list[str]
-    quick_commands: list[str]
-
-
-class RepairFeedback(TypedDict):
-    headline: str
-    summary: str
-    hints: list[str]
-
-
-def _validated_results(
-    results: Iterable[TResult],
-    *,
-    expected_type: type[TResult],
-) -> list[TResult]:
-    if not isinstance(results, Iterable):
-        raise TypeError("results muss iterierbar sein.")
-    result_list = list(results)
-    if any(not isinstance(item, expected_type) for item in result_list):
-        raise TypeError("results enthaelt unerwartete Ergebnistypen.")
-    return result_list
-
-
-def build_check_feedback(results: Iterable[CheckResult]) -> CheckFeedback:
-    check_results = _validated_results(results, expected_type=CheckResult)
-    blocking_total = sum(1 for item in check_results if item.blocking)
-    blocking_ok = sum(1 for item in check_results if item.blocking and item.ok)
-    optional_failed = [
-        item.title
-        for item in check_results
-        if not item.blocking and not item.ok
-    ]
-    blocking_failed = [
-        item.title for item in check_results if item.blocking and not item.ok
-    ]
-    failed_fix_hints = [
-        item.fix_hint for item in check_results if not item.ok and item.fix_hint
-    ]
-
-    headline = (
-        "Start bereit." if not blocking_failed else "Start noch nicht bereit."
-    )
-    next_steps: list[str] = []
-    if blocking_failed:
-        next_steps.append(
-            "Bitte auf 'Reparieren' klicken, damit die Pflicht-Pruefungen "
-            "automatisch behoben werden."
-        )
-    if optional_failed:
-        next_steps.append(
-            "Hinweis: Optionale Punkte sind offen (z. B. Internet). Das Tool "
-            "kann meist trotzdem starten."
-        )
-    if not next_steps:
-        next_steps.append(
-            "Alle Pflichtpunkte sind grün. Sie können jetzt mit 'Starten' "
-            "fortfahren."
-        )
-
-    beginner_terms = [
-        "venv (virtuelle Umgebung): geschützter Python-Bereich nur für dieses Tool.",
-        "pip (Paketmanager): installiert fehlende Python-Bausteine.",
-        "ffmpeg: Werkzeug zum Verarbeiten von Video und Audio.",
-        "Debug-Log: detailliertes Protokoll für die Fehlersuche.",
-    ]
-
-    quick_commands: list[str] = []
-    for hint in failed_fix_hints:
-        if isinstance(hint, str) and hint.startswith("Befehl:"):
-            quick_commands.append(hint.removeprefix("Befehl:").strip())
-
-    summary = (
-        f"Pflichtpruefungen erfolgreich: {blocking_ok}/{max(blocking_total, 1)}"
-    )
-    LOGGER.info("Check-Feedback erstellt: %s | %s", headline, summary)
-    return {
-        "headline": headline,
-        "summary": summary,
-        "next_steps": next_steps,
-        "beginner_terms": beginner_terms,
-        "quick_commands": quick_commands,
-    }
-
-
-def build_repair_feedback(results: Iterable[RepairResult]) -> RepairFeedback:
-    repair_results = _validated_results(results, expected_type=RepairResult)
-    failed = [item.title for item in repair_results if not item.ok]
-    offline_skips = sum(1 for item in repair_results if item.skipped_offline)
-    hints = beginner_recovery_hints(repair_results)
-
-    headline = "Reparatur erfolgreich abgeschlossen."
-    if failed:
-        headline = "Reparatur abgeschlossen, aber weitere Schritte noetig."
-
-    summary = (
-        f"Erfolgreich: {sum(1 for item in repair_results if item.ok)}/"
-        f"{len(repair_results)}"
-    )
-    if offline_skips:
-        summary += f" | Offline uebersprungen: {offline_skips}"
-
-    LOGGER.info("Reparatur-Feedback erstellt: %s | %s", headline, summary)
-    return {
-        "headline": headline,
-        "summary": summary,
-        "hints": hints,
-    }
+def build_repair_feedback(results):
+    return _build_repair_feedback(results)

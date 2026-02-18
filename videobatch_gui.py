@@ -45,6 +45,21 @@ from core.fallback_media import (
 )
 from gui.widgets.dashboard import InfoDashboard
 from gui.main_window import build_initial_state
+from gui.services.preview import play_audio_preview, stop_audio_preview
+from gui.services.project_io import (
+    build_project_payload,
+    load_project_file,
+    make_project_relative,
+    resolve_project_path,
+    save_project_file,
+)
+from gui.state.project_state import (
+    get_project_root,
+    get_project_start_dir,
+    set_last_project_path,
+    set_project_root,
+)
+from gui.views.action_orchestration import choose_project_root_dialog
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -961,7 +976,9 @@ class HelpPane(QtWidgets.QTextBrowser):
 
     def set_theme_tokens(self, theme_tokens: Dict[str, str]) -> None:
         if not isinstance(theme_tokens, dict):
-            logger.warning("Ungueltige Theme-Tokens fuer Hilfe-Bereich ignoriert.")
+            logger.warning(
+                "Ungueltige Theme-Tokens fuer Hilfe-Bereich ignoriert."
+            )
             return
         self._theme_tokens = dict(theme_tokens)
         self.setHtml(self._html())
@@ -2491,26 +2508,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log(f"Audio-Vorschau Fehler: {error_string}", logging.ERROR)
 
     def _play_audio_preview(self, path: str) -> None:
-        if not path:
-            return
-        file_path = Path(path)
-        if not file_path.exists():
+        ok, detail = play_audio_preview(self._audio_player, path)
+        if not ok and detail != "Leerpfad":
             self._show_error_dialog(
                 "Audio fehlt",
-                f"Die Audiodatei wurde nicht gefunden: {file_path}",
+                detail,
                 QtWidgets.QMessageBox.Warning,
             )
             return
-        self._audio_player.setSource(QtCore.QUrl.fromLocalFile(str(file_path)))
-        self._audio_player.play()
-        self._log(f"Audio-Vorschau gestartet: {file_path.name}")
+        if ok:
+            self._log(f"Audio-Vorschau gestartet: {detail}")
 
     def _stop_audio_preview(self) -> None:
-        if (
-            self._audio_player.playbackState()
-            != QtMultimedia.QMediaPlayer.StoppedState
-        ):
-            self._audio_player.stop()
+        if stop_audio_preview(self._audio_player):
             self._log("Audio-Vorschau gestoppt")
 
     def _restore_window_state(self) -> None:
@@ -2560,28 +2570,17 @@ class MainWindow(QtWidgets.QMainWindow):
         return str(fallback)
 
     def _get_project_start_dir(self) -> str:
-        default_dir = self.project_dir_edit.text().strip()
-        if default_dir:
-            stored = Path(default_dir).expanduser()
-            if stored.exists():
-                return str(stored)
-        return self._get_last_dir("ui/last_project_dir", Path.cwd())
+        return get_project_start_dir(
+            self.settings,
+            self.project_dir_edit.text(),
+            last_dir_resolver=self._get_last_dir,
+        )
 
     def _get_project_root(self) -> Optional[Path]:
-        value = self.settings.value("ui/project_root", "", str)
-        if not value:
-            return None
-        root = Path(value).expanduser()
-        if root.exists() and root.is_dir():
-            return root
-        return None
+        return get_project_root(self.settings)
 
     def _set_project_root(self, path: Path) -> None:
-        if not path or not path.exists() or not path.is_dir():
-            return
-        self.settings.setValue("ui/project_root", str(path))
-        self.settings.setValue("ui/last_project_root_dir", str(path))
-        self._log(f"Projektordner gesetzt: {path}")
+        set_project_root(self.settings, path, log_callback=self._log)
 
     def _set_last_dir(self, key: str, path: Path | str) -> None:
         if not path:
@@ -2596,70 +2595,31 @@ class MainWindow(QtWidgets.QMainWindow):
             self.state.last_audio_dir = stored
 
     def _set_last_project_path(self, path: str) -> None:
-        if not path:
-            return
-        project_path = Path(path).expanduser()
-        self.settings.setValue("ui/last_project_path", str(project_path))
-        self.settings.setValue("ui/last_project_dir", str(project_path.parent))
-        self.state.last_project_file = project_path
+        set_last_project_path(self.settings, self.state, path)
 
     def _choose_project_root(self) -> None:
         start_dir = self._get_last_dir("ui/last_project_root_dir", Path.cwd())
-        chosen = QtWidgets.QFileDialog.getExistingDirectory(
-            self,
-            "Projektordner wählen",
-            start_dir,
-        )
-        if not chosen:
-            return
-        project_root = Path(chosen).expanduser()
-        if not project_root.exists() or not project_root.is_dir():
-            QtWidgets.QMessageBox.warning(
-                self,
-                "Projektordner ungültig",
-                "Der ausgewählte Ordner ist nicht verfügbar oder ungültig.",
-            )
+        project_root = choose_project_root_dialog(self, start_dir)
+        if project_root is None:
             return
         self._set_project_root(project_root)
 
     def _make_project_relative(self, path: str) -> str:
-        if not path:
-            return path
-        project_root = self._get_project_root()
-        if not project_root:
-            return path
-        file_path = Path(path).expanduser()
-        try:
-            return str(file_path.relative_to(project_root))
-        except ValueError:
-            return str(file_path)
+        return make_project_relative(path, self._get_project_root())
 
     def _resolve_project_path(
         self, path: str, project_file: Optional[Path]
     ) -> str:
-        if not path:
-            return path
-        candidate = Path(path).expanduser()
-        if candidate.is_absolute():
-            return str(candidate)
-        project_root = self._get_project_root()
-        base = project_root or (project_file.parent if project_file else None)
-        if base:
-            return str(base / candidate)
-        return str(candidate)
+        return resolve_project_path(
+            path, self._get_project_root(), project_file
+        )
 
     def _project_payload(self) -> Dict[str, Any]:
-        return {
-            "pairs": [
-                {
-                    "image": self._make_project_relative(p.image_path),
-                    "audio": self._make_project_relative(p.audio_path or ""),
-                    "output": self._make_project_relative(p.output),
-                }
-                for p in self.pairs
-            ],
-            "settings": self._gather_settings(),
-        }
+        return build_project_payload(
+            self.pairs,
+            self._gather_settings() or {},
+            self._get_project_root(),
+        )
 
     def _auto_save_project(self, reason: str) -> None:
         if not self.auto_save_project.isChecked():
@@ -2669,12 +2629,7 @@ class MainWindow(QtWidgets.QMainWindow):
             auto_path = str(Path.home() / "videobatch_autosave.json")
             self.settings.setValue("ui/auto_save_path", auto_path)
         try:
-            Path(auto_path).write_text(
-                json.dumps(
-                    self._project_payload(), indent=2, ensure_ascii=False
-                ),
-                encoding="utf-8",
-            )
+            save_project_file(Path(auto_path), self._project_payload())
         except (PermissionError, OSError, TypeError, ValueError) as exc:
             logger.exception(
                 "ui.autosave_failed",
@@ -3127,9 +3082,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "settings": self._gather_settings(require_valid=False),
         }
         try:
-            Path(path).write_text(
-                json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-            )
+            save_project_file(Path(path), data)
         except (PermissionError, OSError, TypeError, ValueError) as exc:
             logger.exception(
                 "ui.project_save_failed",
@@ -3158,7 +3111,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not path:
             return
         try:
-            data = json.loads(Path(path).read_text(encoding="utf-8"))
+            data = load_project_file(Path(path))
         except FileNotFoundError as exc:
             logger.warning(
                 "ui.project_load_missing",

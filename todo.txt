@@ -158,3 +158,4 @@
 
 - [x] Breite Exception-Faenger in GUI/Launcher/Core durch konkrete Ausnahmen mit klaren Laienhinweisen und Tests ersetzt
 - [x] Theme-Refactor: feste Button/Preview-Farben in videobatch_gui.py entfernt, zentrale Theme-Tokens (inkl. hover/pressed/disabled/focus) ergänzt und Tests erweitert
+- [x] Schrittweise Modularisierung: Launcher in core/launcher/* getrennt, GUI-Services/State/View-Orchestrierung extrahiert, Unit-Tests ergänzt und Ruff-McCabe-Grenze im QA-Setup aktiviert
