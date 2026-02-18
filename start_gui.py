@@ -11,6 +11,9 @@ from typing import Callable, NoReturn, cast
 from core import launcher_checks
 from core.config import apply_simple_mode_defaults, cfg
 from core.paths import cache_dir, config_dir, log_dir, user_data_dir, work_dir
+from core.startup import apply_repairs as orchestrate_repairs
+from core.startup import render_feedback as build_rendered_feedback
+from core.startup import run_startup_checks
 
 REQUIRED_FILES = ("videobatch_gui.py", "videobatch_extra.py")
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -206,7 +209,7 @@ def _run_release_quality_check(project_root: Path) -> bool:
 def _run_checks(
     py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
 ) -> list[launcher_checks.CheckResult]:
-    results = launcher_checks.collect_checks(py, target_dir, project_root)
+    results = run_startup_checks(py, target_dir, project_root)
     for result in results:
         marker = "✅" if result.ok else "❌"
         print(f"  {marker} {result.title}: {result.detail}")
@@ -231,6 +234,18 @@ def _print_check_summary(results: list[launcher_checks.CheckResult]) -> None:
 
 def _all_blocking_ok(results: list[launcher_checks.CheckResult]) -> bool:
     return all(result.ok for result in results if result.blocking)
+
+
+def apply_repairs(
+    py: str, target_dir: Path, project_root: Path = PROJECT_ROOT
+) -> tuple[
+    list[launcher_checks.CheckResult], list[launcher_checks.RepairResult]
+]:
+    return orchestrate_repairs(py, target_dir, project_root)
+
+
+def render_feedback(results: list[launcher_checks.CheckResult]) -> str:
+    return build_rendered_feedback(results)
 
 
 def _print_feedback_block(feedback: launcher_checks.CheckFeedback) -> None:
@@ -269,6 +284,7 @@ def _dependency_bootstrap(
     results = _safe_run_checks(py, target_dir, project_root)
     _print_check_summary(results)
     _print_feedback_block(launcher_checks.build_check_feedback(results))
+    print(render_feedback(results))
 
     if _all_blocking_ok(results):
         launcher_checks.LOGGER.info(
@@ -288,10 +304,11 @@ def _dependency_bootstrap(
     for hint in repair_feedback.get("hints", []):
         print(f"     - {hint}")
 
-    print("  🔁 Wiederhole Pflichtprüfungen nach Reparatur")
+    print("  🔁 Pflichtprüfungen nach Reparatur ausgewertet")
     results = _safe_run_checks(py, target_dir, project_root)
     _print_check_summary(results)
     _print_feedback_block(launcher_checks.build_check_feedback(results))
+    print(render_feedback(results))
 
     if not _all_blocking_ok(results):
         _fail(

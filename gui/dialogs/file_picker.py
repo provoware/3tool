@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal
@@ -303,25 +303,33 @@ class FilePickerDialog(QtWidgets.QDialog):
             )
         else:
             reverse = mode in ("Name Z → A", "Neueste zuerst", "Größte zuerst")
-            if "Name" in mode:
-                key_fn = lambda it: it.text(1).lower()
-            elif "Neueste" in mode or "Älteste" in mode:
-                key_fn = (
-                    lambda it: Path(
-                        str(it.data(0, QtCore.Qt.ItemDataRole.UserRole))
-                    )
+
+            def _key_name(it: QtWidgets.QTreeWidgetItem) -> str:
+                return it.text(1).lower()
+
+            def _key_mtime(it: QtWidgets.QTreeWidgetItem) -> float:
+                return (
+                    Path(str(it.data(0, QtCore.Qt.ItemDataRole.UserRole)))
                     .stat()
                     .st_mtime
                 )
-            else:
-                key_fn = (
-                    lambda it: Path(
-                        str(it.data(0, QtCore.Qt.ItemDataRole.UserRole))
-                    )
+
+            def _key_size(it: QtWidgets.QTreeWidgetItem) -> int:
+                return (
+                    Path(str(it.data(0, QtCore.Qt.ItemDataRole.UserRole)))
                     .stat()
                     .st_size
                 )
-            rows.sort(key=key_fn, reverse=reverse)
+
+            sort_key: Callable[[QtWidgets.QTreeWidgetItem], Any]
+            if "Name" in mode:
+                sort_key = _key_name
+            elif "Neueste" in mode or "Älteste" in mode:
+                sort_key = _key_mtime
+            else:
+                sort_key = _key_size
+
+            rows.sort(key=sort_key, reverse=reverse)
         self.file_list.addTopLevelItems(rows)
 
     def _on_item_changed(self, item: QtWidgets.QTreeWidgetItem, _: int) -> None:

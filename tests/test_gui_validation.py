@@ -17,7 +17,7 @@ def test_gui_runtime_reports_missing_libgl_if_unavailable(gui_runtime_error):
     result = launcher_checks.check_gui_runtime(sys.executable)
     assert not result.ok
     assert "GUI-Import fehlgeschlagen" in result.detail
-    assert "libGL.so.1" in result.detail
+    assert "libGL.so.1" in result.detail or "libEGL.so.1" in result.detail
     assert result.fix_hint
 
 
@@ -26,7 +26,10 @@ def test_validate_image_fields_marks_invalid(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -45,7 +48,10 @@ def test_validate_audio_fields_marks_invalid(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -64,7 +70,10 @@ def test_dashboard_counts_are_clamped(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -84,7 +93,10 @@ def test_dashboard_progress_is_limited_to_100(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -103,7 +115,10 @@ def test_dashboard_metric_cards_reflow_to_three_columns_on_large_width(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -126,7 +141,10 @@ def test_dashboard_metric_reflow_recovers_from_invalid_width(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -149,7 +167,10 @@ def test_dashboard_selection_counts_update_metric_labels(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -168,7 +189,10 @@ def test_action_buttons_reflow_to_two_columns_on_medium_width(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -191,7 +215,10 @@ def test_action_buttons_reflow_uses_four_columns_on_large_width(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -214,7 +241,10 @@ def test_action_buttons_reflow_recovers_from_invalid_width_type(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")
@@ -238,7 +268,10 @@ def test_action_buttons_reflow_to_single_column_on_small_width(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")

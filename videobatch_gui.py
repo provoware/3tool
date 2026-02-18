@@ -27,25 +27,35 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
-from core.paths import config_dir, log_dir, user_data_dir
+from core.media_validation import (
+    AUDIO_EXTENSIONS,
+    IMAGE_EXTENSIONS,
+    validate_media_pair,
+)
+from core.fallback_media import (
+    dumps_audio_list,
+    loads_audio_list,
+    persist_fallback_media,
+)
 from core.output_management import (
     build_dated_output_dir,
     transfer_with_validation,
 )
+from core.paths import config_dir, log_dir, user_data_dir
 from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, human_time, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
-from core.fallback_media import (
-    dumps_audio_list,
-    loads_audio_list,
-    persist_fallback_media,
-)
-from gui.widgets.dashboard import InfoDashboard
+from gui.dialogs.file_picker import FilePickerDialog, make_thumb
 from gui.main_window import build_initial_state
 from gui.services.preview import play_audio_preview, stop_audio_preview
+from gui.services.runtime_paths import (
+    build_default_runtime_paths,
+    check_ffmpeg,
+    safe_move,
+)
 from gui.services.project_io import (
     build_project_payload,
     load_project_file,
@@ -60,6 +70,8 @@ from gui.state.project_state import (
     set_project_root,
 )
 from gui.views.action_orchestration import choose_project_root_dialog
+from gui.views.table_columns import COLUMNS
+from gui.widgets.dashboard import InfoDashboard
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -86,73 +98,29 @@ THEMES = load_themes(logger)
 UI_TEXTS = load_ui_texts(logger)
 
 # ---------- Helpers ----------
-IMAGE_EXTENSIONS = (
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".bmp",
-    ".webp",
-    ".mp4",
-    ".mkv",
-    ".avi",
-    ".mov",
-)
-AUDIO_EXTENSIONS = (".mp3", ".wav", ".flac", ".m4a", ".aac")
 SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 OUTPUT_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov")
 MAX_PREVIEW_CACHE_ITEMS = 180
-
-
-def which(p: str):
-    return shutil.which(p)
-
-
-def check_ffmpeg():
-    return which("ffmpeg") and which("ffprobe")
+_RUNTIME_PATHS = build_default_runtime_paths()
 
 
 def get_used_dir() -> Path:
-    return Path.home() / "benutzte_dateien"
+    return _RUNTIME_PATHS.used_dir
 
 
 def default_output_dir() -> Path:
-    return Path.home() / "Videos" / "VideoBatchTool_Out"
+    return _RUNTIME_PATHS.output_dir
 
 
 def default_project_dir() -> Path:
-    return Path.home() / "VideoBatchTool_Projekte"
+    return _RUNTIME_PATHS.project_dir
 
 
 def default_downloads_dir() -> Path:
-    downloads = Path.home() / "Downloads"
-    return downloads if downloads.exists() else Path.home()
+    return _RUNTIME_PATHS.downloads_dir
 
-
-def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
-    result = transfer_with_validation(
-        src,
-        dst_dir,
-        copy_only=copy_only,
-        suffix_label="benutzt",
-    )
-    if not result.validated:
-        raise IOError(result.detail)
-    return result.target
-
-
-from gui.dialogs.file_picker import FilePickerDialog, make_thumb
 
 # ---------- Datenmodell ----------
-COLUMNS = [
-    "#",
-    "Thumb",
-    "Bild",
-    "Audio",
-    "Dauer",
-    "Ausgabe",
-    "Fortschritt",
-    "Status",
-]
 
 
 @dataclass
@@ -176,49 +144,9 @@ class PairItem:
             self.thumb = make_thumb(self.image_path)
 
     def validate(self):
-        image_path = (self.image_path or "").strip()
-        audio_path = (self.audio_path or "").strip() if self.audio_path else ""
-        if not image_path or not audio_path:
-            self.valid = False
-            self.validation_msg = "Bild oder Audio fehlt"
-            return
-        ip, ap = Path(image_path), Path(audio_path)
-        if not ip.exists():
-            self.valid = False
-            self.validation_msg = "Bildpfad nicht gefunden"
-            return
-        if not ap.exists():
-            self.valid = False
-            self.validation_msg = "Audiopfad nicht gefunden"
-            return
-        if ip.is_dir():
-            if not os.access(ip, os.R_OK | os.X_OK):
-                self.valid = False
-                self.validation_msg = (
-                    "Bildordner ist nicht lesbar (keine Rechte)"
-                )
-                return
-        else:
-            if not os.access(ip, os.R_OK):
-                self.valid = False
-                self.validation_msg = (
-                    "Bilddatei ist nicht lesbar (keine Rechte)"
-                )
-                return
-            if ip.suffix.lower() not in IMAGE_EXTENSIONS:
-                self.valid = False
-                self.validation_msg = "Ungültiges Bild- oder Videoformat"
-                return
-        if not os.access(ap, os.R_OK):
-            self.valid = False
-            self.validation_msg = "Audiodatei ist nicht lesbar (keine Rechte)"
-            return
-        if ap.suffix.lower() not in AUDIO_EXTENSIONS:
-            self.valid = False
-            self.validation_msg = "Ungültiges Audioformat"
-            return
-        self.valid = True
-        self.validation_msg = ""
+        result = validate_media_pair(self.image_path, self.audio_path)
+        self.valid = result.valid
+        self.validation_msg = result.message
 
 
 class PairTableModel(QAbstractTableModel):

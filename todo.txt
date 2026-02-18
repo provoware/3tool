@@ -165,3 +165,4 @@
 - [x] Aktions- und Bereichslayout weiter modularisiert: einheitliche Button-Groessen zentralisiert und Workflow-Minimalgroessen über gemeinsame Helper vereinheitlicht
 
 - [x] Mypy-Altlasten in GUI-Dateien bereinigt (Qt6-Enum-Konstanten modernisiert und Optional-Guards ergänzt)
+- [x] GUI-/Start-Architektur weiter modularisiert: videobatch_gui Helfer in Services/Views/State ausgelagert, Start-Routine in Startup-Interfaces getrennt und Import-Seiteneffekte testbar reduziert
