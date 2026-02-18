@@ -89,83 +89,27 @@ def test_print_release_readiness_outputs_warning(capsys, monkeypatch) -> None:
     assert "Release noch nicht bereit" in output
 
 
-def test_main_runs_auto_repair_even_without_flag(monkeypatch) -> None:
-    calls = {"repairs": 0}
-
+def test_main_forwards_to_primary_entry(monkeypatch) -> None:
     class Args:
         auto_repair = False
         simple_mode = False
-        debug = False
+        debug = True
+        release_check = False
 
     monkeypatch.setattr(start_gui, "parse_args", lambda: Args())
-    monkeypatch.setattr(start_gui, "_ensure_files", lambda _project_root: None)
-    monkeypatch.setattr(
-        start_gui,
-        "_prepare_runtime_dirs",
-        lambda: {
-            "Nutzerdaten": start_gui.Path("."),
-            "Protokolle": start_gui.Path("."),
-        },
-    )
-    monkeypatch.setattr(
-        start_gui.launcher_checks, "configure_logging", lambda *_args: None
-    )
-    monkeypatch.setattr(
-        start_gui.launcher_checks, "ensure_venv", lambda _project_root: None
-    )
-    monkeypatch.setattr(
-        start_gui.launcher_checks,
-        "venv_python",
-        lambda _project_root: start_gui.Path("python3"),
-    )
-    first = [
-        start_gui.launcher_checks.CheckResult(
-            key="fail",
-            title="Fail",
-            ok=False,
-            detail="blocked",
-            blocking=True,
-        )
-    ]
-    second = [
-        start_gui.launcher_checks.CheckResult(
-            key="ok",
-            title="OK",
-            ok=True,
-            detail="ready",
-            blocking=True,
-        )
-    ]
-    state = {"count": 0}
 
-    def fake_run_checks(_py: str, _target, _project_root):
-        state["count"] += 1
-        return first if state["count"] == 1 else second
+    captured: dict[str, list[str]] = {"args": []}
 
-    monkeypatch.setattr(start_gui, "_run_checks", fake_run_checks)
+    def _fake_primary(argv: list[str]) -> int:
+        captured["args"] = argv
+        return 0
 
-    def fake_run_repairs(_py: str, _target, _project_root):
-        calls["repairs"] += 1
-        return []
-
-    monkeypatch.setattr(start_gui, "_run_repairs", fake_run_repairs)
-    monkeypatch.setattr(start_gui, "_print_check_summary", lambda *_args: None)
-    monkeypatch.setattr(
-        start_gui, "_print_release_readiness", lambda *_args: True
-    )
-    monkeypatch.setattr(start_gui, "_print_beginner_tips", lambda: None)
-    monkeypatch.setattr(
-        start_gui,
-        "_import_module",
-        lambda _name, _project_root: type(
-            "GUI", (), {"run_gui": staticmethod(lambda: None)}
-        )(),
-    )
+    monkeypatch.setattr("app.main", _fake_primary)
 
     result = start_gui.main()
 
     assert result == 0
-    assert calls["repairs"] == 1
+    assert captured["args"] == ["--mode", "gui", "--debug"]
 
 
 def test_safe_prepare_runtime_dirs_wraps_oserror(monkeypatch) -> None:

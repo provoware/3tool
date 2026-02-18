@@ -165,3 +165,5 @@
 - [x] Aktions- und Bereichslayout weiter modularisiert: einheitliche Button-Groessen zentralisiert und Workflow-Minimalgroessen über gemeinsame Helper vereinheitlicht
 
 - [x] Mypy-Altlasten in GUI-Dateien bereinigt (Qt6-Enum-Konstanten modernisiert und Optional-Guards ergänzt)
+
+- [x] Primäres Startkommando `python3 -m app` eingeführt, Bootstrap zentralisiert, Legacy-Startwege auf Hauptpfad umgeleitet, Doku vereinheitlicht und Smoke-Tests je Startmodus ergänzt
