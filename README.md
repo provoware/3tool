@@ -20,20 +20,18 @@ Die benoetigten Python-Pakete stehen in `requirements.txt`.
    ```
 2. Das Tool starten:
    ```bash
-   python3 start_gui.py
+   python3 -m app --mode gui
    ```
    Der Launcher legt bei Bedarf automatisch ein virtuelles Umfeld ("virtual environment") an und installiert die Pakete.
    Bist du bereits in einer eigenen Umgebung, erkennt der Launcher dies und nutzt dein aktuelles Python.
 3. Alternativ kann das Beispielskript `scripts/setup_template.sh` alles in einem Durchlauf erledigen. Ein Muster steht in `setup-sh.txt`.
 
-### Kanonische Startpunkte (empfohlene Standardpfade)
+### Kanonischer Start (genau ein bevorzugter Standard)
 
-* **Start (ein Klick mit Checks/Self-Repair):** `python3 start_gui.py`
-* **GUI-Modul:** `videobatch_gui.py`
-* **CLI-Modul:** `videobatch_extra.py`
+* **Bevorzugter Standard-Start (GUI + Checks/Self-Repair):** `python3 -m app --mode gui`
 
-Der ältere Einstieg `videobatch_launcher.py` bleibt aus Kompatibilitätsgründen erhalten,
-ist aber nicht mehr der primäre Startpfad.
+Legacy-Startwege (`start_gui.py`, `videobatch_launcher.py`) sind veraltet (deprecated)
+und leiten intern auf den Hauptpfad um.
 
 ### Start mit Hilfefenster
 
@@ -43,7 +41,7 @@ benötigten Pakete und `ffmpeg` vorhanden sind. Über die Schaltfläche
 Mit dem Parameter `--help` zeigt der Launcher alle verfügbaren Optionen an:
 
 ```bash
-python3 start_gui.py --help
+python3 -m app --mode gui --help
 ```
 
 Eine ausfuehrliche Anleitung mit allen Tipps steht in `ANLEITUNG_GESAMT.md`.

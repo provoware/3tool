@@ -19,7 +19,7 @@ Diese Anleitung fasst alle bisherigen Hilfen zusammen. Die Sprache ist bewusst e
    ```
 4. Programm starten:
    ```bash
-   python3 start_gui.py
+   python3 -m app --mode gui
    ```
    Der Launcher prueft alles und startet die grafische Oberflaeche (GUI).
 5. Selbsttest ohne GUI:

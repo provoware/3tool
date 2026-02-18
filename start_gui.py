@@ -5,11 +5,11 @@ import importlib
 import logging
 import subprocess
 import sys
+import warnings
 from pathlib import Path
 from typing import Callable, NoReturn, cast
 
 from core import launcher_checks
-from core.config import apply_simple_mode_defaults, cfg
 from core.paths import cache_dir, config_dir, log_dir, user_data_dir, work_dir
 
 REQUIRED_FILES = ("videobatch_gui.py", "videobatch_extra.py")
@@ -161,9 +161,9 @@ def _print_release_readiness(project_root: Path) -> bool:
 
 def _print_beginner_tips() -> None:
     print("\nLaien-Tipps (einfach):")
-    print(" - Bei Problemen zuerst: python3 start_gui.py --auto-repair")
-    print(" - Für schwächere Geräte: python3 start_gui.py --simple-mode")
-    print(" - Details/Fehlerbericht: python3 start_gui.py --debug")
+    print(" - Bei Problemen zuerst: python3 -m app --mode gui --debug")
+    print(" - Für schwächere Geräte: python3 -m app --mode gui --simple-mode")
+    print(" - Details/Fehlerbericht: python3 -m app --mode gui --debug")
     print(" - Selbsttest für CLI: python3 videobatch_extra.py --selftest")
 
 
@@ -367,7 +367,10 @@ def _start_gui(start_func: Callable[[], None]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Klick-Start für VideoBatchTool mit Checks und Self-Repair"
+        description=(
+            "[Deprecated] Legacy-GUI-Start. "
+            "Bevorzugt: python3 -m app --mode gui"
+        )
     )
     parser.add_argument(
         "--auto-repair",
@@ -396,50 +399,24 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    warnings.warn(
+        "start_gui.py ist veraltet. Bitte den Hauptpfad nutzen: "
+        "python3 -m app --mode gui",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     args = parse_args()
-    cfg.debug = args.debug
+    from app import main as primary_main
 
-    steps = 7
-    _status(1, steps, "Projektdateien prüfen")
-    _ensure_files(PROJECT_ROOT)
-    _ok("Projektdateien vollständig")
-
-    _status(2, steps, "Laufzeitordner vorbereiten")
-    runtime_dirs = _safe_prepare_runtime_dirs()
-    launcher_log = runtime_dirs["Protokolle"] / "launcher.log"
-    launcher_checks.configure_logging(launcher_log, args.debug)
-    launcher_checks.LOGGER.info("Launcher gestartet (debug=%s)", args.debug)
-    _ok("Daten-, Config-, Log-, Work- und Cache-Ordner bereit")
-
-    _status(3, steps, "Launcher-Umgebung vorbereiten")
-    py = _safe_ensure_venv(PROJECT_ROOT)
-    _ok(f"Python-Umgebung bereit: {py}")
-
-    _status(4, steps, "Präventiven Start-Bootstrap ausführen")
-    _dependency_bootstrap(py, runtime_dirs["Nutzerdaten"], PROJECT_ROOT)
-
+    forwarded_args = ["--mode", "gui"]
+    if args.debug:
+        forwarded_args.append("--debug")
     if args.simple_mode:
-        _status(6, steps, "Simple-Modus aktivieren")
-        apply_simple_mode_defaults()
-        _ok("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
+        forwarded_args.append("--simple-mode")
+    return primary_main(forwarded_args)
 
-    _print_release_readiness(PROJECT_ROOT)
-    if getattr(args, "release_check", False):
-        _status(7, steps, "Release-Qualitätscheck ausführen")
-        try:
-            _run_release_quality_check(PROJECT_ROOT)
-        except (OSError, subprocess.SubprocessError) as exc:
-            _warn(
-                "Release-Qualitätscheck konnte nicht vollständig laufen: "
-                f"{exc}"
-            )
-            print(
-                "  💡 Vorschlag: Manuell im Projektordner ausführen: "
-                "bash scripts/quality_check.sh"
-            )
-    _print_beginner_tips()
 
-    _status(steps, steps, "GUI starten")
+def run_from_primary_entry() -> int:
     gui = _import_module("videobatch_gui", PROJECT_ROOT)
     start_func = getattr(gui, "run_gui", None)
     if not callable(start_func):

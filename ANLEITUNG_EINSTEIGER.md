@@ -27,7 +27,7 @@ Diese Anleitung richtet sich an Anfaenger und erklaert jeden Schritt.
 
 5. **Programm starten**:
    ```bash
-   python3 start_gui.py
+   python3 -m app --mode gui
    ```
    Der Launcher prueft, ob alles korrekt eingerichtet ist und startet dann die grafische Oberflaeche (GUI).
 
