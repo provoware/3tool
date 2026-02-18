@@ -287,3 +287,43 @@ def test_action_buttons_reflow_to_single_column_on_small_width(
         positions.append((row, col))
     used_columns = {col for _, col in positions}
     assert used_columns == {0}
+
+
+def test_focus_change_keeps_workflow_geometry_stable(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.show()
+    qtbot.waitExposed(win)
+
+    initial_column_sizes = list(win.workflow_columns.sizes())
+    initial_active = win._active_section_name
+
+    win._on_focus_changed(win.table, win.log_edit)
+
+    after_focus_column_sizes = list(win.workflow_columns.sizes())
+    assert after_focus_column_sizes == initial_column_sizes
+    assert win._active_section_name == "Protokoll"
+    assert win._active_section_name != initial_active
+
+    win._request_workflow_rebalance(force=True)
+    qtbot.wait(win.WORKFLOW_REBALANCE_DEBOUNCE_MS + 80)
+    rebalanced_column_sizes = list(win.workflow_columns.sizes())
+    assert any(
+        abs(current - original) >= win.WORKFLOW_REBALANCE_THRESHOLD_PX
+        for current, original in zip(
+            rebalanced_column_sizes,
+            initial_column_sizes,
+        )
+    )

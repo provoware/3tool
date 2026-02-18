@@ -991,6 +991,8 @@ class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
     WORKFLOW_SECTION_MIN_WIDTH = 240
     WORKFLOW_SECTION_MIN_HEIGHT = 190
+    WORKFLOW_REBALANCE_DEBOUNCE_MS = 120
+    WORKFLOW_REBALANCE_THRESHOLD_PX = 18
 
     def __init__(self):
         super().__init__()
@@ -1027,6 +1029,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._audio_player = QtMultimedia.QMediaPlayer(self)
         self._audio_output = QtMultimedia.QAudioOutput(self)
         self._audio_player.setAudioOutput(self._audio_output)
+        self._rebalance_request_id = 0
+        self._rebalance_pending_force = False
         self._audio_output.setVolume(
             self.settings.value("ui/audio_preview_volume", 0.8, float)
         )
@@ -2015,7 +2019,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.update()
 
     def _rebalance_workflow_layout(
-        self, active_name: Optional[str] = None
+        self,
+        active_name: Optional[str] = None,
+        *,
+        force: bool = False,
     ) -> None:
         if not hasattr(self, "workflow_columns"):
             return
@@ -2026,7 +2033,13 @@ class MainWindow(QtWidgets.QMainWindow):
         focus = max(self.WORKFLOW_SECTION_MIN_WIDTH + 20, int(total * 0.38))
         column_sizes = [base, base, base]
         column_sizes[active_column] = focus
-        self.workflow_columns.setSizes(column_sizes)
+        current_column_sizes = self.workflow_columns.sizes()
+        if force or self._needs_significant_resize(
+            current_column_sizes,
+            column_sizes,
+            self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+        ):
+            self.workflow_columns.setSizes(column_sizes)
 
         total_h = max(self.workflow_columns.height(), 1)
         base_h = max(self.WORKFLOW_SECTION_MIN_HEIGHT, int(total_h * 0.44))
@@ -2038,9 +2051,62 @@ class MainWindow(QtWidgets.QMainWindow):
                 row = self._section_resize_targets.get(name, (idx, 0))[1]
                 sizes = [base_h, base_h]
                 sizes[row] = focus_h
-                splitter.setSizes(sizes)
+                current_sizes = splitter.sizes()
+                if force or self._needs_significant_resize(
+                    current_sizes,
+                    sizes,
+                    self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+                ):
+                    splitter.setSizes(sizes)
             else:
-                splitter.setSizes([base_h, base_h])
+                sizes = [base_h, base_h]
+                current_sizes = splitter.sizes()
+                if force or self._needs_significant_resize(
+                    current_sizes,
+                    sizes,
+                    self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+                ):
+                    splitter.setSizes(sizes)
+
+    @staticmethod
+    def _needs_significant_resize(
+        current_sizes: Sequence[int],
+        target_sizes: Sequence[int],
+        threshold_px: int,
+    ) -> bool:
+        if len(current_sizes) != len(target_sizes):
+            return True
+        threshold = max(0, threshold_px)
+        return any(
+            abs(current - target) >= threshold
+            for current, target in zip(current_sizes, target_sizes)
+        )
+
+    def _request_workflow_rebalance(
+        self,
+        active_name: Optional[str] = None,
+        *,
+        force: bool = False,
+    ) -> None:
+        if active_name:
+            self._active_section_name = active_name
+        self._rebalance_pending_force = self._rebalance_pending_force or force
+        self._rebalance_request_id += 1
+        request_id = self._rebalance_request_id
+
+        def _run_rebalance() -> None:
+            if request_id != self._rebalance_request_id:
+                return
+            pending_force = self._rebalance_pending_force
+            self._rebalance_pending_force = False
+            self._rebalance_workflow_layout(
+                getattr(self, "_active_section_name", "Paare"),
+                force=pending_force,
+            )
+
+        QtCore.QTimer.singleShot(
+            self.WORKFLOW_REBALANCE_DEBOUNCE_MS, _run_rebalance
+        )
 
     def _apply_template_preset(self, preset_name: str) -> None:
         presets = {
@@ -2060,8 +2126,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._log(f"Template-Preset gesetzt: {preset_name}")
 
     def _resize_focus_sections(self, active_name: str) -> None:
-        self._active_section_name = active_name
-        self._rebalance_workflow_layout(active_name)
+        self._request_workflow_rebalance(active_name, force=False)
 
     def _on_focus_changed(
         self,
@@ -2078,7 +2143,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if is_active:
                 active_name = name
         if active_name:
-            self._resize_focus_sections(active_name)
+            self._active_section_name = active_name
             self.focus_hint_label.setText(
                 f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, dann den nächsten Schritt starten."
             )
@@ -3687,6 +3752,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_interface_profile(self, profile: str) -> None:
         self.settings.setValue("ui/interface_profile", profile)
         self._apply_interface_profile(profile)
+        self._request_workflow_rebalance(force=True)
         self._log(
             f"Interface-Profil gesetzt: {profile}. "
             "Tipp: Seniorenfreundlich ist für sehschwache Nutzer optimiert."
@@ -3696,6 +3762,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.large_controls = checked
         self.settings.setValue("ui/large_controls", checked)
         self._apply_interface_profile(self.interface_combo.currentText())
+        self._request_workflow_rebalance(force=True)
         self._log(
             f"Große Bedienelemente {'aktiviert' if checked else 'deaktiviert'}"
         )
@@ -3753,7 +3820,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._resize_columns()
         action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
         self._reflow_action_buttons(action_width)
-        QtCore.QTimer.singleShot(0, self._rebalance_workflow_layout)
+        self._request_workflow_rebalance(force=True)
 
     def _table_menu(self, pos: QtCore.QPoint):
         index = self.table.indexAt(pos)
