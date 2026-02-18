@@ -98,6 +98,71 @@ def test_dashboard_progress_is_limited_to_100(
     assert dashboard.progress_value.text() == "100%"
 
 
+def test_dashboard_metric_cards_reflow_to_three_columns_on_large_width(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    dashboard._reflow_metric_cards(1000)
+
+    positions = []
+    for idx in range(dashboard.cards_layout.count()):
+        row, col, _, _ = dashboard.cards_layout.getItemPosition(idx)
+        positions.append((row, col))
+    used_columns = {col for _, col in positions}
+    assert used_columns == {0, 1, 2}
+
+
+def test_dashboard_metric_reflow_recovers_from_invalid_width(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    dashboard._reflow_metric_cards("ungueltig")
+
+    positions = []
+    for idx in range(dashboard.cards_layout.count()):
+        row, col, _, _ = dashboard.cards_layout.getItemPosition(idx)
+        positions.append((row, col))
+    used_columns = {col for _, col in positions}
+    assert used_columns == {0}
+
+
+def test_dashboard_selection_counts_update_metric_labels(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    dashboard.set_selection_counts(5, 3)
+
+    assert dashboard.selected_images_label.text() == "5"
+    assert dashboard.selected_audios_label.text() == "3"
+
+
 def test_action_buttons_reflow_to_two_columns_on_medium_width(
     request, gui_runtime_available, gui_runtime_error
 ):
