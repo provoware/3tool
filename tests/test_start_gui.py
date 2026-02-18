@@ -363,3 +363,38 @@ def test_dependency_bootstrap_fails_if_still_blocked(monkeypatch) -> None:
         assert "Start abgebrochen" in str(exc)
     else:
         raise AssertionError("LauncherError erwartet")
+
+
+def test_import_module_raises_launcher_error_for_missing_tool(
+    monkeypatch,
+) -> None:
+    def _raise(_name: str):
+        raise ModuleNotFoundError("No module named 'PySide6'")
+
+    monkeypatch.setattr(start_gui.importlib, "import_module", _raise)
+
+    try:
+        start_gui._import_module("videobatch_gui")
+    except start_gui.LauncherError as exc:
+        message = str(exc)
+        assert "Ursache" in message
+        assert (
+            "Befehl: python3 videobatch_extra.py --self-repair --debug"
+            in message
+        )
+    else:
+        raise AssertionError("LauncherError expected")
+
+
+def test_start_gui_raises_launcher_error_for_subprocess_failure() -> None:
+    def _start() -> None:
+        raise start_gui.subprocess.SubprocessError("tool failed")
+
+    try:
+        start_gui._start_gui(_start)
+    except start_gui.LauncherError as exc:
+        message = str(exc)
+        assert "Die Oberfläche konnte nicht gestartet werden" in message
+        assert "Befehl: python3 videobatch_extra.py --selftest" in message
+    else:
+        raise AssertionError("LauncherError expected")

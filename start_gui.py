@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -57,10 +58,17 @@ def _import_module(name: str, project_root: Path = PROJECT_ROOT):
         sys.path.insert(0, root)
     try:
         return importlib.import_module(name)
-    except Exception as exc:  # pragma: no cover - user facing runtime guard
+    except (
+        ImportError,
+        ModuleNotFoundError,
+        ValueError,
+    ) as exc:  # pragma: no cover - user facing runtime guard
         _fail(
-            f"Modul '{name}' konnte nicht geladen werden: {exc}. "
-            "Bitte Self-Repair ausführen oder Abhängigkeiten prüfen."
+            f"Start-Modul '{name}' konnte nicht geladen werden. "
+            "Ursache: Abhängigkeit fehlt oder Modul ist defekt. "
+            "Nächster Schritt: automatische Reparatur starten. "
+            "Befehl: python3 videobatch_extra.py --self-repair --debug"
+            f"\nTechnik-Detail: {exc}"
         )
 
 
@@ -339,10 +347,21 @@ def _safe_run_repairs(
 def _start_gui(start_func: Callable[[], None]) -> None:
     try:
         start_func()
-    except Exception as exc:  # pragma: no cover - user facing runtime guard
+    except (
+        RuntimeError,
+        OSError,
+        subprocess.SubprocessError,
+    ) as exc:  # pragma: no cover - user facing runtime guard
+        logging.getLogger(__name__).exception(
+            "launcher.gui_start_failed",
+            extra={"error": str(exc)},
+        )
         _fail(
-            f"GUI-Start fehlgeschlagen: {exc}. "
-            "Bitte 'python3 videobatch_extra.py --selftest' ausführen."
+            "Die Oberfläche konnte nicht gestartet werden. "
+            "Ursache: Systembibliothek oder Tool fehlt/ist blockiert. "
+            "Nächster Schritt: Selbsttest ausführen und Hinweise befolgen. "
+            "Befehl: python3 videobatch_extra.py --selftest"
+            f"\nTechnik-Detail: {exc}"
         )
 
 

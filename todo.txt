@@ -155,3 +155,5 @@
 
 - [x] QA-Preflight erweitert: Tool-Importpruefung um CLI-Kommando-Check mit Auto-Reparaturpfad und Tests abgesichert
 - [x] videobatch_gui.py in Module (gui/dialogs, gui/widgets, gui/controllers) aufgeteilt, Kernlogik nach core/gui_logic.py verschoben und Tests ergänzt
+
+- [x] Breite Exception-Faenger in GUI/Launcher/Core durch konkrete Ausnahmen mit klaren Laienhinweisen und Tests ersetzt

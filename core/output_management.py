@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import shutil
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 from .utils import linux_safe_stem
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -78,7 +82,15 @@ def transfer_with_validation(
     else:
         try:
             shutil.move(source, target)
-        except Exception:
+        except (shutil.Error, OSError) as exc:
+            logger.warning(
+                "transfer.move_failed_fallback_copy",
+                extra={
+                    "source": str(source),
+                    "target": str(target),
+                    "error": str(exc),
+                },
+            )
             shutil.copy2(source, target)
             source.unlink(missing_ok=True)
 

@@ -337,7 +337,14 @@ class EncodeWorker(QtCore.QObject):
             for proc in list(self._processes):
                 try:
                     proc.kill()
-                except Exception:
+                except (OSError, ProcessLookupError, PermissionError) as exc:
+                    logger.debug(
+                        "encode.stop.kill_failed",
+                        extra={
+                            "pid": getattr(proc, "pid", None),
+                            "error": str(exc),
+                        },
+                    )
                     continue
 
     def _escape_ffmpeg_path(self, path: Path) -> str:
@@ -534,10 +541,10 @@ class EncodeWorker(QtCore.QObject):
                             perc = min(100.0, elapsed / duration * 100.0)
                             item.progress = perc
                             self.row_progress.emit(index, perc)
-                        except Exception as e:
+                        except (ValueError, AttributeError) as exc:
                             logger.warning(
-                                "Fehler beim Lesen des Fortschritts: %s",
-                                e,
+                                "encode.progress_parse_failed",
+                                extra={"line": line.strip(), "error": str(exc)},
                             )
             proc.wait()
             if self._stop_event.is_set():
@@ -557,24 +564,56 @@ class EncodeWorker(QtCore.QObject):
                         "after_encode",
                         {"output": str(item.output), "mode": mode},
                     )
-        except Exception as e:
+        except (
+            FileNotFoundError,
+            PermissionError,
+            OSError,
+            ValueError,
+            subprocess.SubprocessError,
+        ) as exc:
             item.status = "FEHLER"
-            self.row_error.emit(index, str(e))
+            user_msg = (
+                "Der Vorgang konnte nicht fertiggestellt werden. "
+                "Ursache: Datei fehlt, keine Rechte oder Tool-Fehler. "
+                "Nächster Schritt: Eingaben prüfen und Test starten mit "
+                "'python3 videobatch_extra.py --selftest'."
+            )
+            self.row_error.emit(index, user_msg)
             file_hint = (
                 item.output
                 or item.image_path
                 or item.audio_path
                 or "unbekannte Datei"
             )
-            self.log.emit(f"Fehler bei {file_hint}: {e}")
+            logger.exception(
+                "encode.row_failed",
+                extra={
+                    "index": index,
+                    "file_hint": str(file_hint),
+                    "error": str(exc),
+                },
+            )
+            self.log.emit(f"Fehler bei {file_hint}: {user_msg} (Detail: {exc})")
         finally:
             if list_path:
                 try:
                     Path(list_path).unlink(missing_ok=True)
-                except Exception as cleanup_error:
+                except (
+                    FileNotFoundError,
+                    PermissionError,
+                    OSError,
+                ) as cleanup_error:
+                    logger.warning(
+                        "encode.cleanup_list_failed",
+                        extra={
+                            "list_path": list_path,
+                            "error": str(cleanup_error),
+                        },
+                    )
                     self.log.emit(
-                        "Konnte temporaere Liste nicht loeschen: "
-                        f"{list_path} ({cleanup_error})"
+                        "Temporäre Liste konnte nicht gelöscht werden. "
+                        "Nächster Schritt: Datei manuell entfernen mit "
+                        f"'rm -f {list_path}'. Detail: {cleanup_error}"
                     )
             if proc is not None:
                 self._unregister_process(proc)
@@ -631,8 +670,21 @@ class EncodeWorker(QtCore.QObject):
                     f"{moved} Dateien nach {used_root} "
                     f"{'kopiert' if self.copy_only else 'verschoben'} und validiert."
                 )
-            except Exception as e:
-                self.log.emit(f"Archivierung fehlgeschlagen: {e}")
+            except (
+                FileNotFoundError,
+                PermissionError,
+                OSError,
+                shutil.Error,
+            ) as exc:
+                logger.exception(
+                    "encode.archive_failed", extra={"error": str(exc)}
+                )
+                self.log.emit(
+                    "Archivierung fehlgeschlagen. Ursache: Datei fehlt oder Rechteproblem. "
+                    "Nächster Schritt: Zielordner prüfen und erneut starten. "
+                    "Befehl: python3 start_gui.py --debug "
+                    f"(Detail: {exc})"
+                )
         self.finished.emit()
 
 
@@ -2143,7 +2195,11 @@ class MainWindow(QtWidgets.QMainWindow):
         out_path = Path(path).expanduser()
         try:
             out_path.mkdir(parents=True, exist_ok=True)
-        except Exception as exc:
+        except (PermissionError, OSError, ValueError) as exc:
+            logger.exception(
+                "ui.output_dir_prepare_failed",
+                extra={"path": str(out_path), "error": str(exc)},
+            )
             self._log(
                 f"Ausgabeordner konnte nicht erstellt werden: {exc}",
                 logging.ERROR,
@@ -2151,7 +2207,11 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(
                 self,
                 "Ausgabeordner fehlerhaft",
-                f"Ordner konnte nicht erstellt werden:\n{exc}",
+                "Ordner konnte nicht erstellt werden.\n"
+                "Ursache: fehlende Rechte oder ungültiger Pfad.\n"
+                "Nächster Schritt: anderen Ordner wählen oder Rechte prüfen.\n"
+                f"Befehl: ls -ld '{out_path}'\n\n"
+                f"Technik-Detail: {exc}",
             )
             return
         QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(out_path)))
@@ -2187,11 +2247,19 @@ class MainWindow(QtWidgets.QMainWindow):
         path = Path(value).expanduser()
         try:
             path.mkdir(parents=True, exist_ok=True)
-        except Exception as exc:
+        except (PermissionError, OSError, ValueError) as exc:
+            logger.exception(
+                "ui.project_dir_prepare_failed",
+                extra={"path": str(path), "error": str(exc)},
+            )
             QtWidgets.QMessageBox.warning(
                 self,
                 "Projektordner ungültig",
-                f"Der Ordner konnte nicht erstellt werden:\n{exc}",
+                "Der Ordner konnte nicht erstellt werden.\n"
+                "Ursache: kein Zugriff oder ungültiger Pfad.\n"
+                "Nächster Schritt: anderen Ordner wählen.\n"
+                f"Befehl: mkdir -p '{path}'\n\n"
+                f"Technik-Detail: {exc}",
             )
             self._log(f"Standard-Projektordner ungültig: {exc}", logging.ERROR)
             fallback = str(default_project_dir())
@@ -2337,8 +2405,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def _log_details(self, max_chars: int = 4000) -> str:
         try:
             text = LOG_FILE.read_text(encoding="utf-8", errors="replace")
-        except Exception as e:
-            return f"Logdatei: {LOG_FILE}\nKonnte Log nicht lesen: {e}"
+        except (FileNotFoundError, PermissionError, OSError) as exc:
+            logger.warning(
+                "ui.log_read_failed",
+                extra={"log_file": str(LOG_FILE), "error": str(exc)},
+            )
+            return (
+                f"Logdatei: {LOG_FILE}\n"
+                "Log konnte nicht gelesen werden. Nächster Schritt: Rechte prüfen mit "
+                f"'ls -l {LOG_FILE}'. Detail: {exc}"
+            )
         if len(text) > max_chars:
             text = "... (gekürzt)\n" + text[-max_chars:]
         return f"Logdatei: {LOG_FILE}\n\n{text}"
@@ -2532,9 +2608,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 ),
                 encoding="utf-8",
             )
-        except Exception as exc:
+        except (PermissionError, OSError, TypeError, ValueError) as exc:
+            logger.exception(
+                "ui.autosave_failed",
+                extra={
+                    "path": str(auto_path),
+                    "reason": reason,
+                    "error": str(exc),
+                },
+            )
             self._log(
-                f"Auto-Speichern fehlgeschlagen ({reason}): {exc}",
+                "Auto-Speichern fehlgeschlagen. Ursache: kein Zugriff oder ungültige Daten. "
+                "Nächster Schritt: Projekt manuell speichern. "
+                f"Befehl: cp '{auto_path}' ./backup_projekt.json (Detail: {exc})",
                 logging.ERROR,
             )
             return
@@ -2660,9 +2746,17 @@ class MainWindow(QtWidgets.QMainWindow):
                         for p in sorted(out_path.rglob("*"))
                         if p.is_file() and p.suffix.lower() in OUTPUT_EXTENSIONS
                     ]
-                except Exception as exc:
+                except (PermissionError, OSError) as exc:
+                    logger.warning(
+                        "ui.structure_scan_failed",
+                        extra={"path": str(out_path), "error": str(exc)},
+                    )
                     error_item = QtWidgets.QTreeWidgetItem(
-                        [f"Fehler beim Lesen: {exc}"]
+                        [
+                            "Ausgabeordner konnte nicht gelesen werden. "
+                            "Bitte Rechte pruefen. "
+                            f"Befehl: ls -la '{out_path}'"
+                        ]
                     )
                     output_root.addChild(error_item)
             else:
@@ -2973,9 +3067,21 @@ class MainWindow(QtWidgets.QMainWindow):
             Path(path).write_text(
                 json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
             )
-        except Exception as e:
-            self._show_error_dialog("Fehler beim Speichern", str(e))
-            self._log(f"Fehler beim Speichern: {e}")
+        except (PermissionError, OSError, TypeError, ValueError) as exc:
+            logger.exception(
+                "ui.project_save_failed",
+                extra={"path": path, "error": str(exc)},
+            )
+            user_msg = (
+                "Projekt konnte nicht gespeichert werden. "
+                "Ursache: Rechteproblem oder ungültige Daten. "
+                "Nächster Schritt: anderen Speicherort wählen. "
+                f"Befehl: mkdir -p '{Path(path).parent}'"
+            )
+            self._show_error_dialog(
+                "Fehler beim Speichern",
+                f"{user_msg}\n\nTechnik-Detail: {exc}",
+            )
             return
         self._set_last_project_path(path)
         self._refresh_structure_view()
@@ -2990,9 +3096,36 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         try:
             data = json.loads(Path(path).read_text(encoding="utf-8"))
-        except Exception as e:
-            self._show_error_dialog("Fehler beim Laden", str(e))
-            self._log(f"Fehler beim Laden: {e}")
+        except FileNotFoundError as exc:
+            logger.warning(
+                "ui.project_load_missing",
+                extra={"path": path, "error": str(exc)},
+            )
+            self._show_error_dialog(
+                "Fehler beim Laden",
+                "Projektdatei fehlt. Nächster Schritt: Datei erneut auswählen. "
+                f"Befehl: ls -l '{path}'\n\nTechnik-Detail: {exc}",
+            )
+            self._log(f"Fehler beim Laden: {exc}")
+            return
+        except (
+            PermissionError,
+            OSError,
+            json.JSONDecodeError,
+            ValueError,
+        ) as exc:
+            logger.exception(
+                "ui.project_load_failed",
+                extra={"path": path, "error": str(exc)},
+            )
+            self._show_error_dialog(
+                "Fehler beim Laden",
+                "Projektdatei konnte nicht geladen werden. "
+                "Ursache: keine Rechte oder defekte JSON-Datei. "
+                "Nächster Schritt: Datei prüfen oder Backup laden. "
+                f"Befehl: python3 -m json.tool '{path}'\n\nTechnik-Detail: {exc}",
+            )
+            self._log(f"Fehler beim Laden: {exc}")
             return
         self._set_last_project_path(path)
         self._push_history()
@@ -3091,7 +3224,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     and entry.suffix.lower() in SLIDESHOW_IMAGE_EXTENSIONS
                 ):
                     return True
-        except Exception:
+        except (PermissionError, OSError) as exc:
+            logger.warning(
+                "ui.slideshow_dir_scan_failed",
+                extra={"path": str(path), "error": str(exc)},
+            )
             return False
         return False
 
@@ -3298,9 +3435,21 @@ class MainWindow(QtWidgets.QMainWindow):
             test_file = out_dir / ".write_test"
             test_file.touch()
             test_file.unlink()
-        except Exception as e:
-            self._show_error_dialog("Ordnerproblem", str(e))
-            self._log(f"Encoding abgebrochen: Ordnerproblem ({e})")
+        except (PermissionError, OSError) as exc:
+            logger.exception(
+                "ui.output_dir_write_test_failed",
+                extra={"path": str(out_dir), "error": str(exc)},
+            )
+            user_msg = (
+                "Im Ausgabeordner kann nicht geschrieben werden. "
+                "Ursache: keine Rechte oder Laufwerk gesperrt. "
+                "Nächster Schritt: anderen Ordner wählen oder Rechte prüfen. "
+                f"Befehl: touch '{out_dir}/.write_test'"
+            )
+            self._show_error_dialog(
+                "Ordnerproblem",
+                f"{user_msg}\n\nTechnik-Detail: {exc}",
+            )
             return
         self.btn_encode.setEnabled(False)
         self.btn_stop.setEnabled(True)

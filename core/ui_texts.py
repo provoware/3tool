@@ -29,9 +29,22 @@ def load_ui_texts(
     path = TEXT_ARCHIVE_DIR / version / f"{locale}.json"
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except Exception as exc:  # pragma: no cover - fallback path
+    except FileNotFoundError as exc:  # pragma: no cover - fallback path
         if logger:
-            logger.warning("UI-Textarchiv konnte nicht geladen werden: %s", exc)
+            logger.warning(
+                "ui_texts.archive_missing",
+                extra={"path": str(path), "error": str(exc)},
+            )
+        return {}
+    except (
+        OSError,
+        json.JSONDecodeError,
+    ) as exc:  # pragma: no cover - fallback path
+        if logger:
+            logger.warning(
+                "ui_texts.archive_invalid",
+                extra={"path": str(path), "error": str(exc)},
+            )
         return {}
     flat: Dict[str, str] = {}
     _flatten("", payload, flat)
