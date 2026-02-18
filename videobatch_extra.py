@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import random
+from dataclasses import replace
 import re
 import sys
 import tempfile
@@ -19,7 +20,7 @@ from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 from core import __version__
-from core.config import apply_simple_mode_defaults, cfg
+from core.config import apply_simple_mode_defaults, load_config, save_config
 from core.utils import build_out_name, human_time, probe_duration, run_ffmpeg
 
 
@@ -130,6 +131,8 @@ def cli_single(
     crf: int = 23,
     preset: str = "ultrafast",
     abitrate: str = "192k",
+    *,
+    debug: bool = False,
 ) -> int:
     out_dir_p = Path(out_dir)
     out_dir_p.mkdir(parents=True, exist_ok=True)
@@ -173,7 +176,7 @@ def cli_single(
             str(crf),
             str(out_file),
         ]
-        res = run_ffmpeg(cmd)
+        res = run_ffmpeg(cmd, debug=debug)
         if res.returncode == 0:
             done += 1
         else:
@@ -193,6 +196,8 @@ def cli_multi_audio(
     crf: int = 23,
     preset: str = "ultrafast",
     abitrate: str = "192k",
+    *,
+    debug: bool = False,
 ) -> int:
     return cli_single(
         [image] * len(audios),
@@ -203,6 +208,7 @@ def cli_multi_audio(
         crf,
         preset,
         abitrate,
+        debug=debug,
     )
 
 
@@ -213,6 +219,8 @@ def cli_video(
     crf: int = 23,
     preset: str = "ultrafast",
     abitrate: str = "192k",
+    *,
+    debug: bool = False,
 ) -> int:
     out_dir_p = Path(out_dir)
     out_dir_p.mkdir(parents=True, exist_ok=True)
@@ -244,7 +252,7 @@ def cli_video(
         str(crf),
         str(out_file),
     ]
-    res = run_ffmpeg(cmd)
+    res = run_ffmpeg(cmd, debug=debug)
     if res.returncode != 0:
         err_lines = res.stderr.strip().splitlines()
         msg = err_lines[-1] if err_lines else "unbekannt"
@@ -290,6 +298,8 @@ def cli_slideshow(
     audio_sample_rate: Optional[int] = None,
     audio_channels: Optional[int] = None,
     audio_normalize: bool = False,
+    *,
+    debug: bool = False,
 ) -> int:
     d = Path(img_dir)
     audio_path = Path(audio)
@@ -508,7 +518,7 @@ def cli_slideshow(
         cmd += ["-af", ",".join(audio_filters)]
     cmd.append(str(out_file))
     try:
-        res = run_ffmpeg(cmd)
+        res = run_ffmpeg(cmd, debug=debug)
     finally:
         try:
             os.unlink(list_path)
@@ -573,6 +583,8 @@ def run_selftests() -> int:
 def main() -> None:
     import argparse
 
+    config = load_config()
+
     parser = argparse.ArgumentParser(description="VideoBatchTool CLI / Tests")
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
@@ -595,10 +607,10 @@ def main() -> None:
         choices=["single", "slideshow", "video", "multi-audio"],
         default="single",
     )
-    parser.add_argument("--width", type=int, default=cfg.default_width)
-    parser.add_argument("--height", type=int, default=cfg.default_height)
-    parser.add_argument("--crf", type=int, default=cfg.default_crf)
-    parser.add_argument("--preset", default=cfg.default_preset)
+    parser.add_argument("--width", type=int, default=config.default_width)
+    parser.add_argument("--height", type=int, default=config.default_height)
+    parser.add_argument("--crf", type=int, default=config.default_crf)
+    parser.add_argument("--preset", default=config.default_preset)
     parser.add_argument("--abitrate", default="192k")
     parser.add_argument(
         "--audio-bitrate", dest="abitrate", default=argparse.SUPPRESS
@@ -644,20 +656,23 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    cfg.debug = args.debug or args.verbose
+    session_debug = bool(args.debug or args.verbose)
+    config = replace(config, debug=session_debug)
     if args.simple_mode:
-        apply_simple_mode_defaults()
+        config = apply_simple_mode_defaults(config)
         if args.width == 1920:
-            args.width = cfg.default_width
+            args.width = config.default_width
         if args.height == 1080:
-            args.height = cfg.default_height
+            args.height = config.default_height
         if args.crf == 23:
-            args.crf = cfg.default_crf
+            args.crf = config.default_crf
         if args.preset == "ultrafast":
-            args.preset = cfg.default_preset
+            args.preset = config.default_preset
         print("Simple-Modus aktiv: 1280x720, CRF 24, Preset veryfast")
 
-    if cfg.debug:
+    save_config(config)
+
+    if config.debug:
         print("Diagnose-Modus aktiv (verbose/debug).")
 
     if args.selftest:
@@ -673,6 +688,7 @@ def main() -> None:
                 args.crf,
                 args.preset,
                 args.abitrate,
+                debug=config.debug,
             )
         )
     if args.mode == "multi-audio" and args.img and args.aud:
@@ -686,6 +702,7 @@ def main() -> None:
                 args.crf,
                 args.preset,
                 args.abitrate,
+                debug=config.debug,
             )
         )
     if args.mode == "video" and args.img and args.aud:
@@ -697,6 +714,7 @@ def main() -> None:
                 args.crf,
                 args.preset,
                 args.abitrate,
+                debug=config.debug,
             )
         )
     if args.mode == "slideshow" and args.img and args.aud:
@@ -742,6 +760,7 @@ def main() -> None:
                 args.audio_sample_rate,
                 args.audio_channels,
                 args.audio_normalize,
+                debug=config.debug,
             )
         )
     print("GUI starten: python3 start_gui.py")

@@ -23,12 +23,16 @@ def _fail(message: str) -> None:
     raise BootstrapError(message)
 
 
-def ensure_required_files(project_root: Path, required_files: tuple[str, ...]) -> None:
+def ensure_required_files(
+    project_root: Path, required_files: tuple[str, ...]
+) -> None:
     if not isinstance(project_root, Path):
         _fail("Interner Fehler: project_root ist kein Path.")
     if not isinstance(required_files, tuple) or not required_files:
         _fail("Interner Fehler: required_files ist ungueltig.")
-    missing = [name for name in required_files if not (project_root / name).exists()]
+    missing = [
+        name for name in required_files if not (project_root / name).exists()
+    ]
     if missing:
         joined = ", ".join(missing)
         _fail(
@@ -97,4 +101,6 @@ def run_bootstrap(
     launcher_checks.configure_logging(launcher_log, debug)
     py = ensure_venv_python(project_root)
     run_preflight(py, runtime_dirs["Nutzerdaten"], project_root)
-    return BootstrapContext(project_root=project_root, python_cmd=py, runtime_dirs=runtime_dirs)
+    return BootstrapContext(
+        project_root=project_root, python_cmd=py, runtime_dirs=runtime_dirs
+    )
