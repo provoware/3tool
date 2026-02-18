@@ -150,3 +150,5 @@
 
 - [x] Dashboard-Kennzahlen auf responsives 6-Karten-Layout (inkl. Bilder/Audios) erweitert und mit Reflow-Tests abgesichert
 - [x] QA-Preflight: Bei fehlendem Python-Interpreter klare Schnelltest-Befehle (Version/which) als Nutzerhilfe und im JSON-Report ergänzen
+
+- [x] Ausgabe-Organisation auf Datumsordner mit Tracks/Musik erweitert, Transfer-Validierung ergänzt und Strukturansicht rekursiv für Unterordner-Ausgaben aktiviert
