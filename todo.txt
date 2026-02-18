@@ -141,3 +141,5 @@
 - [x] Launcher-Theme-Logik zentralisiert (validierte Theme-Aufloesung + Logging in core) und mit Tests abgesichert
 
 - [x] Einstellungen-UI: Sichtbarkeit aller Buttons/Steuerelemente in allen Themes vereinheitlicht und Kontrast verbessert
+
+- [x] Aktions-Buttons responsiv gemacht (automatischer Umbruch ohne verdeckte Elemente) und mit GUI-Tests abgesichert
