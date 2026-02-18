@@ -162,3 +162,4 @@
 - [x] FilePicker-Dialog auf DPI-/Schrift-skalierbares Layout, Splitter-Stretch und adaptive Zoom-Basis umgestellt; GUI-Tests fuer kleine Breite + hohe Skalierung ergaenzt
 
 - [x] AGENTS.md release-orientiert geschärft und Launcher-Feedback-Texte vollständig in JSON modularisiert
+- [x] Aktions- und Bereichslayout weiter modularisiert: einheitliche Button-Groessen zentralisiert und Workflow-Minimalgroessen über gemeinsame Helper vereinheitlicht
