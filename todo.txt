@@ -174,3 +174,4 @@
 - [x] Textverwaltung vereinheitlichen: hardcoded UI-Texte in videobatch_gui.py nach data/texts/v1 (de/en) migrieren, Guard-Test gegen neue harte UI-Texte ergänzen und Workflow dokumentieren
 
 - [x] Fokuswechsel-Layout entkoppelt: activeSection-Highlight ohne hartes Rebalancing je Fokus, debounced Rebalance nur bei expliziten Layout-Events und UI-Test für stabile Geometrie ergänzt
+- [x] Tabellenlesbarkeit verbessert: klare Wrap-Strategie ohne Elide, adaptive Horizontal-Scroll-Regel und robuste Zeilenhoehen-Aktualisierung inkl. Test fuer lange Dateinamen
