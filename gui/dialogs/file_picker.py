@@ -7,6 +7,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal
 
 from core.gui_logic import format_human_size
+from core.ui_texts import text_with_fallback
 from core.utils import human_time, probe_duration
 
 MAX_PREVIEW_CACHE_ITEMS = 180
@@ -61,6 +62,7 @@ class FilePickerDialog(QtWidgets.QDialog):
         start_dir: Path,
         suffixes: Tuple[str, ...],
         mode: str,
+        texts: Optional[Dict[str, str]] = None,
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -70,6 +72,7 @@ class FilePickerDialog(QtWidgets.QDialog):
         self.setMinimumSize(self._scaled_minimum_dialog_size())
         self.setModal(True)
         self._suffixes = tuple(s.lower() for s in suffixes)
+        self._texts = texts or {}
         self._mode = mode
         self._selection_order: List[str] = []
         self._zoom = 1.0
@@ -80,9 +83,21 @@ class FilePickerDialog(QtWidgets.QDialog):
         root = QtWidgets.QVBoxLayout(self)
         header = QtWidgets.QHBoxLayout()
         self.path_edit = QtWidgets.QLineEdit(str(self.current_dir))
-        btn_browse = QtWidgets.QPushButton("Ordner wechseln")
+        btn_browse = QtWidgets.QPushButton(
+            text_with_fallback(
+                self._texts,
+                "dialog.file_picker.change_directory",
+                "Ordner wechseln",
+            )
+        )
         btn_browse.clicked.connect(self._choose_directory)
-        header.addWidget(QtWidgets.QLabel("Ordner:"))
+        header.addWidget(
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self._texts, "dialog.file_picker.directory", "Ordner:"
+                )
+            )
+        )
         header.addWidget(self.path_edit, 1)
         header.addWidget(btn_browse)
 
@@ -101,17 +116,41 @@ class FilePickerDialog(QtWidgets.QDialog):
         )
         self.sort_combo.currentTextChanged.connect(self._apply_sort)
         self.search_edit = QtWidgets.QLineEdit()
-        self.search_edit.setPlaceholderText("Filter (Dateiname)")
+        self.search_edit.setPlaceholderText(
+            text_with_fallback(
+                self._texts,
+                "dialog.file_picker.search_placeholder",
+                "Filter (Dateiname)",
+            )
+        )
         self.search_edit.textChanged.connect(self._apply_filter)
         self.zoom_slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.zoom_slider.setRange(50, 250)
         self.zoom_slider.setValue(100)
         self.zoom_slider.valueChanged.connect(self._set_zoom_from_slider)
-        controls.addWidget(QtWidgets.QLabel("Sortieren:"))
+        controls.addWidget(
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self._texts, "dialog.file_picker.sort", "Sortieren:"
+                )
+            )
+        )
         controls.addWidget(self.sort_combo)
-        controls.addWidget(QtWidgets.QLabel("Suche:"))
+        controls.addWidget(
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self._texts, "dialog.file_picker.search", "Suche:"
+                )
+            )
+        )
         controls.addWidget(self.search_edit, 1)
-        controls.addWidget(QtWidgets.QLabel("Zoom:"))
+        controls.addWidget(
+            QtWidgets.QLabel(
+                text_with_fallback(
+                    self._texts, "dialog.file_picker.zoom", "Zoom:"
+                )
+            )
+        )
         controls.addWidget(self.zoom_slider)
 
         splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
@@ -154,11 +193,29 @@ class FilePickerDialog(QtWidgets.QDialog):
         splitter.setStretchFactor(1, 2)
 
         footer = QtWidgets.QHBoxLayout()
-        self.selected_label = QtWidgets.QLabel("0 ausgewählt")
-        self.ok_button = QtWidgets.QPushButton("Auswahl übernehmen")
+        self.selected_label = QtWidgets.QLabel(
+            text_with_fallback(
+                self._texts,
+                "dialog.file_picker.selected_count",
+                "0 ausgewählt",
+            )
+        )
+        self.ok_button = QtWidgets.QPushButton(
+            text_with_fallback(
+                self._texts,
+                "dialog.file_picker.apply_selection",
+                "Auswahl übernehmen",
+            )
+        )
         self.ok_button.setEnabled(False)
         self.ok_button.clicked.connect(self.accept)
-        cancel_button = QtWidgets.QPushButton("Abbrechen")
+        cancel_button = QtWidgets.QPushButton(
+            text_with_fallback(
+                self._texts,
+                "dialog.file_picker.cancel",
+                "Abbrechen",
+            )
+        )
         cancel_button.clicked.connect(self.reject)
         footer.addWidget(self.selected_label)
         footer.addStretch(1)
@@ -199,7 +256,13 @@ class FilePickerDialog(QtWidgets.QDialog):
 
     def _choose_directory(self) -> None:
         selected = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Ordner wählen", self.path_edit.text().strip()
+            self,
+            text_with_fallback(
+                self._texts,
+                "dialog.file_picker.choose_directory",
+                "Ordner wählen",
+            ),
+            self.path_edit.text().strip(),
         )
         if selected:
             self.current_dir = Path(selected)
