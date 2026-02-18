@@ -89,6 +89,13 @@ def test_build_theme_css_uses_focus_token() -> None:
     assert themes.THEME_TOKENS["Modern"]["focus_color"] in css
 
 
+def test_build_theme_css_adds_focus_style_for_table_cells() -> None:
+    css = themes._build_theme_css(themes.THEME_TOKENS["Modern"])
+    assert "QTableView::item:focus" in css
+    assert "QTreeView::item:focus" in css
+    assert "QListView::item:focus" in css
+
+
 def test_theme_includes_primary_action_button_states() -> None:
     for name, token_map in themes.THEME_TOKENS.items():
         css = themes._build_theme_css(token_map)
@@ -99,6 +106,13 @@ def test_theme_includes_primary_action_button_states() -> None:
         assert ":focus" in css, name
         assert "[readyPulse='a']" in css, name
         assert "[readyPulse='b']" in css, name
+
+
+def test_base_component_style_uses_font_relative_units() -> None:
+    css = themes.BASE_COMPONENT_STYLE
+    assert "min-height:2.4em" in css
+    assert "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit,QTextBrowser" in css
+    assert "font-size:1.7em" in css
 
 
 def test_choose_high_contrast_foreground_prefers_black_on_light_bg() -> None:
