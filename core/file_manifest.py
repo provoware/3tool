@@ -5,10 +5,11 @@ import hashlib
 import json
 import subprocess
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-MANIFEST_SCHEMA_VERSION = "1"
+MANIFEST_SCHEMA_VERSION = "2"
 
 
 @dataclass
@@ -33,6 +34,32 @@ def _tracked_files(project_root: Path) -> list[Path]:
     return sorted(files)
 
 
+def _tracked_blob_map(project_root: Path) -> dict[Path, dict[str, str]]:
+    result = subprocess.run(
+        ["git", "-C", str(project_root), "ls-files", "-s"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    blob_map: dict[Path, dict[str, str]] = {}
+    for raw_line in result.stdout.splitlines():
+        if not raw_line.strip():
+            continue
+        metadata, sep, rel_path = raw_line.partition("\t")
+        if not sep or not rel_path.strip():
+            continue
+        parts = metadata.strip().split()
+        if len(parts) != 3:
+            continue
+        mode, object_hash, stage = parts
+        blob_map[Path(rel_path)] = {
+            "git_mode": mode,
+            "git_blob": object_hash,
+            "git_stage": stage,
+        }
+    return blob_map
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -46,19 +73,34 @@ def _sha256(path: Path) -> str:
 
 def _manifest_file_map(
     entries: list[dict[str, object]],
-) -> dict[str, tuple[int, str]]:
-    mapped: dict[str, tuple[int, str]] = {}
+) -> dict[str, tuple[int, str, str, str, str]]:
+    mapped: dict[str, tuple[int, str, str, str, str]] = {}
     for entry in entries:
         path_value = entry.get("path")
         size_value = entry.get("size")
         sha_value = entry.get("sha256")
+        mode_value = entry.get("git_mode")
+        blob_value = entry.get("git_blob")
+        stage_value = entry.get("git_stage")
         if not isinstance(path_value, str) or not path_value.strip():
             continue
         if not isinstance(size_value, int):
             continue
         if not isinstance(sha_value, str) or not sha_value.strip():
             continue
-        mapped[path_value] = (size_value, sha_value)
+        if not isinstance(mode_value, str) or not mode_value.strip():
+            continue
+        if not isinstance(blob_value, str) or not blob_value.strip():
+            continue
+        if not isinstance(stage_value, str) or not stage_value.strip():
+            continue
+        mapped[path_value] = (
+            size_value,
+            sha_value,
+            mode_value,
+            blob_value,
+            stage_value,
+        )
     return mapped
 
 
@@ -69,19 +111,27 @@ def build_manifest(
 ) -> dict[str, object]:
     exclude = exclude or set()
     entries: list[dict[str, object]] = []
+    tracked_blob_map = _tracked_blob_map(project_root)
     for rel_path in _tracked_files(project_root):
         if rel_path in exclude:
             continue
         abs_path = project_root / rel_path
+        git_meta = tracked_blob_map.get(rel_path)
+        if git_meta is None:
+            continue
         entries.append(
             {
                 "path": rel_path.as_posix(),
                 "size": abs_path.stat().st_size,
                 "sha256": _sha256(abs_path),
+                "git_mode": git_meta["git_mode"],
+                "git_blob": git_meta["git_blob"],
+                "git_stage": git_meta["git_stage"],
             }
         )
     return {
         "schema_version": MANIFEST_SCHEMA_VERSION,
+        "generated_at_utc": datetime.now(tz=UTC).isoformat(),
         "files": entries,
     }
 

@@ -24,11 +24,19 @@ def test_write_and_verify_manifest(tmp_path: Path) -> None:
 
     manifest_path = tmp_path / "data/manifest/v1/project_files.json"
     file_manifest.write_manifest(tmp_path, manifest_path)
+    payload = file_manifest.json.loads(
+        manifest_path.read_text(encoding="utf-8")
+    )
 
     result = file_manifest.verify_manifest(tmp_path, manifest_path)
 
     assert result.ok
     assert result.details == []
+    assert payload["schema_version"] == file_manifest.MANIFEST_SCHEMA_VERSION
+    assert isinstance(payload.get("generated_at_utc"), str)
+    assert all("git_blob" in entry for entry in payload["files"])
+    assert all("git_mode" in entry for entry in payload["files"])
+    assert all("git_stage" in entry for entry in payload["files"])
 
 
 def test_verify_manifest_detects_change(tmp_path: Path) -> None:

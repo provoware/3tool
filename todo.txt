@@ -185,3 +185,5 @@
 - [x] Professional-Batch-CLI gehaertet: strikte Manifest-/Thread-Validierung, Debug-Logging, klare Laienfehler und automatische Tests ergänzt
 
 - [x] Weitere Modularisierung der responsiven Layoutlogik (Action-Reflow + Workflow-Mindestgroesse) in core/gui_logic zentralisiert, Eingabevalidierung gehaertet und Tests erweitert
+
+- [x] Datei-Manifest versioniert erweitert (Schema v2 mit Git-Blob/Mode/Stage + Zeitstempel) und Tests zur Versions-/Metadatenprüfung ergänzt
