@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -167,6 +167,32 @@ def test_validate_command_strips_parts() -> None:
         "-m",
         "pip",
     ]
+
+
+def test_tool_command_ok_accepts_binary_from_path(monkeypatch) -> None:
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _name: "/usr/bin/ruff"
+    )
+
+    assert qa_preflight._tool_command_ok("ruff", "python3") is True
+
+
+def test_tool_command_ok_falls_back_to_python_module(monkeypatch) -> None:
+    monkeypatch.setattr(qa_preflight.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(qa_preflight, "_run_quiet", lambda *_args: True)
+
+    assert qa_preflight._tool_command_ok("pytest", "python3") is True
+
+
+def test_tool_command_ok_rejects_empty_name() -> None:
+    with pytest.raises(ValueError):
+        qa_preflight._tool_command_ok("   ", "python3")
+
+
+def test_tool_command_ok_returns_false_for_unknown_tool(monkeypatch) -> None:
+    monkeypatch.setattr(qa_preflight.shutil, "which", lambda _name: None)
+
+    assert qa_preflight._tool_command_ok("not-supported", "python3") is False
 
 
 def test_print_novice_recovery_steps_prints_and_returns(
@@ -645,6 +671,43 @@ def test_run_preflight_validate_only_skips_install_and_repair(
     assert result == 0
     assert install_called["value"] is False
     assert repair_called["value"] is False
+
+
+def test_run_preflight_fails_when_tool_command_missing(
+    monkeypatch, tmp_path: Path
+) -> None:
+    req = tmp_path / "requirements-dev.txt"
+    req.write_text("pytest==9.0.2\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        qa_preflight.shutil, "which", lambda _cmd: "/usr/bin/python3"
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_ensure_pip_with_fallback",
+        lambda *_: (True, "pip ist bereit"),
+    )
+    monkeypatch.setattr(
+        qa_preflight,
+        "_network_any_reachable",
+        lambda *_: (True, "pypi.org:443"),
+    )
+    monkeypatch.setattr(qa_preflight, "_module_import_ok", lambda *_args: True)
+    monkeypatch.setattr(
+        qa_preflight,
+        "_install_requirements_with_fallback",
+        lambda *_args: (True, "ok"),
+    )
+    monkeypatch.setattr(qa_preflight, "_tool_command_ok", lambda *_args: False)
+    monkeypatch.setattr(
+        qa_preflight,
+        "_attempt_tool_repair",
+        lambda failed_tools, *_args: failed_tools,
+    )
+
+    result = qa_preflight.run_preflight(req, ["pytest"], "python3")
+
+    assert result == 1
 
 
 def test_write_preflight_report_writes_json(tmp_path: Path) -> None:
