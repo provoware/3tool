@@ -210,6 +210,7 @@
   - [ ] Splitter-Min/Max differenziert festlegen (Listen kleiner mit Scroll, Aktionen größer, Preview mit Stretch-Priorität)
   - [x] Vollständige Splitter-Persistenz pro Splitter mit saveState/restoreState inkl. Versionierung einführen
 
+- [x] Automatischen Kontrast-Check beim Theme-Laden (AA) mit Ersatz-Textfarbe und Tests umgesetzt
 - [ ] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
   - [ ] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
   - [ ] Fokusdarstellung auch für Tabellenzellen ergänzen
@@ -217,7 +218,7 @@
   - [ ] Tastatur-Sprunglinks ergänzen (z. B. „Zu Pairing“, „Zu Export“)
   - [ ] Screenreader-Rollen und Live-Statusfeld für kurze Status-/Fehlermeldungen ergänzen
   - [ ] Bei Fehlern Fokus auf Fehlkarte setzen und Kurztext vorlesen lassen
-  - [ ] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
+  - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
   - [ ] Großschrift-Modus als echten Modus umsetzen (Padding, Zeilenhöhe, Icons, Tooltip-Dauer, kein Text-Cutoff)
 
 - [ ] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“

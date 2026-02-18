@@ -375,28 +375,28 @@ THEME_DEFINITIONS: Sequence[Tuple[str, str]] = tuple(
     (name, _build_theme_css(tokens)) for name, tokens in THEME_TOKENS.items()
 )
 
+FALLBACK_FOREGROUND_CANDIDATES: Tuple[str, str] = ("#000000", "#ffffff")
+
 
 def load_themes(logger: Optional[logging.Logger] = None) -> Dict[str, str]:
-    """Lädt die Theme-Definitionen und warnt bei doppelten Namen."""
+    """Lädt Theme-Definitionen, behebt schwachen Kontrast und warnt bei Duplikaten."""
     active_logger = logger or logging.getLogger(__name__)
     themes: Dict[str, str] = {}
     duplicates: List[str] = []
-    for entry in THEME_DEFINITIONS:
-        if not isinstance(entry, tuple) or len(entry) != 2:
-            active_logger.warning(
-                "Theme-Eintrag ist ungueltig: %r (erwartet (Name, CSS))", entry
-            )
-            continue
-        name, css = entry
+    for name, raw_tokens in THEME_TOKENS.items():
         if not isinstance(name, str) or not name.strip():
             active_logger.warning("Theme-Name ist ungueltig: %r", name)
             continue
-        if not isinstance(css, str) or not css.strip():
-            active_logger.warning("Theme-CSS ist leer fuer: %r", name)
+        if not isinstance(raw_tokens, dict):
+            active_logger.warning("Theme-Tokenmap ist ungueltig fuer: %r", name)
             continue
         if name in themes:
             duplicates.append(name)
             continue
+        normalized_tokens = ensure_accessible_theme_tokens(
+            name, raw_tokens, active_logger
+        )
+        css = _build_theme_css(normalized_tokens)
         themes[name] = css
 
     if duplicates:
@@ -407,6 +407,86 @@ def load_themes(logger: Optional[logging.Logger] = None) -> Dict[str, str]:
 
     _warn_low_contrast(active_logger)
     return themes
+
+
+def ensure_accessible_theme_tokens(
+    theme_name: str,
+    tokens: Dict[str, str],
+    logger: Optional[logging.Logger] = None,
+) -> Dict[str, str]:
+    """Erzwingt Mindestkontrast und ersetzt schwache Schriftfarben automatisch."""
+    if not isinstance(theme_name, str) or not theme_name.strip():
+        raise ValueError("theme_name muss ein nicht-leerer String sein")
+    _validate_theme_tokens(tokens)
+    active_logger = logger or logging.getLogger(__name__)
+    adjusted_tokens = dict(tokens)
+    for section, (
+        fg_key,
+        bg_key,
+        minimum_ratio,
+    ) in CONTRAST_REQUIREMENTS.items():
+        current_ratio = _contrast_ratio(
+            adjusted_tokens[fg_key], adjusted_tokens[bg_key]
+        )
+        if current_ratio is None:
+            raise ValueError(
+                f"Theme '{theme_name}' hat ungueltige Farbe fuer '{section}'."
+            )
+        if current_ratio >= minimum_ratio:
+            continue
+        replacement = _choose_high_contrast_foreground(
+            adjusted_tokens[bg_key], minimum_ratio
+        )
+        if replacement is None:
+            active_logger.warning(
+                "Theme '%s': Kontrast fuer '%s' bleibt niedrig (%.2f:1). "
+                "Bitte Farben pruefen.",
+                theme_name,
+                section,
+                current_ratio,
+            )
+            continue
+        old_color = adjusted_tokens[fg_key]
+        adjusted_tokens[fg_key] = replacement
+        fixed_ratio = _contrast_ratio(replacement, adjusted_tokens[bg_key])
+        if fixed_ratio is None:
+            raise ValueError(
+                f"Theme '{theme_name}' konnte nicht fuer '{section}' normalisiert werden."
+            )
+        active_logger.warning(
+            "Theme '%s': Kontrast fuer '%s' war zu niedrig (%.2f:1). "
+            "Textfarbe wurde von %s auf %s gesetzt (neu %.2f:1).",
+            theme_name,
+            section,
+            current_ratio,
+            old_color,
+            replacement,
+            fixed_ratio,
+        )
+    return adjusted_tokens
+
+
+def _choose_high_contrast_foreground(
+    background: str, minimum_ratio: float
+) -> Optional[str]:
+    if not isinstance(background, str) or not background.strip():
+        return None
+    if not isinstance(minimum_ratio, float) and not isinstance(
+        minimum_ratio, int
+    ):
+        return None
+    best_candidate: Optional[Tuple[str, float]] = None
+    for candidate in FALLBACK_FOREGROUND_CANDIDATES:
+        ratio = _contrast_ratio(candidate, background)
+        if ratio is None:
+            continue
+        if best_candidate is None or ratio > best_candidate[1]:
+            best_candidate = (candidate, ratio)
+    if best_candidate is None:
+        return None
+    if best_candidate[1] < float(minimum_ratio):
+        return None
+    return best_candidate[0]
 
 
 def get_theme_tokens(name: str) -> Dict[str, str]:

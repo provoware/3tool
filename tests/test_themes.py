@@ -1,5 +1,9 @@
-import core.themes as themes
+import logging
 from pathlib import Path
+
+import pytest
+
+import core.themes as themes
 
 
 def test_theme_catalog_includes_accessible_profiles() -> None:
@@ -95,6 +99,32 @@ def test_theme_includes_primary_action_button_states() -> None:
         assert ":focus" in css, name
         assert "[readyPulse='a']" in css, name
         assert "[readyPulse='b']" in css, name
+
+
+def test_choose_high_contrast_foreground_prefers_black_on_light_bg() -> None:
+    selected = themes._choose_high_contrast_foreground("#fdf6e3", 7.0)
+    assert selected == "#000000"
+
+
+def test_choose_high_contrast_foreground_prefers_white_on_dark_bg() -> None:
+    selected = themes._choose_high_contrast_foreground("#101827", 7.0)
+    assert selected == "#ffffff"
+
+
+def test_ensure_accessible_theme_tokens_fixes_low_contrast(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    weak = dict(themes.THEME_TOKENS["Modern"])
+    weak["button_bg"] = "#ffffff"
+    weak["button_fg"] = "#f8f8f8"
+
+    caplog.set_level(logging.WARNING)
+    fixed = themes.ensure_accessible_theme_tokens("Test", weak)
+
+    ratio = themes._contrast_ratio(fixed["button_fg"], fixed["button_bg"])
+    assert ratio is not None
+    assert ratio >= themes.CONTRAST_REQUIREMENTS["button"][2]
+    assert "Kontrast fuer 'button' war zu niedrig" in caplog.text
 
 
 def test_gui_primary_action_has_no_hardcoded_button_colors() -> None:
