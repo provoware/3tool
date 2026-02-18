@@ -1,6 +1,7 @@
 # =========================================
 # QUICKSTART
-# Start (alles automatisch):   python3 videobatch_launcher.py
+# Start (bevorzugt):           python3 -m app --mode gui
+# Legacy (deprecated):         python3 videobatch_launcher.py
 # Edit mit micro:              micro videobatch_launcher.py
 # Venv löschen (Reset):        rm -rf .videotool_env
 # =========================================
@@ -421,37 +422,18 @@ def build_wizard():
     return Wizard, QtWidgets, QtCore, QtGui
 
 
-def main():
-    bootstrap_console()
+def main() -> int:
+    print(
+        "⚠️  videobatch_launcher.py ist deprecated. "
+        "Bitte nutzen: python3 -m app --mode gui"
+    )
+    from app import main as primary_main
 
-    try:
-        Wizard, QtWidgets, _, _ = build_wizard()
-    except Exception as e:
-        print("Qt konnte nicht geladen werden:", e)
-        sys.exit(1)
-
-    setup_logging(os.environ.get("VT_DEBUG") == "1")
-    app = QtWidgets.QApplication(sys.argv)
-    wiz = Wizard()
-    if wiz.exec() != QtWidgets.QDialog.Accepted:
-        sys.exit(0)
-
-    try:
-        import videobatch_gui as gui
-    except Exception as e:
-        print("Fehler beim Laden der Oberfl\u00e4che:", e)
-        sys.exit(1)
-
-    try:
-        w = gui.MainWindow()
-        w.show()
-        sys.exit(app.exec())
-    except Exception as e:
-        print("Fehler beim Start des Tools:", e)
-        if hasattr(gui, "LOG_FILE"):
-            print("Details stehen in", gui.LOG_FILE)
-        sys.exit(1)
+    forwarded_args = ["--mode", "gui"]
+    if os.environ.get("VT_DEBUG") == "1":
+        forwarded_args.append("--debug")
+    return int(primary_main(forwarded_args))
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
