@@ -20,7 +20,10 @@ def test_wizard_handle_results_updates_buttons(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     request.getfixturevalue("qapp")
@@ -58,7 +61,10 @@ def test_wizard_toggle_debug_signal_updates_env(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     request.getfixturevalue("qapp")
@@ -82,7 +88,10 @@ def test_wizard_fix_results_restarts_check(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     request.getfixturevalue("qapp")
@@ -118,7 +127,10 @@ def test_wizard_render_results_contains_next_steps(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     request.getfixturevalue("qapp")
