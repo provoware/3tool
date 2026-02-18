@@ -263,18 +263,18 @@
     },
     {
       "path": "data/texts/v1/de.json",
-      "size": 6274,
-      "sha256": "7456e076e566bd6f66b40e9267d956eb076dd915a0c45e4076d7d714c00456b9"
+      "size": 6301,
+      "sha256": "47f364cadbdd7143f92d93bbb050e4f049cd13057d8a910ca6445e3d26de3084"
     },
     {
       "path": "data/texts/v1/en.json",
-      "size": 6056,
-      "sha256": "f266417a823a064c197c3e6d21f9cae86c786c6cf05544ba174515678b70ab68"
+      "size": 6083,
+      "sha256": "9120705c97608bd1da78d8217035369d97ec4b09db3019d5859a49bbe8dd2d07"
     },
     {
       "path": "ereignislog.txt",
-      "size": 83308,
-      "sha256": "b15b6bb236a5832d537850e41175cca11a6b0b2581169fff537f43a61685fffc"
+      "size": 85507,
+      "sha256": "8737b73e5e6533c5be2fd5c27fbba487c3d94de7eea833bb2245f9c2a768bbf5"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -578,8 +578,8 @@
     },
     {
       "path": "tests/test_ui_texts.py",
-      "size": 2398,
-      "sha256": "1025cfad7f26de49b34a082337fb3e0006f6c4f090870536086bcc6db8ac439e"
+      "size": 2762,
+      "sha256": "29dd2d1e642caadce95520f644d1f99cfdef6b9582fc255aa32300bab9ebc332"
     },
     {
       "path": "tests/test_user_feedback.py",
@@ -598,8 +598,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 14500,
-      "sha256": "ea6f4ee3e8ea375525955697141cc8c8d231a0af6c8a6b8c55e0cde3d08cfe3a"
+      "size": 14781,
+      "sha256": "e3515a936981fc0bf25e048e4267181efa2e119e03338690b3fe5e25303b66b6"
     },
     {
       "path": "videobatch_extra.py",
@@ -613,8 +613,8 @@
     },
     {
       "path": "videobatch_gui.py",
-      "size": 151906,
-      "sha256": "c536797d428b64eb25d8505a71235cd626211f0eab2e496e7ea0264e2f4ec975"
+      "size": 154322,
+      "sha256": "517b311ccc5057f3c7beec7a475023015140f2d18204d78a5543619e759a5d72"
     },
     {
       "path": "videobatch_launcher.py",

@@ -175,3 +175,5 @@
 
 - [x] Fokuswechsel-Layout entkoppelt: activeSection-Highlight ohne hartes Rebalancing je Fokus, debounced Rebalance nur bei expliziten Layout-Events und UI-Test für stabile Geometrie ergänzt
 - [x] Tabellenlesbarkeit verbessert: klare Wrap-Strategie ohne Elide, adaptive Horizontal-Scroll-Regel und robuste Zeilenhoehen-Aktualisierung inkl. Test fuer lange Dateinamen
+- [x] DashboardHeader-UI-Text lokalisiert und Guard-Test gegen internen Namen ergänzt
+

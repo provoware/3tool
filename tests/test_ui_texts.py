@@ -82,3 +82,12 @@ def test_videobatch_gui_has_no_new_hardcoded_ui_tooltips_or_status_texts() -> (
             "Bitte Schlüssel in data/texts/v1/* anlegen und text_with_fallback nutzen. "
             f"Gefundenes Muster: {pattern}"
         )
+
+
+def test_videobatch_gui_does_not_show_internal_dashboard_header_name() -> None:
+    source = Path("videobatch_gui.py").read_text(encoding="utf-8")
+
+    assert 'QGroupBox("DashboardHeader")' not in source, (
+        "Interne Objekt-/Debug-Namen dürfen nicht als sichtbarer UI-Text erscheinen. "
+        "Bitte Textschlüssel in data/texts/v1/* verwenden."
+    )

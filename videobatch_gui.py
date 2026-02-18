@@ -1667,7 +1667,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._reflow_action_buttons(available_width=0)
         self.btn_box = action_buttons.box
 
-        dashboard_header = QtWidgets.QGroupBox("DashboardHeader")
+        dashboard_header = QtWidgets.QGroupBox(
+            self._ui_text("dashboard.header", "Dashboard")
+        )
         dashboard_header_layout = QtWidgets.QVBoxLayout(dashboard_header)
         dashboard_header_layout.setContentsMargins(8, 8, 8, 8)
         dashboard_header_layout.addWidget(self.dashboard)
