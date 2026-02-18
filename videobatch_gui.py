@@ -20,7 +20,7 @@ from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from PySide6 import QtCore, QtGui, QtMultimedia, QtWidgets
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, Signal
@@ -2435,23 +2435,36 @@ class MainWindow(QtWidgets.QMainWindow):
         w.setLayout(box)
         return w
 
-    def _reflow_action_buttons(self, available_width: int) -> None:
-        if not hasattr(self, "top_buttons_layout"):
-            return
-        wrappers = getattr(self, "_action_button_wrappers", [])
-        if not wrappers:
-            return
-        if not isinstance(available_width, int):
-            self._log(
-                "Interner Layout-Hinweis: verfügbare Breite ist ungültig, nutze sicheren Standard.",
-                logging.WARNING,
-            )
-            available_width = 0
-        while self.top_buttons_layout.count():
-            item = self.top_buttons_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.setParent(None)
+    def _action_buttons(self) -> Tuple[QtWidgets.QPushButton, ...]:
+        """Return all primary action buttons in one place."""
+        return (
+            self.btn_add_images,
+            self.btn_add_audios,
+            self.btn_auto_pair,
+            self.btn_clear,
+            self.btn_undo,
+            self.btn_save,
+            self.btn_load,
+            self.btn_encode,
+            self.btn_stop,
+            self.btn_wizard,
+            self.btn_out_open,
+        )
+
+    def _normalize_action_layout_width(self, available_width: int) -> int:
+        if isinstance(available_width, int):
+            return available_width
+        self._log(
+            "Interner Layout-Hinweis: verfügbare Breite ist ungültig, nutze sicheren Standard.",
+            logging.WARNING,
+        )
+        return 0
+
+    def _resolve_action_columns(
+        self,
+        wrappers: Sequence[QtWidgets.QWidget],
+        available_width: int,
+    ) -> Tuple[int, int]:
         spacing = max(self.top_buttons_layout.horizontalSpacing(), 0)
         margins = self.top_buttons_layout.contentsMargins()
         usable_width = max(
@@ -2471,6 +2484,42 @@ class MainWindow(QtWidgets.QMainWindow):
         columns = max(
             1,
             min(max_columns, usable_width // max(min_cell_width + spacing, 1)),
+        )
+        return columns, max_columns
+
+    def _compute_workflow_min_size(self) -> Tuple[int, int]:
+        base_font = self._font_size if isinstance(self._font_size, int) else 13
+        base_font = max(10, min(36, int(base_font)))
+        scale = max(1.0, base_font / 13.0)
+        min_width = int(
+            max(
+                self.WORKFLOW_SECTION_MIN_WIDTH,
+                min(460, self.WORKFLOW_SECTION_MIN_WIDTH * scale),
+            )
+        )
+        min_height = int(
+            max(
+                self.WORKFLOW_SECTION_MIN_HEIGHT,
+                min(340, self.WORKFLOW_SECTION_MIN_HEIGHT * scale),
+            )
+        )
+        return min_width, min_height
+
+    def _reflow_action_buttons(self, available_width: int) -> None:
+        if not hasattr(self, "top_buttons_layout"):
+            return
+        wrappers = getattr(self, "_action_button_wrappers", [])
+        if not wrappers:
+            return
+        available_width = self._normalize_action_layout_width(available_width)
+        while self.top_buttons_layout.count():
+            item = self.top_buttons_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+        columns, max_columns = self._resolve_action_columns(
+            wrappers,
+            available_width,
         )
         for i, wrapper in enumerate(wrappers):
             row = i // columns
@@ -3748,20 +3797,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_profile = resolve_interface_profile(profile, self.large_controls)
         font_size = self._font_size + ui_profile.log_font_delta
         height = ui_profile.control_height
-        buttons = [
-            self.btn_add_images,
-            self.btn_add_audios,
-            self.btn_auto_pair,
-            self.btn_clear,
-            self.btn_undo,
-            self.btn_save,
-            self.btn_load,
-            self.btn_encode,
-            self.btn_stop,
-            self.btn_wizard,
-            self.btn_out_open,
-        ]
-        for btn in buttons:
+        for btn in self._action_buttons():
             btn.setMinimumHeight(height)
             btn.setMinimumWidth(ui_profile.compact_button_min_width)
             btn.setFont(QtGui.QFont("DejaVu Sans", font_size))
@@ -3779,16 +3815,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_workflow_section_constraints(self) -> None:
         if not hasattr(self, "_workflow_sections"):
             return
-        base_font = max(10, min(36, int(self._font_size)))
-        scale = max(1.0, base_font / 13.0)
-        min_width = int(max(220, min(460, 220 * scale)))
-        min_height = int(max(170, min(340, 170 * scale)))
+        min_width, min_height = self._compute_workflow_min_size()
         for section in self._workflow_sections:
             section.setMinimumSize(min_width, min_height)
         logger.debug(
-            "Layout-Skalierung aktualisiert: font=%s scale=%.2f min=%sx%s",
-            base_font,
-            scale,
+            "Layout-Skalierung aktualisiert: font=%s min=%sx%s",
+            self._font_size,
             min_width,
             min_height,
         )
