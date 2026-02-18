@@ -1,86 +1,28 @@
-# Projekt-Richtlinien (Release-optimiert, barrierefrei, wartbar)
+# Projekt-Richtlinien (Darstellung, Flexibilität, Responsive Design)
 
-## 1) Pflichtregeln pro Iteration
+## Ziel und Geltungsbereich
+Diese Richtlinie fokussiert ausschließlich auf:
+- Darstellung (UI-Layout, visuelle Konsistenz)
+- grafische Flexibilität (Themes, Kontrast, Skalierung)
+- dynamische automatische Anpassbarkeit (DPI, Schriftgröße, Reflow)
+- Responsive Design (verschiedene Fenstergrößen, Breakpoints, Umbruch)
 
-- Bei **jeder** Änderung muss mindestens **eine offene Aufgabe** aus `todo.txt` vollständig erledigt werden.
-- Jede erledigte Aufgabe wird in `todo.txt` abgehakt **und** in `ereignislog.txt` protokolliert.
-- Der Commit-Kommentar nennt die erledigte(n) Aufgabe(n) eindeutig.
-- Pro Iteration wird mindestens eine Aufgabe abgeschlossen (kein reiner Zwischenstand).
+Alle bisher nicht direkt dazugehörigen Regeln wurden nach `agent_old.txt` verschoben.
 
-## 2) Arbeitsablauf vor/nach Änderungen
+## Pflichtstandards für UI/UX
+- Maximale Barrierefreiheit: hoher Kontrast, sichtbarer Fokus, vollständige Tastaturbedienung.
+- Einheitliche Abstände, Größen, Schrift-Hierarchien und Komponentenverhalten.
+- Mehrere Farbthemes mit verlässlichem Kontrastverhalten und klarer Lesbarkeit.
+- Keine rein farbliche Bedeutung ohne zusätzliche textliche Erklärung.
+- Dynamischer Reflow: Layout passt sich automatisch an Fenstergröße, DPI und Schrift-Skalierung an.
+- Responsive Komponenten dürfen keine wichtigen Bedienelemente verdecken.
 
-### Vor jeder Änderung (max. 5 Schritte)
-1. Kurze **Ist-Analyse** (aktueller Zustand, betroffene Module).
-2. **Risiko-Check** (Regressionen, Datenverlust, GUI-Blockaden, Abhängigkeitsrisiken).
-3. **Plan** mit maximal 5 Schritten.
+## Qualitätsvorgaben für Darstellungsänderungen
+- Für sichtbare Änderungen sind automatische UI-Tests zu pflegen/ergänzen.
+- Bei Änderungen an Themes/Kontrast sind Kontrast- und Lesbarkeitstests auszuführen.
+- Fehlerhinweise in einfacher Sprache mit nächstem Schritt und kopierbarem Befehl.
 
-### Nach jeder Änderung (Pflichtchecks)
-- `scripts/quality_check.sh`
-- `pytest`
-
-Bei Fehlern zuerst automatische Reparaturpfade verwenden, danach verständliches Nutzerfeedback ausgeben.
-
-## 3) Architektur-Standard (strikt)
-
-- Trennung der Verantwortungen:
-  - `core/` = Fachlogik, Validierung, wiederverwendbare Utilities
-  - `gui/` = Darstellung, Interaktion, asynchrone Worker/Controller
-  - `data/` = versionierte Daten (z. B. Texte, Manifeste)
-  - `scripts/` = QA, Build, Wartung, Automatisierung
-- **Konfiguration, variable Laufzeitdaten und Quellcode strikt trennen**.
-- Keine duplizierte Logik; gemeinsame Hilfsfunktionen zentral in `core/`.
-- Einheitliche Benennung, konsistente Abstände/Größen und UI-Elemente.
-
-## 4) Text- und UX-Standard
-
-- Nutzertexte modular und austauschbar in versionierten JSON-Dateien halten (`data/texts/<version>/<locale>.json`).
-- Klare, einfache Sprache; Fachwörter mit Kurz-Erklärung in Klammern.
-- Jeder Fehlertext enthält:
-  - Ursache (verständlich)
-  - Nächsten Schritt
-  - falls möglich kopierbaren Befehl
-- Debug-/Logging-Modus mit laienverständlichen Lösungsvorschlägen pflegen.
-
-## 5) Qualitäts- und Sicherheitsdisziplin
-
-- Jede Funktion validiert Eingaben defensiv (Typ, Wertebereich, leere Werte, unerwartete Formate).
-- Jeder erfolgreiche oder fehlgeschlagene Lauf erzeugt eindeutige Log-/Statusrückmeldung.
-- Keine Blockierung des GUI-Threads; längere Aufgaben asynchron (Thread/Worker).
-- Sichere Defaults, klare Fehlermeldungen, Recovery-Hinweise.
-
-## 6) Barrierefreiheit & Themes
-
-- Hoher Kontrast, klare Fokusmarkierung, vollständige Tastaturbedienbarkeit.
-- Mehrere Themes bereitstellen und Kontrastverhalten regelmäßig automatisch testen.
-- Wichtige Kennzahlen groß, klar und direkt sichtbar (Dashboard-Fokus).
-- Keine Farbcodierung ohne zusätzliche textliche Bedeutung.
-
-## 7) Startroutine & Self-Repair (vollautomatisch)
-
-- Startroutine prüft automatisiert:
-  - Python/venv
-  - benötigte Tools/Pakete
-  - Netz/Offline-Situation
-  - Schreibrechte und Projektpfade
-- Wenn möglich automatische Reparatur ausführen (inkl. Fallback-Strategien).
-- Nutzerfeedback mit klaren nächsten Schritten und konkreten Befehlen ausgeben.
-
-## 8) Release-Readiness (Definition of Done)
-
-Eine Änderung gilt erst als release-fähig, wenn:
-- Aufgabe in `todo.txt` abgehakt ist,
-- `ereignislog.txt` aktualisiert wurde,
-- Pflichtchecks (`scripts/quality_check.sh`, `pytest`) erfolgreich liefen,
-- betroffene Doku/Anleitungen konsistent sind,
-- bei UI-Änderungen Kontrast/Bedienbarkeit geprüft wurde.
-
-## 9) Arbeitspakete (Roadmap)
-
-1. **Ist-Analyse & Planung**
-   - Struktur, AGENTS, Risiken, Kurz-Roadmap.
-2. **Architektur ordnen**
-   - Module klar trennen (Core/Services/UI/CLI/Data), globale Zustände kapseln.
-3. **Qualitäts-Setup stabilisieren**
-   - Tests, Linting, Formatierung, Auto-Checks und Reproduzierbarkeit verbessern.
-4. **Release-Härtung**
-   - Auto-Repair, Nutzerfeedback, Doku-Konsistenz, reproduzierbare Release-Prüfung.
+## Wartbarkeit
+- Darstellungscode modular halten (`gui/`), wiederverwendbare Hilfen zentralisieren.
+- Konfiguration, variable Laufzeitdaten und Quellcode getrennt halten.
+- Konsistente Benennung und einheitliche UI-Standards in allen Ansichten.
