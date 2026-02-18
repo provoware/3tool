@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 logger = logging.getLogger("VideoBatchTool")
 
@@ -108,3 +108,167 @@ def format_human_size(path: Path) -> str:
     result = f"{value:.1f} {unit_list[idx]}"
     logger.debug("Dateigroesse formatiert: %s -> %s", path, result)
     return result
+
+
+def normalize_layout_width(available_width: object) -> int:
+    """Normalize width values for responsive layouts."""
+    width = parse_non_negative_int(
+        available_width,
+        "layout_breite",
+        default=0,
+    )
+    logger.debug("Layout-Breite validiert: %s", width)
+    return width
+
+
+def resolve_action_layout_columns(
+    *,
+    available_width: object,
+    minimum_widths: Sequence[int],
+    spacing: int,
+    margin_left: int,
+    margin_right: int,
+    button_label_width: int,
+) -> tuple[int, int]:
+    """Resolve responsive action-grid columns with strict input checks."""
+    safe_width = normalize_layout_width(available_width)
+    safe_spacing = parse_non_negative_int(spacing, "layout_abstand", default=0)
+    safe_margin_left = parse_non_negative_int(
+        margin_left,
+        "layout_rand_links",
+        default=0,
+    )
+    safe_margin_right = parse_non_negative_int(
+        margin_right,
+        "layout_rand_rechts",
+        default=0,
+    )
+    safe_button_label_width = parse_non_negative_int(
+        button_label_width,
+        "button_label_breite",
+        default=190,
+    )
+    sanitized_min_widths = [
+        parse_non_negative_int(value, "button_min_breite", default=190)
+        for value in minimum_widths
+    ]
+    usable_width = max(
+        safe_width - safe_margin_left - safe_margin_right,
+        240,
+    )
+    dynamic_min_width = max(160, safe_button_label_width + 60)
+    min_cell_width = max(
+        max(sanitized_min_widths, default=190),
+        dynamic_min_width,
+    )
+    max_columns = 4 if usable_width >= 1100 else 3
+    columns = max(
+        1,
+        min(
+            max_columns,
+            usable_width // max(min_cell_width + safe_spacing, 1),
+        ),
+    )
+    logger.debug(
+        "Action-Reflow: width=%s usable=%s columns=%s/%s",
+        safe_width,
+        usable_width,
+        columns,
+        max_columns,
+    )
+    return columns, max_columns
+
+
+def compute_workflow_min_size(
+    *,
+    font_size: object,
+    dpi_scale: object,
+    available_width: object,
+    available_height: object,
+    layout_columns: object,
+    splitter_handle_width: object,
+    splitter_count: object,
+    section_min_width: object,
+    section_min_height: object,
+) -> tuple[int, int]:
+    """Compute adaptive workflow minimum size (DPI + font aware)."""
+    safe_font = parse_non_negative_int(font_size, "schriftgroesse", default=13)
+    safe_font = max(10, min(36, int(safe_font)))
+    try:
+        parsed_dpi_scale = float(dpi_scale)
+    except (TypeError, ValueError):
+        parsed_dpi_scale = 1.0
+    safe_dpi_scale = max(parsed_dpi_scale, 1.0)
+    font_scale = max(1.0, safe_font / 13.0)
+    scale = max(safe_dpi_scale, font_scale)
+
+    safe_columns = max(
+        1,
+        parse_non_negative_int(layout_columns, "workflow_spalten", default=1),
+    )
+    safe_section_min_width = max(
+        280,
+        parse_non_negative_int(
+            section_min_width,
+            "workflow_min_breite",
+            default=280,
+        ),
+    )
+    safe_section_min_height = max(
+        220,
+        parse_non_negative_int(
+            section_min_height,
+            "workflow_min_hoehe",
+            default=220,
+        ),
+    )
+    safe_available_width = max(
+        parse_non_negative_int(available_width, "workflow_verfuegbare_breite", 480),
+        480,
+    )
+    safe_handle_width = parse_non_negative_int(
+        splitter_handle_width,
+        "splitter_handle_breite",
+        default=0,
+    )
+    safe_splitter_count = parse_non_negative_int(
+        splitter_count,
+        "splitter_anzahl",
+        default=0,
+    )
+    usable_width = max(
+        safe_available_width - (safe_handle_width * safe_splitter_count),
+        safe_section_min_width,
+    )
+    max_per_section = max(
+        safe_section_min_width,
+        int(usable_width / safe_columns),
+    )
+    dynamic_width = int(safe_section_min_width * scale)
+    min_width = min(
+        max_per_section,
+        max(safe_section_min_width, dynamic_width),
+    )
+
+    safe_available_height = max(
+        parse_non_negative_int(
+            available_height,
+            "workflow_verfuegbare_hoehe",
+            360,
+        ),
+        360,
+    )
+    max_per_section_h = max(safe_section_min_height, int(safe_available_height / 2))
+    dynamic_height = int(safe_section_min_height * scale)
+    min_height = min(
+        max_per_section_h,
+        max(safe_section_min_height, dynamic_height),
+    )
+    logger.debug(
+        "Workflow-Mindestgroesse: %sx%s (scale=%.2f, columns=%s)",
+        min_width,
+        min_height,
+        scale,
+        safe_columns,
+    )
+    return min_width, min_height
