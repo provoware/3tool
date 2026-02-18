@@ -1,4 +1,5 @@
 import core.themes as themes
+from pathlib import Path
 
 
 def test_theme_catalog_is_limited_to_four_profiles() -> None:
@@ -64,3 +65,22 @@ def test_build_theme_css_uses_focus_token() -> None:
     css = themes._build_theme_css(themes.THEME_TOKENS["Modern"])
     assert "QWidget:focus" in css
     assert themes.THEME_TOKENS["Modern"]["focus_color"] in css
+
+
+def test_theme_includes_primary_action_button_states() -> None:
+    for name, token_map in themes.THEME_TOKENS.items():
+        css = themes._build_theme_css(token_map)
+        assert "QPushButton[accentRole='primaryAction']{" in css, name
+        assert ":hover" in css, name
+        assert ":pressed" in css, name
+        assert ":disabled" in css, name
+        assert ":focus" in css, name
+        assert "[readyPulse='a']" in css, name
+        assert "[readyPulse='b']" in css, name
+
+
+def test_gui_primary_action_has_no_hardcoded_button_colors() -> None:
+    gui_source = Path("videobatch_gui.py").read_text(encoding="utf-8").lower()
+    forbidden = ["#005bbb", "#1e8e3e", "#27ae60", "color:white"]
+    for value in forbidden:
+        assert value not in gui_source

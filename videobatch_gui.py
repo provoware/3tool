@@ -33,7 +33,7 @@ from core.output_management import (
     transfer_with_validation,
 )
 from core.plugins import PluginManager
-from core.themes import load_themes
+from core.themes import get_theme_tokens, load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, human_time, probe_duration
@@ -949,28 +949,76 @@ class FavoriteListWidget(DropListWidget):
 
 
 class HelpPane(QtWidgets.QTextBrowser):
-    def __init__(self):
+    def __init__(self, theme_tokens: Optional[Dict[str, str]] = None):
         super().__init__()
+        self._theme_tokens: Dict[str, str] = dict(
+            theme_tokens or get_theme_tokens("Modern")
+        )
         self.setOpenExternalLinks(True)
         self.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHtml(self._html())
 
-    @staticmethod
-    def _guide_svg_data() -> str:
+    def set_theme_tokens(self, theme_tokens: Dict[str, str]) -> None:
+        if not isinstance(theme_tokens, dict):
+            logger.warning("Ungueltige Theme-Tokens fuer Hilfe-Bereich ignoriert.")
+            return
+        self._theme_tokens = dict(theme_tokens)
+        self.setHtml(self._html())
+
+    def _guide_svg_data(self) -> str:
+        fallback_tokens = get_theme_tokens("Modern")
+        info_bg = self._theme_tokens.get(
+            "preview_info_bg", fallback_tokens["preview_info_bg"]
+        )
+        info_border = self._theme_tokens.get(
+            "preview_info_border", fallback_tokens["preview_info_border"]
+        )
+        info_fg = self._theme_tokens.get(
+            "preview_info_fg", fallback_tokens["preview_info_fg"]
+        )
+        success_bg = self._theme_tokens.get(
+            "preview_success_bg", fallback_tokens["preview_success_bg"]
+        )
+        success_border = self._theme_tokens.get(
+            "preview_success_border",
+            fallback_tokens["preview_success_border"],
+        )
+        success_fg = self._theme_tokens.get(
+            "preview_success_fg", fallback_tokens["preview_success_fg"]
+        )
+        danger_bg = self._theme_tokens.get(
+            "preview_danger_bg", fallback_tokens["preview_danger_bg"]
+        )
+        danger_border = self._theme_tokens.get(
+            "preview_danger_border", fallback_tokens["preview_danger_border"]
+        )
+        danger_fg = self._theme_tokens.get(
+            "preview_danger_fg", fallback_tokens["preview_danger_fg"]
+        )
         svg = """
         <svg xmlns="http://www.w3.org/2000/svg" width="520" height="120">
-          <rect x="10" y="10" width="160" height="100" rx="10" fill="#e8f0fe" stroke="#1a73e8" stroke-width="2"/>
-          <rect x="180" y="10" width="160" height="100" rx="10" fill="#e6f4ea" stroke="#137333" stroke-width="2"/>
-          <rect x="350" y="10" width="160" height="100" rx="10" fill="#fce8e6" stroke="#c5221f" stroke-width="2"/>
-          <text x="90" y="55" font-size="14" text-anchor="middle" fill="#1a73e8">1. Bilder wählen</text>
-          <text x="260" y="55" font-size="14" text-anchor="middle" fill="#137333">2. Audios wählen</text>
-          <text x="430" y="55" font-size="14" text-anchor="middle" fill="#c5221f">3. Start</text>
-          <text x="90" y="80" font-size="11" text-anchor="middle" fill="#1a73e8">Fotos/Ordner</text>
-          <text x="260" y="80" font-size="11" text-anchor="middle" fill="#137333">MP3/WAV etc.</text>
-          <text x="430" y="80" font-size="11" text-anchor="middle" fill="#c5221f">Videos erzeugen</text>
+          <rect x="10" y="10" width="160" height="100" rx="10" fill="{info_bg}" stroke="{info_border}" stroke-width="2"/>
+          <rect x="180" y="10" width="160" height="100" rx="10" fill="{success_bg}" stroke="{success_border}" stroke-width="2"/>
+          <rect x="350" y="10" width="160" height="100" rx="10" fill="{danger_bg}" stroke="{danger_border}" stroke-width="2"/>
+          <text x="90" y="55" font-size="14" text-anchor="middle" fill="{info_fg}">1. Bilder wählen</text>
+          <text x="260" y="55" font-size="14" text-anchor="middle" fill="{success_fg}">2. Audios wählen</text>
+          <text x="430" y="55" font-size="14" text-anchor="middle" fill="{danger_fg}">3. Start</text>
+          <text x="90" y="80" font-size="11" text-anchor="middle" fill="{info_fg}">Fotos/Ordner</text>
+          <text x="260" y="80" font-size="11" text-anchor="middle" fill="{success_fg}">MP3/WAV etc.</text>
+          <text x="430" y="80" font-size="11" text-anchor="middle" fill="{danger_fg}">Videos erzeugen</text>
         </svg>
-        """.strip()
+        """.strip().format(
+            info_bg=info_bg,
+            info_border=info_border,
+            info_fg=info_fg,
+            success_bg=success_bg,
+            success_border=success_border,
+            success_fg=success_fg,
+            danger_bg=danger_bg,
+            danger_border=danger_border,
+            danger_fg=danger_fg,
+        )
         encoded = urllib.parse.quote(svg)
         return f"data:image/svg+xml;utf8,{encoded}"
 
@@ -1142,6 +1190,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings = QtCore.QSettings(
             str(SETTINGS_FILE), QtCore.QSettings.IniFormat
         )
+        self._current_theme_name = "Modern"
+        self._current_theme_tokens = get_theme_tokens(self._current_theme_name)
         self._font_size = self.settings.value("ui/font_size", 13, int)
         self.debug_mode = self.settings.value("ui/debug", False, bool)
         self.log_level = self.settings.value("log/level", "", str).upper()
@@ -1262,7 +1312,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.table.setWordWrap(True)
 
-        self.help_pane = HelpPane()
+        self.help_pane = HelpPane(self._current_theme_tokens)
         self.help_pane.setAccessibleName("Hilfe-Bereich")
         self.help_pane.setAccessibleDescription("Kurzanleitung zum Tool")
 
@@ -1737,6 +1787,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_save = QtWidgets.QPushButton("Projekt speichern")
         self.btn_load = QtWidgets.QPushButton("Projekt laden")
         self.btn_encode = QtWidgets.QPushButton("START")
+        self.btn_encode.setProperty("accentRole", "primaryAction")
+        self.btn_encode.setProperty("readyPulse", "off")
         self.btn_stop = QtWidgets.QPushButton("Stopp")
         self.btn_stop.setEnabled(False)
         self.btn_wizard = QtWidgets.QPushButton("Geführter Start")
@@ -1752,9 +1804,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
         self.btn_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen")
 
-        self.btn_encode.setStyleSheet(
-            "font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;"
-        )
         self._encode_ready_timer = QtCore.QTimer(self)
         self._encode_ready_timer.setInterval(500)
         self._encode_ready_timer.timeout.connect(
@@ -2083,9 +2132,27 @@ class MainWindow(QtWidgets.QMainWindow):
         if name not in THEMES:
             name = "Modern"
         css = THEMES.get(name, "")
+        self._current_theme_name = name
+        self._current_theme_tokens = get_theme_tokens(name)
         QtWidgets.QApplication.instance().setStyleSheet(css)
         self.settings.setValue("ui/theme", name)
+        if hasattr(self, "help_pane"):
+            self.help_pane.set_theme_tokens(self._current_theme_tokens)
+        self._sync_encode_button_state()
         self._log(f"Farbschema gewechselt: {name}")
+
+    def _sync_encode_button_state(self) -> None:
+        if not hasattr(self, "btn_encode"):
+            return
+        self.btn_encode.setProperty("accentRole", "primaryAction")
+        if self._encode_ready_timer.isActive():
+            pulse = "a" if self._encode_ready_on else "b"
+        else:
+            pulse = "off"
+        self.btn_encode.setProperty("readyPulse", pulse)
+        self.btn_encode.style().unpolish(self.btn_encode)
+        self.btn_encode.style().polish(self.btn_encode)
+        self.btn_encode.update()
 
     def _rebalance_workflow_layout(
         self, active_name: Optional[str] = None
@@ -2671,20 +2738,16 @@ class MainWindow(QtWidgets.QMainWindow):
         if pair_count > 0 and not self.btn_stop.isEnabled():
             if not self._encode_ready_timer.isActive():
                 self._encode_ready_timer.start()
+                self._encode_ready_on = False
         else:
             if self._encode_ready_timer.isActive():
                 self._encode_ready_timer.stop()
-            self.btn_encode.setStyleSheet(
-                "font-size:14pt;font-weight:bold;background:#005BBB;color:white;padding:4px 10px;"
-            )
+            self._encode_ready_on = False
+        self._sync_encode_button_state()
 
     def _toggle_encode_ready_style(self) -> None:
         self._encode_ready_on = not self._encode_ready_on
-        base = "font-size:14pt;font-weight:bold;color:white;padding:4px 10px;"
-        if self._encode_ready_on:
-            self.btn_encode.setStyleSheet(base + "background:#1E8E3E;")
-        else:
-            self.btn_encode.setStyleSheet(base + "background:#27AE60;")
+        self._sync_encode_button_state()
 
     def _refresh_structure_view(self) -> None:
         if not hasattr(self, "structure_tree"):

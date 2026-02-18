@@ -58,6 +58,25 @@ TOKEN_KEYS: Tuple[str, ...] = (
     "progress_border",
     "progress_chunk",
     "focus_color",
+    "action_primary_bg",
+    "action_primary_fg",
+    "action_primary_border",
+    "action_primary_hover",
+    "action_primary_pressed",
+    "action_primary_disabled_bg",
+    "action_primary_disabled_fg",
+    "action_primary_focus",
+    "action_ready_bg_a",
+    "action_ready_bg_b",
+    "preview_info_bg",
+    "preview_info_border",
+    "preview_info_fg",
+    "preview_success_bg",
+    "preview_success_border",
+    "preview_success_fg",
+    "preview_danger_bg",
+    "preview_danger_border",
+    "preview_danger_fg",
 )
 
 THEME_TOKENS: Dict[str, Dict[str, str]] = {
@@ -86,6 +105,25 @@ THEME_TOKENS: Dict[str, Dict[str, str]] = {
         "progress_border": "#b7bfcc",
         "progress_chunk": "#1a73e8",
         "focus_color": "#1a73e8",
+        "action_primary_bg": "#005bbb",
+        "action_primary_fg": "#ffffff",
+        "action_primary_border": "#004a96",
+        "action_primary_hover": "#0a6ed1",
+        "action_primary_pressed": "#004a96",
+        "action_primary_disabled_bg": "#7f9ec2",
+        "action_primary_disabled_fg": "#e9f1ff",
+        "action_primary_focus": "#ffbf00",
+        "action_ready_bg_a": "#1e8e3e",
+        "action_ready_bg_b": "#27ae60",
+        "preview_info_bg": "#e8f0fe",
+        "preview_info_border": "#1a73e8",
+        "preview_info_fg": "#1a73e8",
+        "preview_success_bg": "#e6f4ea",
+        "preview_success_border": "#137333",
+        "preview_success_fg": "#137333",
+        "preview_danger_bg": "#fce8e6",
+        "preview_danger_border": "#c5221f",
+        "preview_danger_fg": "#c5221f",
     },
     "Nachtblau Pro": {
         "widget_bg": "#101827",
@@ -112,6 +150,25 @@ THEME_TOKENS: Dict[str, Dict[str, str]] = {
         "progress_border": "#6ea7ff",
         "progress_chunk": "#6ea7ff",
         "focus_color": "#ffbf00",
+        "action_primary_bg": "#6ea7ff",
+        "action_primary_fg": "#081223",
+        "action_primary_border": "#9ec4ff",
+        "action_primary_hover": "#8fb9ff",
+        "action_primary_pressed": "#5d97e8",
+        "action_primary_disabled_bg": "#344865",
+        "action_primary_disabled_fg": "#b9cae3",
+        "action_primary_focus": "#ffbf00",
+        "action_ready_bg_a": "#38a169",
+        "action_ready_bg_b": "#48bb78",
+        "preview_info_bg": "#1f3252",
+        "preview_info_border": "#6ea7ff",
+        "preview_info_fg": "#9ec4ff",
+        "preview_success_bg": "#173a2a",
+        "preview_success_border": "#48bb78",
+        "preview_success_fg": "#9ae6b4",
+        "preview_danger_bg": "#4a1f28",
+        "preview_danger_border": "#fc8181",
+        "preview_danger_fg": "#feb2b2",
     },
     "Hochkontrast Hell": {
         "widget_bg": "#ffffff",
@@ -138,6 +195,25 @@ THEME_TOKENS: Dict[str, Dict[str, str]] = {
         "progress_border": "#000000",
         "progress_chunk": "#000000",
         "focus_color": "#ffbf00",
+        "action_primary_bg": "#000000",
+        "action_primary_fg": "#ffffff",
+        "action_primary_border": "#000000",
+        "action_primary_hover": "#1f2937",
+        "action_primary_pressed": "#111827",
+        "action_primary_disabled_bg": "#4b5563",
+        "action_primary_disabled_fg": "#f9fafb",
+        "action_primary_focus": "#ffbf00",
+        "action_ready_bg_a": "#000000",
+        "action_ready_bg_b": "#1f2937",
+        "preview_info_bg": "#ffffff",
+        "preview_info_border": "#000000",
+        "preview_info_fg": "#000000",
+        "preview_success_bg": "#ffffff",
+        "preview_success_border": "#000000",
+        "preview_success_fg": "#000000",
+        "preview_danger_bg": "#ffffff",
+        "preview_danger_border": "#000000",
+        "preview_danger_fg": "#000000",
     },
     "Hochkontrast Dunkel": {
         "widget_bg": "#000000",
@@ -164,6 +240,25 @@ THEME_TOKENS: Dict[str, Dict[str, str]] = {
         "progress_border": "#ffffff",
         "progress_chunk": "#ffffff",
         "focus_color": "#ffbf00",
+        "action_primary_bg": "#ffffff",
+        "action_primary_fg": "#000000",
+        "action_primary_border": "#ffffff",
+        "action_primary_hover": "#e5e7eb",
+        "action_primary_pressed": "#cbd5e1",
+        "action_primary_disabled_bg": "#6b7280",
+        "action_primary_disabled_fg": "#ffffff",
+        "action_primary_focus": "#ffbf00",
+        "action_ready_bg_a": "#ffffff",
+        "action_ready_bg_b": "#e5e7eb",
+        "preview_info_bg": "#000000",
+        "preview_info_border": "#ffffff",
+        "preview_info_fg": "#ffffff",
+        "preview_success_bg": "#000000",
+        "preview_success_border": "#ffffff",
+        "preview_success_fg": "#ffffff",
+        "preview_danger_bg": "#000000",
+        "preview_danger_border": "#ffffff",
+        "preview_danger_fg": "#ffffff",
     },
 }
 
@@ -198,6 +293,22 @@ def _build_theme_css(tokens: Dict[str, str]) -> str:
         f"QProgressBar{{background-color:{tokens['progress_bg']};color:{tokens['progress_fg']};border:2px solid {tokens['progress_border']};}} "
         f"QProgressBar::chunk{{background-color:{tokens['progress_chunk']};}} "
         f"QWidget:focus{{outline:2px solid {tokens['focus_color']};outline-offset:1px;}}"
+        f"QPushButton[accentRole='primaryAction']{{"
+        f"background-color:{tokens['action_primary_bg']};"
+        f"color:{tokens['action_primary_fg']};"
+        f"border:2px solid {tokens['action_primary_border']};"
+        "font-size:14pt;font-weight:bold;padding:4px 10px;"
+        "}} "
+        f"QPushButton[accentRole='primaryAction']:hover{{background-color:{tokens['action_primary_hover']};}} "
+        f"QPushButton[accentRole='primaryAction']:pressed{{background-color:{tokens['action_primary_pressed']};}} "
+        f"QPushButton[accentRole='primaryAction']:disabled{{"
+        f"background-color:{tokens['action_primary_disabled_bg']};"
+        f"color:{tokens['action_primary_disabled_fg']};"
+        f"border-color:{tokens['action_primary_disabled_bg']};"
+        "}} "
+        f"QPushButton[accentRole='primaryAction']:focus{{outline:2px solid {tokens['action_primary_focus']};outline-offset:1px;}} "
+        f"QPushButton[accentRole='primaryAction'][readyPulse='a']{{background-color:{tokens['action_ready_bg_a']};}} "
+        f"QPushButton[accentRole='primaryAction'][readyPulse='b']{{background-color:{tokens['action_ready_bg_b']};}}"
         + BASE_COMPONENT_STYLE
         + ACTIVE_SECTION_STYLE
     )
@@ -239,6 +350,12 @@ def load_themes(logger: Optional[logging.Logger] = None) -> Dict[str, str]:
 
     _warn_low_contrast(themes, active_logger)
     return themes
+
+
+def get_theme_tokens(name: str) -> Dict[str, str]:
+    if not isinstance(name, str) or name not in THEME_TOKENS:
+        return dict(THEME_TOKENS["Modern"])
+    return dict(THEME_TOKENS[name])
 
 
 def _warn_low_contrast(themes: Dict[str, str], logger: logging.Logger) -> None:
