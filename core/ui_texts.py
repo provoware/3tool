@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-
 ARCHIVE_VERSION = "v1"
 DEFAULT_LOCALE = "de"
 TEXT_ARCHIVE_DIR = Path(__file__).resolve().parent.parent / "data" / "texts"
@@ -54,3 +53,26 @@ def load_ui_texts(
 def text_with_fallback(texts: Dict[str, str], key: str, fallback: str) -> str:
     value = texts.get(key, "").strip()
     return value if value else fallback
+
+
+def text_with_format(
+    texts: Dict[str, str],
+    key: str,
+    fallback: str,
+    **values: Any,
+) -> str:
+    template = text_with_fallback(texts, key, fallback)
+    if not isinstance(template, str) or not template.strip():
+        raise ValueError("Textvorlage darf nicht leer sein.")
+    for field, field_value in values.items():
+        if not isinstance(field, str) or not field:
+            raise ValueError("Formatfelder muessen gueltige Namen haben.")
+        if field_value is None:
+            raise ValueError(f"Formatfeld '{field}' darf nicht None sein.")
+    try:
+        return template.format(**values)
+    except KeyError as exc:
+        missing = str(exc).strip("'")
+        raise ValueError(
+            f"Textvorlage '{key}' erwartet fehlendes Feld: {missing}."
+        ) from exc
