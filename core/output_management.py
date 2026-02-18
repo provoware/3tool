@@ -34,7 +34,9 @@ def classify_output_category(mode: str) -> str:
     return "tracks"
 
 
-def build_dated_output_dir(base_output_dir: Path, mode: str, now: datetime | None = None) -> Path:
+def build_dated_output_dir(
+    base_output_dir: Path, mode: str, now: datetime | None = None
+) -> Path:
     safe_base = validate_directory(base_output_dir)
     current = now or datetime.now()
     date_folder = current.strftime("%Y-%m-%d")
@@ -44,7 +46,9 @@ def build_dated_output_dir(base_output_dir: Path, mode: str, now: datetime | Non
     return output_dir
 
 
-def _build_target_path(source: Path, destination_dir: Path, suffix_label: str) -> Path:
+def _build_target_path(
+    source: Path, destination_dir: Path, suffix_label: str
+) -> Path:
     stem = linux_safe_stem(source.stem, "datei")
     suffix = source.suffix.lower() or ".dat"
     target = destination_dir / f"{stem}_{suffix_label}{suffix}"
@@ -79,7 +83,9 @@ def transfer_with_validation(
             source.unlink(missing_ok=True)
 
     target_exists = target.exists() and target.is_file()
-    source_size = source.stat().st_size if source.exists() else target.stat().st_size
+    source_size = (
+        source.stat().st_size if source.exists() else target.stat().st_size
+    )
     target_size = target.stat().st_size if target_exists else -1
     validated = target_exists and source_size == target_size
     detail = (

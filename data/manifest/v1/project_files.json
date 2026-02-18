@@ -137,6 +137,11 @@
       "sha256": "938118dc7e30202d4ccbd27115a743871ce74570579ba880bf639c622bde0f94"
     },
     {
+      "path": "core/output_management.py",
+      "size": 3119,
+      "sha256": "fb0f7abe42f516fd89191d99704581d306963b3e6e05f0f3a65df27d9959b0c8"
+    },
+    {
       "path": "core/paths.py",
       "size": 388,
       "sha256": "eb01a1ba01fd903530b86f480e7409229bef489ef6078b4c80c39ad8729cd147"
@@ -148,8 +153,8 @@
     },
     {
       "path": "core/qa_preflight.py",
-      "size": 30203,
-      "sha256": "b3826444bd2a8501aa00eb62467f2ab7a6ff289ae47a1bf4638f691a8c2676fa"
+      "size": 32210,
+      "sha256": "316a78499339f3314858eda653f98f27fb3d8d9011c8f8d644a80d5bad13d897"
     },
     {
       "path": "core/release_audit.py",
@@ -193,8 +198,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 69540,
-      "sha256": "34cb84f6464ea4d94a59074750284d325966014d29a18322dc277bfe8a6430ff"
+      "size": 70449,
+      "sha256": "c6340fe1cf05be5a9efdd4caa379af57bbbcceae3fabd98f0aa20e0aec22593d"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -307,14 +312,19 @@
       "sha256": "fbdb2e7cc89c2ea6af4cc51c87dcb1d9e9c47f5e8fb9712ad0505bf2a0c79826"
     },
     {
+      "path": "tests/test_output_management.py",
+      "size": 1735,
+      "sha256": "562ec41f37108cc93a38ed495dc06f4e5cf7475aec8c5d81e4d039c50f008804"
+    },
+    {
       "path": "tests/test_plugins.py",
       "size": 650,
       "sha256": "3ce448432a3bbe7d8e4d6285967a872c4ba3768135d917dc72edc17af7184050"
     },
     {
       "path": "tests/test_qa_preflight.py",
-      "size": 21464,
-      "sha256": "0de41709d14c15b79469ca8d9118c1e91a63fa1eb076411fb2767e40201111f2"
+      "size": 23477,
+      "sha256": "db482a7b6fc69eb003060747ffb224bd332d092c2cce3ba4c83e2b0166a731a0"
     },
     {
       "path": "tests/test_release_audit.py",
@@ -358,8 +368,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 12038,
-      "sha256": "1d395bdaa3b3ec3a1b384dc74e649c4582c6f9479fb2100b88712d5434a9bcd6"
+      "size": 12156,
+      "sha256": "77bedf7652b3383d607609b513eb25fadfde69cf3ef1e22c61051363b0b90064"
     },
     {
       "path": "videobatch_extra.py",

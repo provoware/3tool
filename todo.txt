@@ -152,3 +152,5 @@
 - [x] QA-Preflight: Bei fehlendem Python-Interpreter klare Schnelltest-Befehle (Version/which) als Nutzerhilfe und im JSON-Report ergänzen
 
 - [x] Ausgabe-Organisation auf Datumsordner mit Tracks/Musik erweitert, Transfer-Validierung ergänzt und Strukturansicht rekursiv für Unterordner-Ausgaben aktiviert
+
+- [x] QA-Preflight erweitert: Tool-Importpruefung um CLI-Kommando-Check mit Auto-Reparaturpfad und Tests abgesichert

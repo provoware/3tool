@@ -3,8 +3,8 @@ from __future__ import annotations
 import argparse
 import json
 import shlex
-import socket
 import shutil
+import socket
 import subprocess
 import sys
 import traceback
@@ -413,6 +413,29 @@ def _module_import_ok(module_name: str, python_cmd: str) -> bool:
     )
 
 
+def _tool_command_ok(tool_name: str, python_cmd: str) -> bool:
+    if not isinstance(tool_name, str) or not tool_name.strip():
+        raise ValueError("tool_name muss ein nicht-leerer String sein.")
+
+    normalized_tool = tool_name.strip()
+    interpreter = _validate_python_cmd(python_cmd)
+    binary_path = shutil.which(normalized_tool)
+    if binary_path:
+        return True
+
+    module_name = TOOL_MODULES.get(normalized_tool)
+    if module_name is None:
+        return False
+
+    return _run_quiet(
+        [interpreter, "-m", module_name, "--version"],
+        _validate_timeout_seconds(
+            IMPORT_TIMEOUT_SECONDS,
+            "IMPORT_TIMEOUT_SECONDS",
+        ),
+    )
+
+
 def _pip_available(python_cmd: str) -> bool:
     interpreter = _validate_python_cmd(python_cmd)
     return _run_quiet(
@@ -795,8 +818,44 @@ def run_preflight(
             tool_check_logged = True
 
         if tool_ready:
-            print_feedback("ok", f"Tool bereit: {tool}")
-            _push_check(f"tool:{tool}", "ok", "Import erfolgreich")
+            try:
+                command_ready = _tool_command_ok(tool, interpreter)
+            except (TypeError, ValueError, OSError) as exc:
+                command_ready = False
+                detail = _build_error_help(exc)
+                print_feedback(
+                    "warn",
+                    (
+                        "Tool-Startkommando konnte nicht geprüft werden: "
+                        f"{tool}"
+                    ),
+                )
+                print_debug(
+                    f"Tool-Kommando Fehlerdetail ({tool}): {detail}",
+                    debug_enabled,
+                )
+                _push_check(f"tool:{tool}:command", "warn", detail)
+
+            if command_ready:
+                print_feedback("ok", f"Tool bereit: {tool}")
+                _push_check(f"tool:{tool}", "ok", "Import erfolgreich")
+                _push_check(
+                    f"tool:{tool}:command",
+                    "ok",
+                    "Kommando verfügbar",
+                )
+            else:
+                if tool not in failed_tools:
+                    failed_tools.append(tool)
+                print_feedback(
+                    "warn",
+                    ("Tool installiert, aber Startkommando fehlt: " f"{tool}"),
+                )
+                _push_check(
+                    f"tool:{tool}:command",
+                    "warn",
+                    "Kommando nicht verfügbar",
+                )
         elif tool not in failed_tools:
             failed_tools.append(tool)
             print_feedback("warn", f"Tool nicht importierbar: {tool}")
