@@ -149,3 +149,4 @@
 - [x] Deklaratives Theme-Token-Schema fuer UI-Stile eingefuehrt und per Tests abgesichert
 
 - [x] Dashboard-Kennzahlen auf responsives 6-Karten-Layout (inkl. Bilder/Audios) erweitert und mit Reflow-Tests abgesichert
+- [x] QA-Preflight: Bei fehlendem Python-Interpreter klare Schnelltest-Befehle (Version/which) als Nutzerhilfe und im JSON-Report ergänzen

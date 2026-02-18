@@ -98,6 +98,17 @@ def _validate_python_cmd(python_cmd: str) -> str:
     return interpreter
 
 
+def _python_not_found_help(interpreter: str) -> list[str]:
+    validated_interpreter = _validate_python_cmd(interpreter)
+    quoted_interpreter = shlex.quote(validated_interpreter)
+    return [
+        "Python installieren oder korrekten Interpreterpfad mit --python setzen.",
+        "Schnelltest im Terminal:",
+        f"- {quoted_interpreter} --version",
+        f"- which {quoted_interpreter}",
+    ]
+
+
 def _validate_debug_mode(debug_mode: bool) -> bool:
     if not isinstance(debug_mode, bool):
         raise TypeError("debug_mode muss ein bool sein.")
@@ -632,10 +643,11 @@ def run_preflight(
     if shutil.which(interpreter) is None:
         print(f"❌ Python-Interpreter nicht gefunden: {interpreter}")
         print("💡 Bitte Python installieren oder den Interpreterpfad prüfen.")
+        print("💡 Schnelltest-Befehle:")
+        for step in _python_not_found_help(interpreter)[2:]:
+            print(step)
         _push_check("python", "error", f"Interpreter fehlt: {interpreter}")
-        report["help"] = [
-            "Python installieren oder korrekten Interpreterpfad mit --python setzen."
-        ]
+        report["help"] = _python_not_found_help(interpreter)
         _write_preflight_report(report_target, report)
         return 1
 
