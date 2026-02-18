@@ -157,3 +157,4 @@
 - [x] videobatch_gui.py in Module (gui/dialogs, gui/widgets, gui/controllers) aufgeteilt, Kernlogik nach core/gui_logic.py verschoben und Tests ergänzt
 
 - [x] Breite Exception-Faenger in GUI/Launcher/Core durch konkrete Ausnahmen mit klaren Laienhinweisen und Tests ersetzt
+- [x] Theme-Refactor: feste Button/Preview-Farben in videobatch_gui.py entfernt, zentrale Theme-Tokens (inkl. hover/pressed/disabled/focus) ergänzt und Tests erweitert
