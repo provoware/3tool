@@ -1005,6 +1005,7 @@ class MainWindow(QtWidgets.QMainWindow):
     WORKFLOW_STACK_GUARD_WIDTH = 860
     WORKFLOW_REBALANCE_DEBOUNCE_MS = 120
     WORKFLOW_REBALANCE_THRESHOLD_PX = 18
+    UI_RECALC_DEBOUNCE_MS = 150
 
     def __init__(self):
         super().__init__()
@@ -1043,6 +1044,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self._audio_player.setAudioOutput(self._audio_output)
         self._rebalance_request_id = 0
         self._rebalance_pending_force = False
+        self._pending_action_reflow = False
+        self._pending_table_row_resize = False
+        self._pending_hint_rewrap = False
+        self._ui_recalc_timer = QtCore.QTimer(self)
+        self._ui_recalc_timer.setSingleShot(True)
+        self._ui_recalc_timer.timeout.connect(self._run_debounced_ui_recalc)
         self._audio_output.setVolume(
             self.settings.value("ui/audio_preview_volume", 0.8, float)
         )
@@ -4007,10 +4014,49 @@ class MainWindow(QtWidgets.QMainWindow):
         self._schedule_table_row_resize()
 
     def _schedule_table_row_resize(self) -> None:
-        if not hasattr(self, "table") or self._table_row_resize_pending:
+        if not hasattr(self, "table"):
             return
-        self._table_row_resize_pending = True
-        QtCore.QTimer.singleShot(0, self._apply_table_row_heights)
+        self._schedule_ui_recalc(table_row_resize=True)
+
+    def _schedule_ui_recalc(
+        self,
+        *,
+        action_reflow: bool = False,
+        table_row_resize: bool = False,
+        hint_rewrap: bool = False,
+    ) -> None:
+        self._pending_action_reflow = (
+            self._pending_action_reflow or action_reflow
+        )
+        self._pending_table_row_resize = (
+            self._pending_table_row_resize or table_row_resize
+        )
+        self._pending_hint_rewrap = self._pending_hint_rewrap or hint_rewrap
+        self._ui_recalc_timer.start(self.UI_RECALC_DEBOUNCE_MS)
+
+    def _run_debounced_ui_recalc(self) -> None:
+        if self._pending_action_reflow and hasattr(self, "btn_box"):
+            self._reflow_action_buttons(self.btn_box.width())
+
+        if self._pending_table_row_resize:
+            self._table_row_resize_pending = True
+            self._apply_table_row_heights()
+
+        if self._pending_hint_rewrap:
+            self._rewrap_focus_hint_label()
+
+        self._pending_action_reflow = False
+        self._pending_table_row_resize = False
+        self._pending_hint_rewrap = False
+
+    def _rewrap_focus_hint_label(self) -> None:
+        if not hasattr(self, "focus_hint_label"):
+            return
+        parent = self.focus_hint_label.parentWidget()
+        if parent is None:
+            return
+        self.focus_hint_label.setMaximumWidth(max(280, parent.width() - 24))
+        self.focus_hint_label.updateGeometry()
 
     def _apply_table_row_heights(self) -> None:
         if not hasattr(self, "table"):
@@ -4042,8 +4088,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
         self._resize_columns()
-        action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
-        self._reflow_action_buttons(action_width)
+        self._schedule_ui_recalc(action_reflow=True, hint_rewrap=True)
         self._request_workflow_rebalance(force=False)
 
     def _table_menu(self, pos: QtCore.QPoint):

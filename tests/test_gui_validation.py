@@ -503,3 +503,47 @@ def test_splitter_state_is_saved_and_restored_per_splitter(
             abs(current - target) < clone.WORKFLOW_REBALANCE_THRESHOLD_PX
             for current, target in zip(current_sizes, target_sizes)
         )
+
+
+def test_resize_event_batches_ui_recalc_with_debounce(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    called = {"action": 0, "hint": 0}
+    original_reflow = win._reflow_action_buttons
+    original_rewrap = win._rewrap_focus_hint_label
+
+    def counted_reflow(available_width):
+        called["action"] += 1
+        return original_reflow(available_width)
+
+    def counted_rewrap():
+        called["hint"] += 1
+        return original_rewrap()
+
+    win._reflow_action_buttons = counted_reflow
+    win._rewrap_focus_hint_label = counted_rewrap
+
+    win.resize(1000, 760)
+    win.resize(1010, 760)
+    win.resize(1020, 760)
+
+    assert called["action"] == 0
+    assert called["hint"] == 0
+
+    qtbot.wait(win.UI_RECALC_DEBOUNCE_MS + 80)
+
+    assert called["action"] == 1
+    assert called["hint"] == 1
