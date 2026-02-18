@@ -193,3 +193,56 @@
 - [x] Dashboard- und Aktionskarten-Reflow gegen Textüberlagerung bei großer Schrift/DPI gehärtet und GUI-Tests ergänzt
 
 - [x] Start-Reparaturorchestrierung gehaertet: Eingaben/Check-Ergebnisse strikt validiert, laienfreundliche Naechstschritt-Hinweise ergänzt und Tests erweitert
+
+## Offene Punkte (neu)
+
+- [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
+  - [ ] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
+  - [ ] Workflow-Layout auf 2 Spalten umstellen (links Schritte, rechts Ergebnis/Preview) plus optionales Details/Log unten
+  - [ ] Tabellen auf Master-Detail-Pattern umstellen (kompakte Tabelle + Detailpanel)
+  - [ ] Breakpoint-Verhalten ohne Splitter-Orientierungswechsel umsetzen (Kompaktmodus via QStackedWidget)
+  - [ ] Adaptive Density als Einstellung einführen (kompakt/normal/groß mit proportionaler Skalierung)
+  - [ ] Visuelle Hierarchie erzwingen: Export-Button + Preview als sticky Bereich sichtbar halten
+
+- [ ] B) Dynamik & Reflow: Nutzer-Layout nicht sabotieren
+  - [ ] resizeEvent-Rebalance entfernen bzw. nur on-demand erlauben (Start/Reset/Breakpoint ohne gespeichertes Nutzerlayout)
+  - [ ] Debounce für UI-Neuberechnungen per QTimer (120–250 ms) für Reflow/Zeilenhöhen/Hint-Rewrap
+  - [ ] Splitter-Min/Max differenziert festlegen (Listen kleiner mit Scroll, Aktionen größer, Preview mit Stretch-Priorität)
+  - [ ] Vollständige Splitter-Persistenz pro Splitter mit saveState/restoreState inkl. Versionierung einführen
+
+- [ ] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
+  - [ ] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
+  - [ ] Fokusdarstellung auch für Tabellenzellen ergänzen
+  - [ ] Workflow-basierte Tab-Order vollständig definieren
+  - [ ] Tastatur-Sprunglinks ergänzen (z. B. „Zu Pairing“, „Zu Export“)
+  - [ ] Screenreader-Rollen und Live-Statusfeld für kurze Status-/Fehlermeldungen ergänzen
+  - [ ] Bei Fehlern Fokus auf Fehlkarte setzen und Kurztext vorlesen lassen
+  - [ ] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
+  - [ ] Großschrift-Modus als echten Modus umsetzen (Padding, Zeilenhöhe, Icons, Tooltip-Dauer, kein Text-Cutoff)
+
+- [ ] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“
+  - [ ] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
+  - [ ] Inline-Validierung mit Badges/Tooltips ausbauen, Dialoge nur für kritische Entscheidungen
+  - [ ] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzen
+  - [ ] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
+  - [ ] Undo/Redo für UI-Aktionen (Pairing-Änderungen, Entfernen, Auto-Pair) einführen
+
+- [ ] E) Robustheit & Codequalität
+  - [ ] Single Source of Truth mit zentralen Datenmodellen (ImagesModel, AudiosModel, PairsModel) ausbauen
+  - [ ] Klare Trennung in Services (LayoutService, ValidationService, PairingService, ExportService) weiterziehen
+  - [ ] Deterministische Layout-Defaults per Fensterverhältnis einführen (z. B. 35/30/35) statt setSizes([1,1,1])
+  - [ ] Layout-Messung auf sizeHint/minimumSizeHint/content-aware umstellen statt starrer Faktoren
+  - [ ] UI-Smoke-Tests für 800x600/1366x768/1920x1080, 150% Großschrift, Dark/Light ergänzen
+  - [ ] Fehlerzustände grafisch standardisieren (ErrorBanner, WarningBadge, SuccessToast)
+
+- [ ] High-Impact-Maßnahmen (Top 10)
+  - [ ] Rebalance aus resizeEvent entfernen oder strikt on-demand schalten
+  - [ ] Splitter-State pro Splitter persistieren und sauber wiederherstellen
+  - [ ] Kompaktmodus via QStackedWidget statt Orientation-Flip einführen
+  - [ ] Theme: starre Pixel-Min-Heights entfernen und skalierbar machen
+  - [ ] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen
+  - [ ] Workflow-Tab-Order verbindlich definieren
+  - [ ] Klickbares Status-Dashboard mit Ampel-Karten liefern
+  - [ ] Tabellen auf Master-Detail umstellen
+  - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren
+  - [ ] UI-Smoke-Tests für Auflösungen + Großschrift automatisieren
