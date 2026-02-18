@@ -739,3 +739,12 @@ def test_default_qa_tools_are_supported() -> None:
         qa_preflight._validate_tool_names(qa_preflight.DEFAULT_QA_TOOLS)
         == qa_preflight.DEFAULT_QA_TOOLS
     )
+
+
+def test_python_not_found_help_contains_actionable_commands() -> None:
+    steps = qa_preflight._python_not_found_help("python3")
+
+    assert "Interpreterpfad" in steps[0]
+    assert steps[1] == "Schnelltest im Terminal:"
+    assert steps[2] == "- python3 --version"
+    assert steps[3] == "- which python3"
