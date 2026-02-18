@@ -77,3 +77,23 @@ Damit sind Änderungen transparent nachvollziehbar.
 - UI-Texte in `data/texts/v1/de.json` versioniert ablegen.
 - Fehler stets verständlich melden und eine Lösung anbieten.
 - GUI-Thread nicht blockieren; lange Jobs asynchron ausführen.
+
+## Text-Workflow (UI-Texte zentral und austauschbar)
+
+1. **Neuen Text nur über Schlüssel anlegen**
+   - Text zuerst in `data/texts/v1/de.json` als Key ergänzen.
+   - Danach denselben Key in `data/texts/v1/en.json` pflegen.
+2. **Im Code immer Fallback nutzen**
+   - UI-Texte in der GUI nur über `text_with_fallback(...)` oder einen Helper
+     (z. B. `_ui_text`) abrufen.
+   - Keine neuen harten Strings in `QMessageBox`, `setToolTip` oder
+     `statusBar().showMessage` einbauen.
+3. **Formatfelder stabil halten**
+   - Platzhalter wie `{path}` oder `{count}` in allen Locales identisch halten.
+4. **Automatisch prüfen**
+   - Guard-Test: `tests/test_ui_texts.py` verhindert neue harte UI-Texte in
+     `videobatch_gui.py`.
+5. **Änderung validieren**
+   - Pflicht: `scripts/quality_check.sh` und `pytest` ausführen.
+
+Kurzregel: Erst JSON-Schlüssel, dann Codeverdrahtung, danach Tests.

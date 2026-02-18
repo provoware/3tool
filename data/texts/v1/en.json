@@ -1,29 +1,29 @@
 {
   "dashboard": {
-    "summary": "Datei-Übersicht",
-    "selection": "Auswahl: {selected_images} Bilder, {selected_audios} Audios",
+    "summary": "File Overview",
+    "selection": "Selection: {selected_images} images, {selected_audios} audios",
     "counts": {
-      "total": "Gesamt",
-      "done": "Fertig",
-      "errors": "Fehler",
-      "progress": "Fortschritt",
-      "images": "Bilder",
+      "total": "Total",
+      "done": "Done",
+      "errors": "Errors",
+      "progress": "Progress",
+      "images": "Images",
       "audios": "Audios"
     },
     "status": {
       "ffmpeg_ok": "ffmpeg: OK",
-      "ffmpeg_missing": "ffmpeg: FEHLT",
-      "env_ok": "Umgebung: OK",
-      "env_missing": "Umgebung: FEHLT"
+      "ffmpeg_missing": "ffmpeg: MISSING",
+      "env_ok": "Environment: OK",
+      "env_missing": "Environment: MISSING"
     }
   },
   "statusbar": {
-    "counts": "{images} Bilder | {audios} Audios | {pairs} Paare | Auswahl: {selected_images}B/{selected_audios}A"
+    "counts": "{images} images | {audios} audios | {pairs} pairs | Selection: {selected_images}I/{selected_audios}A"
   },
   "messages": {
-    "selection_images": "{count} Bild(er) ausgewählt",
-    "selection_audios": "{count} Audio(s) ausgewählt",
-    "path_copied": "Pfad kopiert"
+    "selection_images": "{count} image(s) selected",
+    "selection_audios": "{count} audio file(s) selected",
+    "path_copied": "Path copied"
   },
   "launcher": {
     "feedback": {
@@ -84,70 +84,70 @@
   },
   "ui": {
     "buttons": {
-      "open": "Öffnen",
-      "select": "Auswählen",
-      "cancel": "Abbrechen"
+      "open": "Open",
+      "select": "Select",
+      "cancel": "Cancel"
     },
     "tooltips": {
-      "open_output_dir": "Ausgabeordner im Dateimanager öffnen",
-      "select_default_project_dir": "Standard-Projektordner auswählen",
-      "processing_mode": "Verarbeitungsmodus wählen",
-      "clear_path_filter": "Pfad-Filter löschen",
-      "log_files_location": "Speicherort der Protokolldateien"
+      "open_output_dir": "Open output folder in file manager",
+      "select_default_project_dir": "Select default project folder",
+      "processing_mode": "Choose processing mode",
+      "clear_path_filter": "Clear path filter",
+      "log_files_location": "Location of log files"
     }
   },
   "menu": {
     "tooltips": {
-      "project_root": "Startordner für Dialoge festlegen",
-      "load_project": "Gespeichertes Projekt laden",
-      "save_project": "Projekt sichern",
-      "quit_app": "Programm schließen",
-      "font_increase": "Schriftgröße erhöhen",
-      "font_decrease": "Schriftgröße verkleinern",
-      "font_reset": "Schriftgröße zurücksetzen",
-      "copy_only": "Originaldateien behalten",
-      "enable_debug_log": "Detailiertes Protokoll aktivieren",
-      "show_documentation": "Dokumentation anzeigen",
-      "show_latest_logs": "Letzte Meldungen anzeigen",
-      "show_quick_help": "Kurzes Hilfefenster anzeigen",
-      "open_guided_wizard": "Schritt-für-Schritt-Assistent öffnen"
+      "project_root": "Set start folder for dialogs",
+      "load_project": "Load saved project",
+      "save_project": "Save project",
+      "quit_app": "Close application",
+      "font_increase": "Increase font size",
+      "font_decrease": "Decrease font size",
+      "font_reset": "Reset font size",
+      "copy_only": "Keep original files",
+      "enable_debug_log": "Enable detailed log",
+      "show_documentation": "Show documentation",
+      "show_latest_logs": "Show latest messages",
+      "show_quick_help": "Show quick help window",
+      "open_guided_wizard": "Open step-by-step wizard"
     }
   },
   "dialogs": {
     "output_dir_missing": {
-      "title": "Ausgabeordner fehlt",
-      "body": "Bitte zuerst einen Ausgabeordner festlegen."
+      "title": "Output folder missing",
+      "body": "Please set an output folder first."
     },
     "output_dir_invalid": {
-      "title": "Ausgabeordner fehlerhaft",
-      "body_prefix": "Ordner konnte nicht erstellt werden.\nUrsache: fehlende Rechte oder ungültiger Pfad.\nNächster Schritt: anderen Ordner wählen oder Rechte prüfen.\nBefehl: ls -ld '{path}'"
+      "title": "Output folder invalid",
+      "body_prefix": "Folder could not be created.\nCause: missing permissions or invalid path.\nNext step: choose another folder or check permissions.\nCommand: ls -ld '{path}'"
     },
     "default_project_dir": {
-      "title": "Standard-Projektordner auswählen"
+      "title": "Select default project folder"
     },
     "project_dir_invalid": {
-      "title": "Projektordner ungültig",
-      "body_prefix": "Der Ordner konnte nicht erstellt werden.\nUrsache: kein Zugriff oder ungültiger Pfad.\nNächster Schritt: anderen Ordner wählen.\nBefehl: mkdir -p '{path}'"
+      "title": "Project folder invalid",
+      "body_prefix": "The folder could not be created.\nCause: no access or invalid path.\nNext step: choose another folder.\nCommand: mkdir -p '{path}'"
     },
     "template_invalid": {
-      "title": "Template ungültig"
+      "title": "Template invalid"
     },
     "missing_images": {
-      "title": "Bilder fehlen",
-      "body": "Bitte zuerst Bilder auswählen.",
-      "info": "Tipp: Du kannst einzelne Dateien oder einen Ordner wählen.",
-      "choose_files": "Bilder wählen",
-      "choose_folder": "Bildordner wählen"
+      "title": "Images missing",
+      "body": "Please select images first.",
+      "info": "Tip: You can choose single files or a folder.",
+      "choose_files": "Choose images",
+      "choose_folder": "Choose image folder"
     },
     "missing_audios": {
-      "title": "Audios fehlen",
-      "body": "Bitte Audiodateien auswählen.",
-      "info": "Tipp: Ein Audio pro Bild, oder nutze den Modus 'Mehrere Audios, 1 Bild'.",
-      "choose_files": "Audios wählen",
-      "choose_folder": "Audioordner wählen"
+      "title": "Audios missing",
+      "body": "Please select audio files.",
+      "info": "Tip: One audio per image, or use mode 'Multiple Audios, 1 Image'.",
+      "choose_files": "Choose audios",
+      "choose_folder": "Choose audio folder"
     },
     "fallback_media": {
-      "title": "Fallback-Medien"
+      "title": "Fallback media"
     }
   }
 }

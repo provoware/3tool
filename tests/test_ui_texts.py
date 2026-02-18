@@ -61,3 +61,24 @@ def test_text_with_format_raises_for_missing_field() -> None:
         ui_texts.text_with_format(
             {"a.b": "Hallo {name}"}, "a.b", "Fallback", other="X"
         )
+
+
+def test_videobatch_gui_has_no_new_hardcoded_ui_tooltips_or_status_texts() -> (
+    None
+):
+    source = Path("videobatch_gui.py").read_text(encoding="utf-8")
+
+    forbidden_patterns = [
+        '.setToolTip("',
+        'statusBar().showMessage("',
+        'QMessageBox.information(self, "',
+        'QMessageBox.warning(self, "',
+        'QMessageBox.critical(self, "',
+    ]
+
+    for pattern in forbidden_patterns:
+        assert pattern not in source, (
+            "Neue UI-Texte dürfen nicht hartkodiert werden. "
+            "Bitte Schlüssel in data/texts/v1/* anlegen und text_with_fallback nutzen. "
+            f"Gefundenes Muster: {pattern}"
+        )
