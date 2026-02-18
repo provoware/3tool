@@ -162,6 +162,32 @@ def test_dashboard_metric_reflow_recovers_from_invalid_width(
     assert used_columns == {0}
 
 
+def test_dashboard_metric_cards_adapt_to_font_size_changes(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    old_height = dashboard._metric_cards[0].minimumHeight()
+    font = dashboard.font()
+    font.setPointSize(font.pointSize() + 6)
+    dashboard.setFont(font)
+    qtbot.wait(0)
+
+    new_height = dashboard._metric_cards[0].minimumHeight()
+    assert new_height >= old_height
+
+
 def test_dashboard_selection_counts_update_metric_labels(
     request, gui_runtime_available, gui_runtime_error
 ):

@@ -25,6 +25,8 @@ BASE_COMPONENT_STYLE = (
     "QFrame[dashboardCard='true']{border:1px solid #7a8699;border-radius:10px;padding:6px;} "
     "QLabel[metricLabel='true']{font-size:11px;font-weight:600;letter-spacing:0.3px;} "
     "QLabel[metricValue='true']{font-size:24px;font-weight:700;} "
+    "QFrame[actionTile='true']{border:1px solid #7a8699;border-radius:10px;} "
+    "QLabel[actionTileDetail='true']{font-size:12px;line-height:1.25;} "
     "QWidget[responsive='compact'] QPushButton,QWidget[responsive='compact'] QToolButton{min-height:28px;padding:4px 8px;} "
     "QWidget[responsive='expanded'] QPushButton,QWidget[responsive='expanded'] QToolButton{min-height:38px;padding:8px 14px;} "
 )
@@ -440,7 +442,11 @@ def validate_theme_contrast(
         raise ValueError(f"Unbekanntes Theme: {theme_name}")
     tokens = THEME_TOKENS[theme_name]
     report: Dict[str, Tuple[float, float, bool]] = {}
-    for section, (fg_key, bg_key, minimum_ratio) in CONTRAST_REQUIREMENTS.items():
+    for section, (
+        fg_key,
+        bg_key,
+        minimum_ratio,
+    ) in CONTRAST_REQUIREMENTS.items():
         ratio = _contrast_ratio(tokens[fg_key], tokens[bg_key])
         if ratio is None:
             raise ValueError(

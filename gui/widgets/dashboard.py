@@ -96,6 +96,7 @@ class InfoDashboard(QtWidgets.QWidget):
             ]
         )
         self._reflow_metric_cards(self.width())
+        self._refresh_metric_card_sizes()
 
         status_row = QtWidgets.QHBoxLayout()
         status_row.setSpacing(10)
@@ -112,6 +113,12 @@ class InfoDashboard(QtWidgets.QWidget):
         lay.addWidget(self.mini_log)
         self.set_selection_counts(0, 0)
 
+    def changeEvent(self, event: QtCore.QEvent) -> None:
+        super().changeEvent(event)
+        if event.type() == QtCore.QEvent.Type.FontChange:
+            self._refresh_metric_card_sizes()
+            self._reflow_metric_cards(self.width())
+
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
         self._reflow_metric_cards(event.size().width())
@@ -122,17 +129,21 @@ class InfoDashboard(QtWidgets.QWidget):
             self.cards_layout.takeAt(0)
         for index, card in enumerate(self._metric_cards):
             self.cards_layout.addWidget(card, index // columns, index % columns)
+        for index in range(columns):
+            self.cards_layout.setColumnStretch(index, 1)
 
     def _build_metric_card(
         self, title: str, value_label: QtWidgets.QLabel
     ) -> QtWidgets.QFrame:
         title_label = QtWidgets.QLabel(title)
         title_label.setProperty("metricLabel", True)
+        title_label.setWordWrap(True)
         value_label.setProperty("metricValue", True)
         value_label.setAlignment(
             QtCore.Qt.AlignmentFlag.AlignLeft
             | QtCore.Qt.AlignmentFlag.AlignVCenter
         )
+        value_label.setMinimumWidth(0)
 
         card = QtWidgets.QFrame()
         card.setProperty("dashboardCard", True)
@@ -141,11 +152,18 @@ class InfoDashboard(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Policy.Preferred,
         )
         lay = QtWidgets.QVBoxLayout(card)
-        lay.setContentsMargins(8, 6, 8, 6)
-        lay.setSpacing(2)
+        lay.setContentsMargins(10, 8, 10, 8)
+        lay.setSpacing(4)
         lay.addWidget(title_label)
         lay.addWidget(value_label)
         return card
+
+    def _refresh_metric_card_sizes(self) -> None:
+        metric_height = QtGui.QFontMetrics(self.progress_value.font()).height()
+        label_height = QtGui.QFontMetrics(self.selection_label.font()).height()
+        card_min_height = max(76, metric_height + label_height + 24)
+        for card in self._metric_cards:
+            card.setMinimumHeight(card_min_height)
 
     def set_counts(self, t: object, d: object, e: object) -> None:
         total = parse_non_negative_int(t, "gesamt")
