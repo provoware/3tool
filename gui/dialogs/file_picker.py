@@ -10,6 +10,15 @@ from core.gui_logic import format_human_size
 from core.utils import human_time, probe_duration
 
 MAX_PREVIEW_CACHE_ITEMS = 180
+MIN_FONT_POINT_SIZE = 8
+BASE_DIALOG_WIDTH_EM = 68
+BASE_DIALOG_HEIGHT_EM = 42
+BASE_PREVIEW_WIDTH_EM = 30
+BASE_PREVIEW_HEIGHT_EM = 17
+BASE_PREVIEW_MIN_HEIGHT_EM = 12
+PREVIEW_MIN_SIDE_PX = 180
+MIN_DIALOG_WIDTH_PX = 720
+MIN_DIALOG_HEIGHT_PX = 520
 
 
 def make_thumb(path: str, size: Tuple[int, int] = (160, 90)) -> QtGui.QPixmap:
@@ -53,7 +62,10 @@ class FilePickerDialog(QtWidgets.QDialog):
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.resize(1100, 700)
+        self._base_preview_size = QtCore.QSize(640, 360)
+        base_dialog_size = self._scaled_dialog_size()
+        self.resize(base_dialog_size)
+        self.setMinimumSize(self._scaled_minimum_dialog_size())
         self.setModal(True)
         self._suffixes = tuple(s.lower() for s in suffixes)
         self._mode = mode
@@ -102,6 +114,10 @@ class FilePickerDialog(QtWidgets.QDialog):
 
         splitter = QtWidgets.QSplitter(Qt.Horizontal)
         self.file_list = QtWidgets.QTreeWidget()
+        self.file_list.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         self.file_list.setHeaderLabels(["Auswahl", "Datei", "Größe"])
         self.file_list.setRootIsDecorated(False)
         self.file_list.itemChanged.connect(self._on_item_changed)
@@ -109,9 +125,19 @@ class FilePickerDialog(QtWidgets.QDialog):
         self.file_list.installEventFilter(self)
 
         preview_wrap = QtWidgets.QWidget()
+        preview_wrap.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         preview_layout = QtWidgets.QVBoxLayout(preview_wrap)
         self.preview_label = PreviewLabel("Vorschau")
-        self.preview_label.setMinimumHeight(280)
+        self.preview_label.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.preview_label.setMinimumHeight(
+            self._scaled_length(BASE_PREVIEW_MIN_HEIGHT_EM, PREVIEW_MIN_SIDE_PX)
+        )
         self.preview_label.setAlignment(Qt.AlignCenter)
         self.preview_label.zoom_changed.connect(self._adjust_zoom)
         self.preview_info = QtWidgets.QPlainTextEdit()
@@ -121,6 +147,9 @@ class FilePickerDialog(QtWidgets.QDialog):
 
         splitter.addWidget(self.file_list)
         splitter.addWidget(preview_wrap)
+        splitter.setChildrenCollapsible(False)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 2)
 
         footer = QtWidgets.QHBoxLayout()
         self.selected_label = QtWidgets.QLabel("0 ausgewählt")
@@ -160,6 +189,12 @@ class FilePickerDialog(QtWidgets.QDialog):
                 return True
         return super().eventFilter(obj, event)
 
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        current_item = self.file_list.currentItem()
+        if current_item is not None and self._mode != "audio":
+            self._update_preview(current_item)
+
     def _choose_directory(self) -> None:
         selected = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Ordner wählen", self.path_edit.text().strip()
@@ -168,6 +203,55 @@ class FilePickerDialog(QtWidgets.QDialog):
             self.current_dir = Path(selected)
             self.path_edit.setText(selected)
             self._load_files()
+
+    def _font_point_size(self) -> int:
+        font = self.font()
+        point_size = font.pointSize()
+        if point_size <= 0:
+            point_size = font.pixelSize()
+        if point_size <= 0:
+            point_size = MIN_FONT_POINT_SIZE
+        return max(MIN_FONT_POINT_SIZE, point_size)
+
+    def _dpi_scale(self) -> float:
+        screen = self.screen() or QtWidgets.QApplication.primaryScreen()
+        if screen is None:
+            return 1.0
+        screen_dpi = max(1.0, screen.logicalDotsPerInchX())
+        return max(1.0, self.logicalDpiX() / screen_dpi)
+
+    def _scaled_length(self, em_units: int, min_px: int = 1) -> int:
+        em_int = em_units if isinstance(em_units, int) else 1
+        em_int = max(1, em_int)
+        return max(
+            min_px, int(em_int * self._font_point_size() * self._dpi_scale())
+        )
+
+    def _scaled_dialog_size(self) -> QtCore.QSize:
+        return QtCore.QSize(
+            self._scaled_length(BASE_DIALOG_WIDTH_EM),
+            self._scaled_length(BASE_DIALOG_HEIGHT_EM),
+        )
+
+    def _scaled_minimum_dialog_size(self) -> QtCore.QSize:
+        return QtCore.QSize(
+            self._scaled_length(48, MIN_DIALOG_WIDTH_PX),
+            self._scaled_length(26, MIN_DIALOG_HEIGHT_PX),
+        )
+
+    def _update_base_preview_size(self) -> None:
+        preview_rect = self.preview_label.contentsRect()
+        fallback = QtCore.QSize(
+            self._scaled_length(BASE_PREVIEW_WIDTH_EM, PREVIEW_MIN_SIDE_PX),
+            self._scaled_length(BASE_PREVIEW_HEIGHT_EM, PREVIEW_MIN_SIDE_PX),
+        )
+        if preview_rect.width() <= 0 or preview_rect.height() <= 0:
+            available_size = fallback
+        else:
+            available_size = preview_rect.size()
+        width = max(PREVIEW_MIN_SIDE_PX, available_size.width())
+        height = max(PREVIEW_MIN_SIDE_PX, available_size.height())
+        self._base_preview_size = QtCore.QSize(width, height)
 
     def _load_files(self) -> None:
         entered = Path(self.path_edit.text().strip())
@@ -270,15 +354,23 @@ class FilePickerDialog(QtWidgets.QDialog):
             self.preview_label.setText("Audio-Vorschau: Doppelklick in Liste")
             self.preview_label.setPixmap(QtGui.QPixmap())
         else:
+            self._update_base_preview_size()
             if str(path) not in self._image_preview_cache:
                 self._cache_image_preview(
-                    str(path), make_thumb(str(path), size=(640, 360))
+                    str(path),
+                    make_thumb(
+                        str(path),
+                        size=(
+                            self._base_preview_size.width(),
+                            self._base_preview_size.height(),
+                        ),
+                    ),
                 )
             pix = self._image_preview_cache[str(path)]
             self.preview_label.setPixmap(
                 pix.scaled(
-                    int(640 * self._zoom),
-                    int(360 * self._zoom),
+                    int(self._base_preview_size.width() * self._zoom),
+                    int(self._base_preview_size.height() * self._zoom),
                     Qt.KeepAspectRatio,
                     Qt.SmoothTransformation,
                 )
