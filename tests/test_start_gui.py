@@ -1,21 +1,15 @@
 import start_gui
-from core.config import apply_simple_mode_defaults, cfg
+from core.config import Config, apply_simple_mode_defaults
 
 
 def test_simple_mode_defaults_applied() -> None:
-    cfg.default_width = 1920
-    cfg.default_height = 1080
-    cfg.default_crf = 23
-    cfg.default_preset = "ultrafast"
-    cfg.simple_mode = False
+    updated = apply_simple_mode_defaults(Config())
 
-    apply_simple_mode_defaults()
-
-    assert cfg.simple_mode is True
-    assert cfg.default_width == 1280
-    assert cfg.default_height == 720
-    assert cfg.default_crf == 24
-    assert cfg.default_preset == "veryfast"
+    assert updated.simple_mode is True
+    assert updated.default_width == 1280
+    assert updated.default_height == 720
+    assert updated.default_crf == 24
+    assert updated.default_preset == "veryfast"
 
 
 def test_all_blocking_ok() -> None:

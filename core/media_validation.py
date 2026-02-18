@@ -58,7 +58,9 @@ def validate_media_pair(
             return ValidationResult(False, "Ungültiges Bild- oder Videoformat")
 
     if not os.access(audio_file, os.R_OK):
-        return ValidationResult(False, "Audiodatei ist nicht lesbar (keine Rechte)")
+        return ValidationResult(
+            False, "Audiodatei ist nicht lesbar (keine Rechte)"
+        )
     if audio_file.suffix.lower() not in AUDIO_EXTENSIONS:
         return ValidationResult(False, "Ungültiges Audioformat")
 

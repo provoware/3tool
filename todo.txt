@@ -168,3 +168,4 @@
 - [x] GUI-/Start-Architektur weiter modularisiert: videobatch_gui Helfer in Services/Views/State ausgelagert, Start-Routine in Startup-Interfaces getrennt und Import-Seiteneffekte testbar reduziert
 
 - [x] Primäres Startkommando `python3 -m app` eingeführt, Bootstrap zentralisiert, Legacy-Startwege auf Hauptpfad umgeleitet, Doku vereinheitlicht und Smoke-Tests je Startmodus ergänzt
+- [x] Konfigurationsmodell versioniert (schema_version), Migration v1->v2 mit Backup/Rollback umgesetzt und globale Config-Mutationen auf Session-Laden/Speichern umgestellt

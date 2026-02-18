@@ -3,17 +3,20 @@ from __future__ import annotations
 import argparse
 import importlib
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Callable
 
 from core.bootstrap import BootstrapError, run_bootstrap
-from core.config import apply_simple_mode_defaults, cfg
+from core.config import apply_simple_mode_defaults, load_config, save_config
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 REQUIRED_FILES = ("videobatch_gui.py", "videobatch_extra.py")
 
 
-def _import_callable(module_name: str, callable_name: str) -> Callable[[], int | None]:
+def _import_callable(
+    module_name: str, callable_name: str
+) -> Callable[[], int | None]:
     root = str(PROJECT_ROOT)
     if root not in sys.path:
         sys.path.insert(0, root)
@@ -36,7 +39,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="gui",
         help="Startmodus: gui (Standard) oder cli.",
     )
-    parser.add_argument("--debug", action="store_true", help="Debug-Logging aktivieren.")
+    parser.add_argument(
+        "--debug", action="store_true", help="Debug-Logging aktivieren."
+    )
     parser.add_argument(
         "--simple-mode",
         action="store_true",
@@ -50,11 +55,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def run_mode(mode: str, debug: bool, simple_mode: bool, smoke_only: bool) -> int:
+def run_mode(
+    mode: str, debug: bool, simple_mode: bool, smoke_only: bool
+) -> int:
+    config = load_config()
+    if config.debug != debug:
+        config = replace(config, debug=debug)
     if simple_mode:
-        apply_simple_mode_defaults()
-        cfg.simple_mode = True
-    run_bootstrap(PROJECT_ROOT, REQUIRED_FILES, debug)
+        config = apply_simple_mode_defaults(config)
+    save_config(config)
+    run_bootstrap(PROJECT_ROOT, REQUIRED_FILES, config.debug)
     if smoke_only:
         return 0
 
@@ -70,9 +80,10 @@ def run_mode(mode: str, debug: bool, simple_mode: bool, smoke_only: bool) -> int
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    cfg.debug = args.debug
     try:
-        return run_mode(args.mode, args.debug, args.simple_mode, args.smoke_only)
+        return run_mode(
+            args.mode, args.debug, args.simple_mode, args.smoke_only
+        )
     except BootstrapError as exc:
         print(f"❌ {exc}")
         return 1

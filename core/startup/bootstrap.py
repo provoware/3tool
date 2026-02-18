@@ -12,7 +12,9 @@ REQUIRED_FILES = ("videobatch_gui.py", "videobatch_extra.py")
 def ensure_project_files(project_root: Path) -> list[str]:
     if not isinstance(project_root, Path):
         raise TypeError("project_root muss ein Path sein")
-    return [name for name in REQUIRED_FILES if not (project_root / name).exists()]
+    return [
+        name for name in REQUIRED_FILES if not (project_root / name).exists()
+    ]
 
 
 def prepare_runtime_dirs() -> dict[str, Path]:

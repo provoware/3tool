@@ -102,14 +102,24 @@
       "sha256": "eb7d540da592e398309362d3a06a72ee39ce603320bc12fc790cd22a534b5f1b"
     },
     {
+      "path": "app.py",
+      "size": 2694,
+      "sha256": "53662d8f3e34f8d6c93438869d318c949f0d9d50b2e40be0b7071f598fe1f637"
+    },
+    {
       "path": "core/__init__.py",
       "size": 87,
       "sha256": "1033763afea1e78b1cff483e16fdc784fb289ce2c6d73dd8386e4a5a676e448c"
     },
     {
+      "path": "core/bootstrap.py",
+      "size": 3501,
+      "sha256": "7bd80d42a197f69761831f543a9d45b9301ef390fc3aef232c95e49d76a49b0a"
+    },
+    {
       "path": "core/config.py",
-      "size": 519,
-      "sha256": "e97a1f437d612c82bc92adcd764ca1658edcc45293f383ba1fa8ca115d726853"
+      "size": 7230,
+      "sha256": "16d485e73ff4289e6b0584f59401400206c9c8fa2446ee00bc9d008a21bb01a5"
     },
     {
       "path": "core/dependency_consistency.py",
@@ -172,6 +182,11 @@
       "sha256": "938118dc7e30202d4ccbd27115a743871ce74570579ba880bf639c622bde0f94"
     },
     {
+      "path": "core/media_validation.py",
+      "size": 1829,
+      "sha256": "aa9139929f5c6d6bb3976ad67f41e8cc80520e2b025cf0be5a68b2ff1fefddc3"
+    },
+    {
       "path": "core/output_management.py",
       "size": 3458,
       "sha256": "6beb7145adcc23b8032e10050de99993c92a80bb76e799304592b8b0a03feda2"
@@ -197,6 +212,26 @@
       "sha256": "592fe3053a1b70a52e3363c79071292eac8f12139de820427ebee8692bdfb393"
     },
     {
+      "path": "core/startup/__init__.py",
+      "size": 382,
+      "sha256": "8b1808963536088cf2d19245f12901298ecd9917f1126ffa9a73774fe2494fa8"
+    },
+    {
+      "path": "core/startup/bootstrap.py",
+      "size": 1467,
+      "sha256": "86cf878ff888f7efa41ffa8c69b6dd9c7a6663643aa996dc08b5f7c387b9d4ad"
+    },
+    {
+      "path": "core/startup/feedback_renderer.py",
+      "size": 605,
+      "sha256": "245d789ba02eb54ef5ff5c7175910a75dea95d13b0f14d4df877497bdd36ddf2"
+    },
+    {
+      "path": "core/startup/repair_orchestrator.py",
+      "size": 652,
+      "sha256": "cc8652e79d9dc494a226bc0ee03cccc47217047dd1dada13f8aa579aeccbe639"
+    },
+    {
       "path": "core/themes.py",
       "size": 18149,
       "sha256": "fc9e94bb20a2110c7fb8cad1ff025d5200ba4262ede0868a1c77b77f274bbc65"
@@ -218,8 +253,8 @@
     },
     {
       "path": "core/utils.py",
-      "size": 4759,
-      "sha256": "950cc62d3138c66d9517767e4a806014b28c47fe5736df3587777f4e8bc1c499"
+      "size": 4749,
+      "sha256": "9a94ed5681214e823afe3568497345e70f6b9a05308ad17b352be6641ec08d0c"
     },
     {
       "path": "core/validation.py",
@@ -233,10 +268,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 78534,
-      "sha256": "5bb1a10c5275bd651d973dcea7f5fe9d1def560fd1c777d724851a83c87c71d6"
-      "size": 77544,
-      "sha256": "ab69f396bc674d8fb9f309f97404222a1899345d9ba5927c2a378d105e881b05"
+      "size": 79831,
+      "sha256": "97ff8a50a5886ad7948c79ca4824f538e5631b8f6b17a815f06aeb6da49636a5"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -289,6 +322,11 @@
       "sha256": "3b60acdd2be6e165240c170bf69ffb72c112f259ef134548042d99ecf8aed28f"
     },
     {
+      "path": "gui/services/runtime_paths.py",
+      "size": 1252,
+      "sha256": "e7e331602267cded8565e1ad973f137730a9e6fe56db42f6ab95fa8a1dd664a9"
+    },
+    {
       "path": "gui/state/__init__.py",
       "size": 310,
       "sha256": "a5e62452e06c982c20bfebf7872b1736b2f24c8841745dc6aa61966cbe6a8706"
@@ -299,6 +337,11 @@
       "sha256": "a815a4f39ac12121bb194dea00607ae03f7858780658030fac6d8854cb718fb3"
     },
     {
+      "path": "gui/state/runtime_state.py",
+      "size": 573,
+      "sha256": "1afefee75e625b1fd38eee39ffb250534a82a6d8bdc069719d48f9529ecd7196"
+    },
+    {
       "path": "gui/views/__init__.py",
       "size": 181,
       "sha256": "a070c8e8d28360391a9ce671717f9df8ddabdb6206db495c08853270655a7a19"
@@ -307,6 +350,11 @@
       "path": "gui/views/action_orchestration.py",
       "size": 702,
       "sha256": "3f5802d2c740831550bd6ee4ba3aa0822adfede2b5faf13e044e6874bd633101"
+    },
+    {
+      "path": "gui/views/table_columns.py",
+      "size": 219,
+      "sha256": "a2103b6a710bb83269a99f506d208d39813d1670750f2e02aac2274f88727ebe"
     },
     {
       "path": "gui/widgets/__init__.py",
@@ -375,15 +423,18 @@
     },
     {
       "path": "start_gui.py",
-      "size": 16101,
-      "sha256": "6650141857acf04701cef58b7aff30bd838060375d9b932fc8002c8acaa7815d"
-      "size": 14367,
-      "sha256": "801dee78cae8b16707cddd264d756f546876be5224c8cc1d6739df5853d90fdf"
+      "size": 14956,
+      "sha256": "f9bd67eaddfdba20c13c6670b7b33ef1481c8e9c7bc98f4a5b3e37cfcc888fe0"
     },
     {
       "path": "tests/conftest.py",
       "size": 843,
       "sha256": "91486907b52a8421f3820e85ae2640734b319999a66b24578a3ffe638ca5e172"
+    },
+    {
+      "path": "tests/test_app_start_modes.py",
+      "size": 2482,
+      "sha256": "cc266e273179b4ccd61a449fccc036a982ca1b128428bd532de314e801eb0d49"
     },
     {
       "path": "tests/test_dependency_consistency.py",
@@ -446,6 +497,11 @@
       "sha256": "d8e0cc8afe668c2e0c1930ac7db76a575d4320076e42bcc1e5bcd70281e715dc"
     },
     {
+      "path": "tests/test_media_validation.py",
+      "size": 613,
+      "sha256": "e421a16bb9bba766ea254e7d226545691c6d60ebae07b59e21e2267250a75195"
+    },
+    {
       "path": "tests/test_output_management.py",
       "size": 2353,
       "sha256": "7b26e1361235046a714d1f84ff4559ea7feeafba321104ff4c6b9083843ac336"
@@ -472,8 +528,13 @@
     },
     {
       "path": "tests/test_start_gui.py",
-      "size": 10127,
-      "sha256": "55ef23dc7388318f3cd99ae83cb48bd96c994e7a0df1af145d0c69143296c7b6"
+      "size": 10018,
+      "sha256": "dd09e02377f4f3ebfc3adc297602c93dfe68f604adf46a05db4c13447c0b010f"
+    },
+    {
+      "path": "tests/test_startup_interfaces.py",
+      "size": 1282,
+      "sha256": "6c840448394b42f43ce082dca8e490b52ebbc10328e279376b782609f29d385c"
     },
     {
       "path": "tests/test_themes.py",
@@ -507,15 +568,13 @@
     },
     {
       "path": "todo.txt",
-      "size": 13548,
-      "sha256": "470e21b3e5ec307629f268bd80ff1095e7863d11744a7b0175502b6ee86440f9"
-      "size": 13539,
-      "sha256": "ad377215f308e39beeb1d11ddfadc52f64525ed3d339e1f2f9931a0efefdd9af"
+      "size": 13910,
+      "sha256": "b777a79c55963ba3b7cfa0c7772b32194186464914bd86613a6c63732758ebf7"
     },
     {
       "path": "videobatch_extra.py",
-      "size": 23602,
-      "sha256": "5c3d8fe359ca41cfdd6897bce75779ee613fda941064bdde926a688f5d8463a1"
+      "size": 24142,
+      "sha256": "283c3f9089580fad9b3b87c48c4f1b548b878ac5896b4e7c68d6b8743becc48c"
     },
     {
       "path": "videobatch_extra_improved.py",

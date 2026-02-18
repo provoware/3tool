@@ -10,9 +10,6 @@ from typing import List
 
 import ffmpeg
 
-from .config import cfg
-
-
 MAX_FILENAME_LENGTH = 120
 
 
@@ -149,14 +146,14 @@ def probe_duration(path: str) -> float:
     return 0.0
 
 
-def run_ffmpeg(cmd: List[str]) -> CompletedProcess[str]:
-    if cfg.debug:
+def run_ffmpeg(cmd: List[str], *, debug: bool = False) -> CompletedProcess[str]:
+    if debug:
         print("Starte:", " ".join(cmd))
     try:
         res = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
     except FileNotFoundError:
         print("FFmpeg nicht gefunden. Bitte installieren.", file=sys.stderr)
         return CompletedProcess(cmd, 1, "", "ffmpeg fehlt")
-    if cfg.debug and res.stderr:
+    if debug and res.stderr:
         print(res.stderr)
     return res
