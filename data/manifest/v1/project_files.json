@@ -493,8 +493,8 @@
     },
     {
       "path": "tests/test_gui_validation.py",
-      "size": 8842,
-      "sha256": "132435b12003a5f8039ed80e8cb1666a9fb39f5d475bdab9f55138a1909bcbd6"
+      "size": 10140,
+      "sha256": "da1b5923b5666f745b4b8e9fa9f5cd94d987386f127cfc2bacf713461158696a"
     },
     {
       "path": "tests/test_launcher_checks.py",
