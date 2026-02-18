@@ -991,8 +991,11 @@ class GuidedWizard(QtWidgets.QDialog):
 # ---------- MainWindow ----------
 class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
-    WORKFLOW_SECTION_MIN_WIDTH = 240
+    WORKFLOW_SECTION_MIN_WIDTH = 180
     WORKFLOW_SECTION_MIN_HEIGHT = 190
+    WORKFLOW_BREAKPOINT_SMALL = 1024
+    WORKFLOW_BREAKPOINT_MEDIUM = 1440
+    WORKFLOW_STACK_GUARD_WIDTH = 860
     WORKFLOW_REBALANCE_DEBOUNCE_MS = 120
     WORKFLOW_REBALANCE_THRESHOLD_PX = 18
 
@@ -2047,9 +2050,25 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         name = active_name or getattr(self, "_active_section_name", "Paare")
         active_column = self._section_resize_targets.get(name, (1, 1))[0]
-        total = max(self.workflow_columns.width(), 1)
-        base = max(self.WORKFLOW_SECTION_MIN_WIDTH, int(total * 0.28))
-        focus = max(self.WORKFLOW_SECTION_MIN_WIDTH + 20, int(total * 0.38))
+        available_width = max(self.workflow_columns.width(), 1)
+        available_height = max(self.workflow_columns.height(), 1)
+        layout_meta = self._workflow_layout_meta(available_width)
+        guard_stack = bool(layout_meta["force_stack"])
+        target_columns = int(layout_meta["columns"])
+        if target_columns <= 1:
+            guard_stack = True
+
+        orientation = Qt.Vertical if guard_stack else Qt.Horizontal
+        if self.workflow_columns.orientation() != orientation:
+            self.workflow_columns.setOrientation(orientation)
+
+        sections = len(self.workflow_splitters)
+        if guard_stack:
+            base = max(1, int(available_height / max(sections, 1)))
+            focus = min(available_height, int(base * 1.25))
+        else:
+            base = max(1, int(available_width / max(sections, 1)))
+            focus = min(available_width, int(base * 1.25))
         column_sizes = [base, base, base]
         column_sizes[active_column] = focus
         current_column_sizes = self.workflow_columns.sizes()
@@ -2060,10 +2079,14 @@ class MainWindow(QtWidgets.QMainWindow):
         ):
             self.workflow_columns.setSizes(column_sizes)
 
-        total_h = max(self.workflow_columns.height(), 1)
-        base_h = max(self.WORKFLOW_SECTION_MIN_HEIGHT, int(total_h * 0.44))
+        total_h = max(available_height, 1)
+        base_h = max(
+            1,
+            int(total_h * (0.44 if target_columns >= 3 else 0.5)),
+        )
         focus_h = max(
-            self.WORKFLOW_SECTION_MIN_HEIGHT + 20, int(total_h * 0.56)
+            1,
+            int(total_h * (0.56 if target_columns >= 3 else 0.62)),
         )
         for idx, splitter in enumerate(self.workflow_splitters):
             if idx == active_column:
@@ -2434,20 +2457,77 @@ class MainWindow(QtWidgets.QMainWindow):
     def _compute_workflow_min_size(self) -> Tuple[int, int]:
         base_font = self._font_size if isinstance(self._font_size, int) else 13
         base_font = max(10, min(36, int(base_font)))
-        scale = max(1.0, base_font / 13.0)
-        min_width = int(
-            max(
-                self.WORKFLOW_SECTION_MIN_WIDTH,
-                min(460, self.WORKFLOW_SECTION_MIN_WIDTH * scale),
-            )
+        dpi_scale = self._workflow_dpi_scale_factor()
+        font_scale = max(1.0, base_font / 13.0)
+        scale = max(dpi_scale, font_scale)
+
+        available_width = self.width()
+        if hasattr(self, "workflow_columns"):
+            available_width = max(self.workflow_columns.width(), self.width())
+        available_width = max(available_width, 480)
+        layout_meta = self._workflow_layout_meta(available_width)
+        target_columns = max(1, int(layout_meta["columns"]))
+
+        usable_width = max(
+            available_width
+            - (
+                self.workflow_columns.handleWidth()
+                * (len(self.workflow_splitters))
+            ),
+            self.WORKFLOW_SECTION_MIN_WIDTH,
         )
-        min_height = int(
-            max(
-                self.WORKFLOW_SECTION_MIN_HEIGHT,
-                min(340, self.WORKFLOW_SECTION_MIN_HEIGHT * scale),
+        max_per_section = max(
+            self.WORKFLOW_SECTION_MIN_WIDTH,
+            int(usable_width / target_columns),
+        )
+        dynamic_width = int(self.WORKFLOW_SECTION_MIN_WIDTH * scale)
+        min_width = min(
+            max_per_section, max(self.WORKFLOW_SECTION_MIN_WIDTH, dynamic_width)
+        )
+
+        available_height = self.height()
+        if hasattr(self, "workflow_columns"):
+            available_height = max(
+                self.workflow_columns.height(), self.height()
             )
+        available_height = max(available_height, 360)
+        max_per_section_h = max(
+            self.WORKFLOW_SECTION_MIN_HEIGHT,
+            int(available_height / 2),
+        )
+        dynamic_height = int(self.WORKFLOW_SECTION_MIN_HEIGHT * scale)
+        min_height = min(
+            max_per_section_h,
+            max(self.WORKFLOW_SECTION_MIN_HEIGHT, dynamic_height),
         )
         return min_width, min_height
+
+    def _workflow_dpi_scale_factor(self) -> float:
+        screen = self.screen() or QtWidgets.QApplication.primaryScreen()
+        if screen is None:
+            return 1.0
+        logical_scale = max(screen.logicalDotsPerInch() / 96.0, 1.0)
+        ratio_scale = max(screen.devicePixelRatio(), 1.0)
+        return max(logical_scale, ratio_scale)
+
+    def _workflow_layout_meta(self, available_width: int) -> Dict[str, object]:
+        normalized_width = max(320, int(available_width))
+        dpi_scale = max(self._workflow_dpi_scale_factor(), 1.0)
+        effective_width = int(normalized_width / dpi_scale)
+        if effective_width <= self.WORKFLOW_BREAKPOINT_SMALL:
+            columns = 1
+        elif effective_width <= self.WORKFLOW_BREAKPOINT_MEDIUM:
+            columns = 2
+        else:
+            columns = 3
+        force_stack = (
+            columns <= 1 or normalized_width <= self.WORKFLOW_STACK_GUARD_WIDTH
+        )
+        return {
+            "columns": columns,
+            "force_stack": force_stack,
+            "effective_width": effective_width,
+        }
 
     def _reflow_action_buttons(self, available_width: int) -> None:
         if not hasattr(self, "top_buttons_layout"):
@@ -3806,16 +3886,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self._update_workflow_section_constraints()
 
     def _update_workflow_section_constraints(self) -> None:
-        if not hasattr(self, "_workflow_sections"):
+        if not hasattr(self, "_workflow_sections") or not hasattr(
+            self, "workflow_columns"
+        ):
             return
+        available_width = max(self.workflow_columns.width(), self.width())
+        layout_meta = self._workflow_layout_meta(available_width)
+        guard_stack = bool(layout_meta["force_stack"])
+        orientation = Qt.Vertical if guard_stack else Qt.Horizontal
+        if self.workflow_columns.orientation() != orientation:
+            self.workflow_columns.setOrientation(orientation)
+
         min_width, min_height = self._compute_workflow_min_size()
         for section in self._workflow_sections:
             section.setMinimumSize(min_width, min_height)
         logger.debug(
-            "Layout-Skalierung aktualisiert: font=%s min=%sx%s",
+            "Layout-Skalierung aktualisiert: font=%s min=%sx%s columns=%s stack=%s",
             self._font_size,
             min_width,
             min_height,
+            layout_meta["columns"],
+            guard_stack,
         )
 
     def _global_exception(self, etype, value, tb):
