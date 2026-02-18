@@ -8,9 +8,12 @@ from PySide6 import QtCore
 
 def get_project_root(settings: QtCore.QSettings) -> Optional[Path]:
     value = settings.value("ui/project_root", "", str)
-    if not value:
+    if not isinstance(value, str):
         return None
-    root = Path(value).expanduser()
+    stripped = value.strip()
+    if not stripped:
+        return None
+    root = Path(stripped).expanduser()
     if root.exists() and root.is_dir():
         return root
     return None

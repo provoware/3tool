@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 
 from core.gui_logic import format_human_size
 from core.utils import human_time, probe_duration
@@ -27,16 +27,18 @@ def make_thumb(path: str, size: Tuple[int, int] = (160, 90)) -> QtGui.QPixmap:
 
         img = Image.open(path)
         img.thumbnail(size)
-        if img.mode != "RGBA":
-            img = img.convert("RGBA")
-        data = img.tobytes("raw", "RGBA")
+        rgba_img = img.convert("RGBA") if img.mode != "RGBA" else img.copy()
+        data = rgba_img.tobytes("raw", "RGBA")
         qimg = QtGui.QImage(
-            data, img.size[0], img.size[1], QtGui.QImage.Format_RGBA8888
+            data,
+            rgba_img.size[0],
+            rgba_img.size[1],
+            QtGui.QImage.Format.Format_RGBA8888,
         )
         return QtGui.QPixmap.fromImage(qimg)
     except Exception:
         pix = QtGui.QPixmap(size[0], size[1])
-        pix.fill(Qt.gray)
+        pix.fill(QtCore.Qt.GlobalColor.gray)
         return pix
 
 
@@ -44,7 +46,7 @@ class PreviewLabel(QtWidgets.QLabel):
     zoom_changed = Signal(float)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier:
             self.zoom_changed.emit(0.1 if event.angleDelta().y() > 0 else -0.1)
             event.accept()
             return
@@ -101,7 +103,7 @@ class FilePickerDialog(QtWidgets.QDialog):
         self.search_edit = QtWidgets.QLineEdit()
         self.search_edit.setPlaceholderText("Filter (Dateiname)")
         self.search_edit.textChanged.connect(self._apply_filter)
-        self.zoom_slider = QtWidgets.QSlider(Qt.Horizontal)
+        self.zoom_slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
         self.zoom_slider.setRange(50, 250)
         self.zoom_slider.setValue(100)
         self.zoom_slider.valueChanged.connect(self._set_zoom_from_slider)
@@ -112,7 +114,7 @@ class FilePickerDialog(QtWidgets.QDialog):
         controls.addWidget(QtWidgets.QLabel("Zoom:"))
         controls.addWidget(self.zoom_slider)
 
-        splitter = QtWidgets.QSplitter(Qt.Horizontal)
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Horizontal)
         self.file_list = QtWidgets.QTreeWidget()
         self.file_list.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
@@ -138,7 +140,7 @@ class FilePickerDialog(QtWidgets.QDialog):
         self.preview_label.setMinimumHeight(
             self._scaled_length(BASE_PREVIEW_MIN_HEIGHT_EM, PREVIEW_MIN_SIDE_PX)
         )
-        self.preview_label.setAlignment(Qt.AlignCenter)
+        self.preview_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.preview_label.zoom_changed.connect(self._adjust_zoom)
         self.preview_info = QtWidgets.QPlainTextEdit()
         self.preview_info.setReadOnly(True)
@@ -172,18 +174,18 @@ class FilePickerDialog(QtWidgets.QDialog):
     def eventFilter(self, obj: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if (
             obj is self.file_list
-            and event.type() == QtCore.QEvent.KeyPress
+            and event.type() == QtCore.QEvent.Type.KeyPress
             and isinstance(event, QtGui.QKeyEvent)
-            and event.key() == Qt.Key_Space
+            and event.key() == QtCore.Qt.Key.Key_Space
         ):
             item = self.file_list.currentItem()
             if item:
                 item.setCheckState(
                     0,
                     (
-                        Qt.Unchecked
-                        if item.checkState(0) == Qt.Checked
-                        else Qt.Checked
+                        QtCore.Qt.CheckState.Unchecked
+                        if item.checkState(0) == QtCore.Qt.CheckState.Checked
+                        else QtCore.Qt.CheckState.Checked
                     ),
                 )
                 return True
@@ -266,8 +268,8 @@ class FilePickerDialog(QtWidgets.QDialog):
                 item = QtWidgets.QTreeWidgetItem(
                     ["", path.name, format_human_size(path)]
                 )
-                item.setData(0, Qt.UserRole, str(path))
-                item.setCheckState(0, Qt.Unchecked)
+                item.setData(0, QtCore.Qt.ItemDataRole.UserRole, str(path))
+                item.setCheckState(0, QtCore.Qt.CheckState.Unchecked)
                 self.file_list.addTopLevelItem(item)
         self.file_list.blockSignals(False)
         self._apply_filter()
@@ -277,19 +279,25 @@ class FilePickerDialog(QtWidgets.QDialog):
         query = self.search_edit.text().strip().lower()
         for i in range(self.file_list.topLevelItemCount()):
             item = self.file_list.topLevelItem(i)
+            if item is None:
+                continue
             item.setHidden(query not in item.text(1).lower())
 
     def _apply_sort(self) -> None:
         mode = self.sort_combo.currentText()
-        rows = [
-            self.file_list.takeTopLevelItem(0)
-            for _ in range(self.file_list.topLevelItemCount())
-        ]
+        rows: List[QtWidgets.QTreeWidgetItem] = []
+        for _ in range(self.file_list.topLevelItemCount()):
+            row = self.file_list.takeTopLevelItem(0)
+            if row is not None:
+                rows.append(row)
         if mode == "Auswahlreihenfolge":
             rows.sort(
                 key=lambda item: (
-                    self._selection_order.index(item.data(0, Qt.UserRole))
-                    if item.data(0, Qt.UserRole) in self._selection_order
+                    self._selection_order.index(
+                        str(item.data(0, QtCore.Qt.ItemDataRole.UserRole))
+                    )
+                    if str(item.data(0, QtCore.Qt.ItemDataRole.UserRole))
+                    in self._selection_order
                     else 99999
                 )
             )
@@ -299,21 +307,31 @@ class FilePickerDialog(QtWidgets.QDialog):
                 key_fn = lambda it: it.text(1).lower()
             elif "Neueste" in mode or "Älteste" in mode:
                 key_fn = (
-                    lambda it: Path(it.data(0, Qt.UserRole)).stat().st_mtime
+                    lambda it: Path(
+                        str(it.data(0, QtCore.Qt.ItemDataRole.UserRole))
+                    )
+                    .stat()
+                    .st_mtime
                 )
             else:
-                key_fn = lambda it: Path(it.data(0, Qt.UserRole)).stat().st_size
+                key_fn = (
+                    lambda it: Path(
+                        str(it.data(0, QtCore.Qt.ItemDataRole.UserRole))
+                    )
+                    .stat()
+                    .st_size
+                )
             rows.sort(key=key_fn, reverse=reverse)
         self.file_list.addTopLevelItems(rows)
 
     def _on_item_changed(self, item: QtWidgets.QTreeWidgetItem, _: int) -> None:
-        path = item.data(0, Qt.UserRole)
+        path = str(item.data(0, QtCore.Qt.ItemDataRole.UserRole))
         if (
-            item.checkState(0) == Qt.Checked
+            item.checkState(0) == QtCore.Qt.CheckState.Checked
             and path not in self._selection_order
         ):
             self._selection_order.append(path)
-        elif item.checkState(0) != Qt.Checked:
+        elif item.checkState(0) != QtCore.Qt.CheckState.Checked:
             self._selection_order = [
                 p for p in self._selection_order if p != path
             ]
@@ -343,7 +361,7 @@ class FilePickerDialog(QtWidgets.QDialog):
     ) -> None:
         if not current:
             return
-        path = Path(current.data(0, Qt.UserRole))
+        path = Path(str(current.data(0, QtCore.Qt.ItemDataRole.UserRole)))
         info = [f"Datei: {path.name}", f"Pfad: {path}"]
         if self._mode == "audio":
             if str(path) not in self._audio_probe_cache:
@@ -371,8 +389,8 @@ class FilePickerDialog(QtWidgets.QDialog):
                 pix.scaled(
                     int(self._base_preview_size.width() * self._zoom),
                     int(self._base_preview_size.height() * self._zoom),
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation,
+                    QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                    QtCore.Qt.TransformationMode.SmoothTransformation,
                 )
             )
             self.preview_label.setText("")

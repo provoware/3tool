@@ -128,8 +128,8 @@
     },
     {
       "path": "core/gui_logic.py",
-      "size": 2718,
-      "sha256": "be09f8c74231d22d7ab8f4e780178730075f6263414368b24c5b2509e79bbef2"
+      "size": 3311,
+      "sha256": "e9452a08a365711f7d9041db8f677bc7e66aeb3cb1d29219447933d7ca559a02"
     },
     {
       "path": "core/launcher/__init__.py",
@@ -233,8 +233,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 76339,
-      "sha256": "09a491551a5f5af287654592813aa0e52044f387b06a78cf0066df53e12f8895"
+      "size": 77334,
+      "sha256": "96ffc001ce3e37f20a3073af1148fe9185cbdce8cd5d78e500c66ab03cd787be"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -263,8 +263,8 @@
     },
     {
       "path": "gui/dialogs/file_picker.py",
-      "size": 14777,
-      "sha256": "61249bd28b1e04499876f218c0a749001efcdd9ef70ccc4d38f2b3004cf5b724"
+      "size": 15713,
+      "sha256": "17a3155f46a71095cadb91a67346461f70ccf63560bb6851347ae50275caab79"
     },
     {
       "path": "gui/main_window.py",
@@ -278,8 +278,8 @@
     },
     {
       "path": "gui/services/preview.py",
-      "size": 694,
-      "sha256": "c80ad7b95ba7282e01d1a8c55827799d36f66e97c74da2fc1045f76b38eaea8c"
+      "size": 732,
+      "sha256": "1f4e0e4121ca9adb3aa896ceed6c19afdb531c5906bad79eaeabce0674dc0cea"
     },
     {
       "path": "gui/services/project_io.py",
@@ -293,8 +293,8 @@
     },
     {
       "path": "gui/state/project_state.py",
-      "size": 1559,
-      "sha256": "74fb9559cc233a4f36558825f967490112451d99a478a532065425607dc05cde"
+      "size": 1649,
+      "sha256": "a815a4f39ac12121bb194dea00607ae03f7858780658030fac6d8854cb718fb3"
     },
     {
       "path": "gui/views/__init__.py",
@@ -313,8 +313,8 @@
     },
     {
       "path": "gui/widgets/dashboard.py",
-      "size": 6697,
-      "sha256": "e46e37b1283bd2d58c891b7670b14b0f80d83ad51633e5f3735120850e899fc4"
+      "size": 6751,
+      "sha256": "cde5c25fb28eeefe52b1aa7a39e5ae9d8c9085be85712e9e83c44ea516b72b23"
     },
     {
       "path": "mypy.ini",
@@ -503,8 +503,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 13239,
-      "sha256": "67859114c683c558ef7440dfa375fcecd55d3625bddbf34113a16dcacb402b0e"
+      "size": 13350,
+      "sha256": "485dfe1bfc6a4ea2974c43dea6ca42bfe698876f75850702f7801ca3f80d818c"
     },
     {
       "path": "videobatch_extra.py",
