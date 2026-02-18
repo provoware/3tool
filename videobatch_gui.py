@@ -2224,13 +2224,15 @@ class MainWindow(QtWidgets.QMainWindow):
             (self.btn_encode, "Videos jetzt erstellen"),
             (self.btn_stop, "Laufenden Vorgang abbrechen"),
         ]
-        for i, (btn, tip) in enumerate(btn_defs):
-            row, col = divmod(i, 3)
-            top_buttons.addWidget(self._wrap_button(btn, tip), row, col)
-        for i in range(3):
-            top_buttons.setColumnStretch(i, 1)
+        self._action_button_wrappers = [
+            self._wrap_button(btn, tip) for btn, tip in btn_defs
+        ]
+        for wrapper in self._action_button_wrappers:
+            wrapper.setMinimumWidth(190)
+        self._reflow_action_buttons(available_width=0)
         btn_box = QtWidgets.QGroupBox("Aktionen")
         btn_box.setLayout(top_buttons)
+        self.btn_box = btn_box
 
         dashboard_header = QtWidgets.QGroupBox("DashboardHeader")
         dashboard_header_layout = QtWidgets.QVBoxLayout(dashboard_header)
@@ -2751,15 +2753,53 @@ class MainWindow(QtWidgets.QMainWindow):
         button.setAccessibleDescription(help_text)
         lbl = QtWidgets.QLabel(f"<small>{help_text}</small>")
         lbl.setAlignment(Qt.AlignCenter)
-        button.setMaximumHeight(28)
+        lbl.setWordWrap(True)
+        button.setMaximumHeight(16777215)
+        button.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Fixed,
+        )
         box = QtWidgets.QVBoxLayout()
         box.setContentsMargins(2, 0, 2, 0)
         box.setSpacing(1)
         box.addWidget(button)
         box.addWidget(lbl)
         w = QtWidgets.QWidget()
+        w.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum,
+        )
         w.setLayout(box)
         return w
+
+    def _reflow_action_buttons(self, available_width: int) -> None:
+        if not hasattr(self, "top_buttons_layout"):
+            return
+        wrappers = getattr(self, "_action_button_wrappers", [])
+        if not wrappers:
+            return
+        while self.top_buttons_layout.count():
+            item = self.top_buttons_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+        spacing = max(self.top_buttons_layout.horizontalSpacing(), 0)
+        margins = self.top_buttons_layout.contentsMargins()
+        usable_width = max(
+            available_width - margins.left() - margins.right(),
+            240,
+        )
+        min_cell_width = max(
+            max((w.minimumWidth() for w in wrappers), default=190), 160
+        )
+        columns = max(1, min(3, usable_width // (min_cell_width + spacing)))
+        for i, wrapper in enumerate(wrappers):
+            row = i // columns
+            col = i % columns
+            self.top_buttons_layout.addWidget(wrapper, row, col)
+        for i in range(3):
+            stretch = 1 if i < columns else 0
+            self.top_buttons_layout.setColumnStretch(i, stretch)
 
     def _log(self, msg: str, level=logging.INFO):
         if level >= logging.INFO or self.debug_mode:
@@ -3988,6 +4028,8 @@ class MainWindow(QtWidgets.QMainWindow):
             )
         if hasattr(self, "central_layout"):
             self.central_layout.setSpacing(values.main)
+        action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
+        self._reflow_action_buttons(action_width)
 
     def _update_interface_profile(self, profile: str) -> None:
         self.settings.setValue("ui/interface_profile", profile)
@@ -4026,6 +4068,11 @@ class MainWindow(QtWidgets.QMainWindow):
             btn.setMinimumHeight(height)
             btn.setMinimumWidth(ui_profile.compact_button_min_width)
             btn.setFont(QtGui.QFont("DejaVu Sans", font_size))
+        wrapper_min_width = max(ui_profile.compact_button_min_width + 28, 190)
+        for wrapper in getattr(self, "_action_button_wrappers", []):
+            wrapper.setMinimumWidth(wrapper_min_width)
+        action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
+        self._reflow_action_buttons(action_width)
         self.table.verticalHeader().setDefaultSectionSize(
             ui_profile.table_row_height
         )
@@ -4050,6 +4097,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
         self._resize_columns()
+        action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
+        self._reflow_action_buttons(action_width)
         QtCore.QTimer.singleShot(0, self._rebalance_workflow_layout)
 
     def _table_menu(self, pos: QtCore.QPoint):
