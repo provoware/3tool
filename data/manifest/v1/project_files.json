@@ -263,13 +263,13 @@
     },
     {
       "path": "data/texts/v1/de.json",
-      "size": 6274,
-      "sha256": "7456e076e566bd6f66b40e9267d956eb076dd915a0c45e4076d7d714c00456b9"
+      "size": 6301,
+      "sha256": "47f364cadbdd7143f92d93bbb050e4f049cd13057d8a910ca6445e3d26de3084"
     },
     {
       "path": "data/texts/v1/en.json",
-      "size": 6056,
-      "sha256": "f266417a823a064c197c3e6d21f9cae86c786c6cf05544ba174515678b70ab68"
+      "size": 6083,
+      "sha256": "9120705c97608bd1da78d8217035369d97ec4b09db3019d5859a49bbe8dd2d07"
     },
     {
       "path": "ereignislog.txt",
@@ -578,8 +578,8 @@
     },
     {
       "path": "tests/test_ui_texts.py",
-      "size": 2398,
-      "sha256": "1025cfad7f26de49b34a082337fb3e0006f6c4f090870536086bcc6db8ac439e"
+      "size": 2762,
+      "sha256": "29dd2d1e642caadce95520f644d1f99cfdef6b9582fc255aa32300bab9ebc332"
     },
     {
       "path": "tests/test_user_feedback.py",

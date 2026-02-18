@@ -15,7 +15,8 @@
       "ffmpeg_missing": "ffmpeg: FEHLT",
       "env_ok": "Umgebung: OK",
       "env_missing": "Umgebung: FEHLT"
-    }
+    },
+    "header": "Dashboard"
   },
   "statusbar": {
     "counts": "{images} Bilder | {audios} Audios | {pairs} Paare | Auswahl: {selected_images}B/{selected_audios}A"
