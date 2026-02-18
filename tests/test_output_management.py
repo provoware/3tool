@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from core import output_management
 from core.output_management import (
     build_dated_output_dir,
     classify_output_category,
@@ -44,6 +45,29 @@ def test_transfer_with_validation_copy_only(tmp_path: Path) -> None:
 def test_transfer_with_validation_move(tmp_path: Path) -> None:
     src = tmp_path / "img.png"
     src.write_bytes(b"xyz")
+
+    result = transfer_with_validation(
+        src,
+        tmp_path / "used",
+        copy_only=False,
+        suffix_label="benutzt",
+    )
+
+    assert result.validated is True
+    assert result.target.exists()
+    assert not src.exists()
+
+
+def test_transfer_with_validation_move_falls_back_to_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    src = tmp_path / "image.png"
+    src.write_bytes(b"xyz")
+
+    def _raise_move(*_args, **_kwargs):
+        raise OSError("cross-device link")
+
+    monkeypatch.setattr(output_management.shutil, "move", _raise_move)
 
     result = transfer_with_validation(
         src,
