@@ -181,3 +181,5 @@
 - [x] Workflow-Layout auf responsive Breakpoints mit DPI-gekoppeltem Reflow und Guard-Stacking umgestellt
 
 - [x] AGENTS.md auf Darstellungs-/Responsive-Fokus reduziert und bisherige Regeln nach agent_old.txt archiviert
+
+- [x] Professional-Batch-CLI gehaertet: strikte Manifest-/Thread-Validierung, Debug-Logging, klare Laienfehler und automatische Tests ergänzt
