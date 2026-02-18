@@ -4,13 +4,6 @@ import logging
 import re
 from typing import Dict, List, Optional, Sequence, Tuple
 
-FOCUS_STYLE = (
-    "QWidget:focus{outline:2px solid #ffbf00;outline-offset:1px;} "
-    "QLineEdit:focus,QComboBox:focus,QSpinBox:focus,"
-    "QAbstractItemView:focus,QPushButton:focus,QTabBar::tab:focus{"
-    "outline:2px solid #ffbf00;outline-offset:1px;}"
-)
-
 BASE_COMPONENT_STYLE = (
     "QPushButton{min-height:32px;padding:6px 12px;font-weight:600;border-radius:8px;} "
     "QToolButton{min-height:32px;padding:6px 10px;font-weight:600;border-radius:8px;} "
@@ -40,96 +33,178 @@ ACTIVE_SECTION_STYLE = (
     "QGroupBox[activeSection='true']{border:3px solid #ffbf00;}"
 )
 
-THEME_DEFINITIONS: Sequence[Tuple[str, str]] = (
-    (
-        "Modern",
-        "QWidget{background-color:#f6f7fb;color:#1e1e1e;} "
-        "QPushButton{background-color:#e6e8f0;color:#1e1e1e;border:1px solid #c9ced8;} "
-        "QToolButton{background-color:#e6e8f0;color:#1e1e1e;border:1px solid #c9ced8;} "
-        "QPushButton:hover{background-color:#dfe4ef;} "
-        "QToolButton:hover{background-color:#dfe4ef;} "
-        "QPushButton:pressed{background-color:#cfd6e4;} "
-        "QToolButton:pressed{background-color:#cfd6e4;} "
-        "QCheckBox::indicator,QRadioButton::indicator{border:2px solid #4b5563;background:#ffffff;} "
-        "QCheckBox::indicator:checked,QRadioButton::indicator:checked{background:#1a73e8;border-color:#1a73e8;} "
-        "QComboBox::drop-down{background:#e6e8f0;} "
-        "QScrollBar::handle:vertical,QScrollBar::handle:horizontal{background:#9aa3b2;border-radius:6px;} "
-        "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit{"
-        "background-color:#ffffff;color:#1e1e1e;border:1px solid #6b7280;} "
-        "QTableView::item:selected,QListView::item:selected{background-color:#c9dcff;color:#0f172a;} "
-        "QProgressBar{background-color:#e7ebf3;color:#1e1e1e;border:1px solid #b7bfcc;} "
-        "QProgressBar::chunk{background-color:#1a73e8;} "
-        "QWidget:focus{outline:2px solid #1a73e8;}"
+TOKEN_KEYS: Tuple[str, ...] = (
+    "widget_bg",
+    "widget_fg",
+    "button_bg",
+    "button_fg",
+    "button_border",
+    "button_hover",
+    "button_pressed",
+    "indicator_border",
+    "indicator_bg",
+    "indicator_checked",
+    "dropdown_bg",
+    "scroll_handle",
+    "field_bg",
+    "field_fg",
+    "field_border",
+    "header_bg",
+    "header_fg",
+    "selection_bg",
+    "selection_fg",
+    "progress_bg",
+    "progress_fg",
+    "progress_border",
+    "progress_chunk",
+    "focus_color",
+)
+
+THEME_TOKENS: Dict[str, Dict[str, str]] = {
+    "Modern": {
+        "widget_bg": "#f6f7fb",
+        "widget_fg": "#1e1e1e",
+        "button_bg": "#e6e8f0",
+        "button_fg": "#1e1e1e",
+        "button_border": "#c9ced8",
+        "button_hover": "#dfe4ef",
+        "button_pressed": "#cfd6e4",
+        "indicator_border": "#4b5563",
+        "indicator_bg": "#ffffff",
+        "indicator_checked": "#1a73e8",
+        "dropdown_bg": "#e6e8f0",
+        "scroll_handle": "#9aa3b2",
+        "field_bg": "#ffffff",
+        "field_fg": "#1e1e1e",
+        "field_border": "#6b7280",
+        "header_bg": "#f6f7fb",
+        "header_fg": "#1e1e1e",
+        "selection_bg": "#c9dcff",
+        "selection_fg": "#0f172a",
+        "progress_bg": "#e7ebf3",
+        "progress_fg": "#1e1e1e",
+        "progress_border": "#b7bfcc",
+        "progress_chunk": "#1a73e8",
+        "focus_color": "#1a73e8",
+    },
+    "Nachtblau Pro": {
+        "widget_bg": "#101827",
+        "widget_fg": "#e6edf7",
+        "button_bg": "#20324f",
+        "button_fg": "#e6edf7",
+        "button_border": "#46618c",
+        "button_hover": "#284063",
+        "button_pressed": "#314b70",
+        "indicator_border": "#9ec4ff",
+        "indicator_bg": "#16243a",
+        "indicator_checked": "#6ea7ff",
+        "dropdown_bg": "#20324f",
+        "scroll_handle": "#6ea7ff",
+        "field_bg": "#16243a",
+        "field_fg": "#f2f7ff",
+        "field_border": "#6ea7ff",
+        "header_bg": "#1f3252",
+        "header_fg": "#f2f7ff",
+        "selection_bg": "#6ea7ff",
+        "selection_fg": "#081223",
+        "progress_bg": "#16243a",
+        "progress_fg": "#f2f7ff",
+        "progress_border": "#6ea7ff",
+        "progress_chunk": "#6ea7ff",
+        "focus_color": "#ffbf00",
+    },
+    "Hochkontrast Hell": {
+        "widget_bg": "#ffffff",
+        "widget_fg": "#000000",
+        "button_bg": "#000000",
+        "button_fg": "#ffffff",
+        "button_border": "#000000",
+        "button_hover": "#1f2937",
+        "button_pressed": "#374151",
+        "indicator_border": "#000000",
+        "indicator_bg": "#ffffff",
+        "indicator_checked": "#000000",
+        "dropdown_bg": "#000000",
+        "scroll_handle": "#000000",
+        "field_bg": "#ffffff",
+        "field_fg": "#000000",
+        "field_border": "#000000",
+        "header_bg": "#000000",
+        "header_fg": "#ffffff",
+        "selection_bg": "#000000",
+        "selection_fg": "#ffffff",
+        "progress_bg": "#ffffff",
+        "progress_fg": "#000000",
+        "progress_border": "#000000",
+        "progress_chunk": "#000000",
+        "focus_color": "#ffbf00",
+    },
+    "Hochkontrast Dunkel": {
+        "widget_bg": "#000000",
+        "widget_fg": "#ffffff",
+        "button_bg": "#ffffff",
+        "button_fg": "#000000",
+        "button_border": "#ffffff",
+        "button_hover": "#e5e7eb",
+        "button_pressed": "#cbd5e1",
+        "indicator_border": "#ffffff",
+        "indicator_bg": "#000000",
+        "indicator_checked": "#ffffff",
+        "dropdown_bg": "#ffffff",
+        "scroll_handle": "#ffffff",
+        "field_bg": "#000000",
+        "field_fg": "#ffffff",
+        "field_border": "#ffffff",
+        "header_bg": "#ffffff",
+        "header_fg": "#000000",
+        "selection_bg": "#ffffff",
+        "selection_fg": "#000000",
+        "progress_bg": "#000000",
+        "progress_fg": "#ffffff",
+        "progress_border": "#ffffff",
+        "progress_chunk": "#ffffff",
+        "focus_color": "#ffbf00",
+    },
+}
+
+
+def _validate_theme_tokens(tokens: Dict[str, str]) -> None:
+    if not isinstance(tokens, dict):
+        raise TypeError("Theme-Tokens muessen als dict uebergeben werden.")
+    missing = [key for key in TOKEN_KEYS if key not in tokens]
+    if missing:
+        raise ValueError(f"Fehlende Theme-Tokens: {', '.join(missing)}")
+    for key in TOKEN_KEYS:
+        value = tokens[key]
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"Theme-Token '{key}' ist ungueltig.")
+
+
+def _build_theme_css(tokens: Dict[str, str]) -> str:
+    _validate_theme_tokens(tokens)
+    return (
+        f"QWidget{{background-color:{tokens['widget_bg']};color:{tokens['widget_fg']};}} "
+        f"QPushButton{{background-color:{tokens['button_bg']};color:{tokens['button_fg']};border:2px solid {tokens['button_border']};}} "
+        f"QToolButton{{background-color:{tokens['button_bg']};color:{tokens['button_fg']};border:2px solid {tokens['button_border']};}} "
+        f"QPushButton:hover,QToolButton:hover{{background-color:{tokens['button_hover']};}} "
+        f"QPushButton:pressed,QToolButton:pressed{{background-color:{tokens['button_pressed']};}} "
+        f"QCheckBox::indicator,QRadioButton::indicator{{border:2px solid {tokens['indicator_border']};background:{tokens['indicator_bg']};}} "
+        f"QCheckBox::indicator:checked,QRadioButton::indicator:checked{{background:{tokens['indicator_checked']};border-color:{tokens['indicator_checked']};}} "
+        f"QComboBox::drop-down{{background:{tokens['dropdown_bg']};}} "
+        f"QScrollBar::handle:vertical,QScrollBar::handle:horizontal{{background:{tokens['scroll_handle']};border-radius:6px;}} "
+        f"QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{{background-color:{tokens['field_bg']};color:{tokens['field_fg']};border:2px solid {tokens['field_border']};}} "
+        f"QHeaderView::section{{background-color:{tokens['header_bg']};color:{tokens['header_fg']};}} "
+        f"QTableView::item:selected,QListView::item:selected{{background-color:{tokens['selection_bg']};color:{tokens['selection_fg']};}} "
+        f"QProgressBar{{background-color:{tokens['progress_bg']};color:{tokens['progress_fg']};border:2px solid {tokens['progress_border']};}} "
+        f"QProgressBar::chunk{{background-color:{tokens['progress_chunk']};}} "
+        f"QWidget:focus{{outline:2px solid {tokens['focus_color']};outline-offset:1px;}}"
         + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Nachtblau Pro",
-        "QWidget{background-color:#101827;color:#e6edf7;} "
-        "QPushButton{background-color:#20324f;color:#e6edf7;border:1px solid #46618c;} "
-        "QToolButton{background-color:#20324f;color:#e6edf7;border:1px solid #46618c;} "
-        "QPushButton:hover{background-color:#284063;} "
-        "QToolButton:hover{background-color:#284063;} "
-        "QPushButton:pressed{background-color:#314b70;} "
-        "QToolButton:pressed{background-color:#314b70;} "
-        "QCheckBox::indicator,QRadioButton::indicator{border:2px solid #9ec4ff;background:#16243a;} "
-        "QCheckBox::indicator:checked,QRadioButton::indicator:checked{background:#6ea7ff;border-color:#6ea7ff;} "
-        "QComboBox::drop-down{background:#20324f;} "
-        "QScrollBar::handle:vertical,QScrollBar::handle:horizontal{background:#6ea7ff;border-radius:6px;} "
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#16243a;color:#f2f7ff;border:2px solid #6ea7ff;} "
-        "QHeaderView::section{background-color:#1f3252;color:#f2f7ff;} "
-        "QTableView::item:selected,QListView::item:selected{background-color:#6ea7ff;color:#081223;} "
-        "QProgressBar{background-color:#16243a;color:#f2f7ff;border:2px solid #6ea7ff;} "
-        "QProgressBar::chunk{background-color:#6ea7ff;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Hochkontrast Hell",
-        "QWidget{background-color:#ffffff;color:#000000;} "
-        "QPushButton{background-color:#000000;color:#ffffff;border:2px solid #000000;}"
-        "QToolButton{background-color:#000000;color:#ffffff;border:2px solid #000000;}"
-        "QPushButton:hover,QToolButton:hover{background-color:#1f2937;}"
-        "QPushButton:pressed,QToolButton:pressed{background-color:#374151;}"
-        "QCheckBox::indicator,QRadioButton::indicator{border:2px solid #000000;background:#ffffff;}"
-        "QCheckBox::indicator:checked,QRadioButton::indicator:checked{background:#000000;border-color:#000000;}"
-        "QComboBox::drop-down{background:#000000;}"
-        "QScrollBar::handle:vertical,QScrollBar::handle:horizontal{background:#000000;border-radius:6px;}"
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#ffffff;color:#000000;border:2px solid #000000;}"
-        "QHeaderView::section{background-color:#000000;color:#ffffff;}"
-        "QProgressBar{background-color:#ffffff;color:#000000;border:2px solid #000000;} "
-        "QProgressBar::chunk{background-color:#000000;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
-    (
-        "Hochkontrast Dunkel",
-        "QWidget{background-color:#000000;color:#ffffff;} "
-        "QPushButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
-        "QToolButton{background-color:#ffffff;color:#000000;border:2px solid #ffffff;}"
-        "QPushButton:hover{background-color:#f3f4f6;}"
-        "QToolButton:hover{background-color:#f3f4f6;}"
-        "QPushButton:pressed{background-color:#d1d5db;}"
-        "QToolButton:pressed{background-color:#d1d5db;}"
-        "QCheckBox::indicator,QRadioButton::indicator{border:2px solid #ffffff;background:#000000;}"
-        "QCheckBox::indicator:checked,QRadioButton::indicator:checked{background:#ffffff;border-color:#ffffff;}"
-        "QComboBox::drop-down{background:#ffffff;color:#000000;}"
-        "QScrollBar::handle:vertical,QScrollBar::handle:horizontal{background:#ffffff;border-radius:6px;}"
-        "QLineEdit,QComboBox,QSpinBox,QPlainTextEdit,QTextBrowser{"
-        "background-color:#000000;color:#ffffff;border:2px solid #ffffff;}"
-        "QHeaderView::section{background-color:#ffffff;color:#000000;}"
-        "QTableView::item:selected,QListView::item:selected{"
-        "background-color:#ffffff;color:#000000;}"
-        "QProgressBar{background-color:#000000;color:#ffffff;border:2px solid #ffffff;} "
-        "QProgressBar::chunk{background-color:#ffffff;} "
-        + FOCUS_STYLE
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE,
-    ),
+        + ACTIVE_SECTION_STYLE
+    )
+
+
+THEME_DEFINITIONS: Sequence[Tuple[str, str]] = tuple(
+    (name, _build_theme_css(tokens)) for name, tokens in THEME_TOKENS.items()
 )
 
 
