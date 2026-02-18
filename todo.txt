@@ -205,10 +205,10 @@
   - [ ] Visuelle Hierarchie erzwingen: Export-Button + Preview als sticky Bereich sichtbar halten
 
 - [ ] B) Dynamik & Reflow: Nutzer-Layout nicht sabotieren
-  - [ ] resizeEvent-Rebalance entfernen bzw. nur on-demand erlauben (Start/Reset/Breakpoint ohne gespeichertes Nutzerlayout)
+  - [x] resizeEvent-Rebalance entfernen bzw. nur on-demand erlauben (Start/Reset/Breakpoint ohne gespeichertes Nutzerlayout)
   - [ ] Debounce für UI-Neuberechnungen per QTimer (120–250 ms) für Reflow/Zeilenhöhen/Hint-Rewrap
   - [ ] Splitter-Min/Max differenziert festlegen (Listen kleiner mit Scroll, Aktionen größer, Preview mit Stretch-Priorität)
-  - [ ] Vollständige Splitter-Persistenz pro Splitter mit saveState/restoreState inkl. Versionierung einführen
+  - [x] Vollständige Splitter-Persistenz pro Splitter mit saveState/restoreState inkl. Versionierung einführen
 
 - [ ] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
   - [ ] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
@@ -230,14 +230,14 @@
 - [ ] E) Robustheit & Codequalität
   - [ ] Single Source of Truth mit zentralen Datenmodellen (ImagesModel, AudiosModel, PairsModel) ausbauen
   - [ ] Klare Trennung in Services (LayoutService, ValidationService, PairingService, ExportService) weiterziehen
-  - [ ] Deterministische Layout-Defaults per Fensterverhältnis einführen (z. B. 35/30/35) statt setSizes([1,1,1])
+  - [x] Deterministische Layout-Defaults per Fensterverhältnis einführen (z. B. 35/30/35) statt setSizes([1,1,1])
   - [ ] Layout-Messung auf sizeHint/minimumSizeHint/content-aware umstellen statt starrer Faktoren
   - [ ] UI-Smoke-Tests für 800x600/1366x768/1920x1080, 150% Großschrift, Dark/Light ergänzen
   - [ ] Fehlerzustände grafisch standardisieren (ErrorBanner, WarningBadge, SuccessToast)
 
 - [ ] High-Impact-Maßnahmen (Top 10)
-  - [ ] Rebalance aus resizeEvent entfernen oder strikt on-demand schalten
-  - [ ] Splitter-State pro Splitter persistieren und sauber wiederherstellen
+  - [x] Rebalance aus resizeEvent entfernen oder strikt on-demand schalten
+  - [x] Splitter-State pro Splitter persistieren und sauber wiederherstellen
   - [ ] Kompaktmodus via QStackedWidget statt Orientation-Flip einführen
   - [ ] Theme: starre Pixel-Min-Heights entfernen und skalierbar machen
   - [ ] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen

@@ -414,3 +414,92 @@ def test_workflow_min_size_clamps_for_large_font_profile(
         section.minimumHeight() == min_height
         for section in win._workflow_sections
     )
+
+
+def test_scaled_sizes_keep_total_and_positive(
+    gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    videobatch_gui = _import_gui_module()
+    sizes = videobatch_gui.MainWindow._scaled_sizes((35, 30, 35), 1000)
+
+    assert len(sizes) == 3
+    assert sum(sizes) == 1000
+    assert all(size > 0 for size in sizes)
+
+
+def test_resize_rebalance_respects_user_splitter_layout(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.show()
+    qtbot.waitExposed(win)
+
+    custom_sizes = [500, 180, 250]
+    win.workflow_columns.setSizes(custom_sizes)
+    win._user_layout_touched = True
+
+    win._request_workflow_rebalance(force=False)
+    qtbot.wait(win.WORKFLOW_REBALANCE_DEBOUNCE_MS + 80)
+
+    current_sizes = list(win.workflow_columns.sizes())
+    assert all(
+        abs(current - target) < win.WORKFLOW_REBALANCE_THRESHOLD_PX
+        for current, target in zip(current_sizes, custom_sizes)
+    )
+
+
+def test_splitter_state_is_saved_and_restored_per_splitter(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    column_sizes = [420, 210, 360]
+    row_sizes = [[300, 140], [220, 320], [260, 280]]
+    win.workflow_columns.setSizes(column_sizes)
+    for splitter, sizes in zip(win.workflow_splitters, row_sizes):
+        splitter.setSizes(sizes)
+
+    win._save_workflow_splitter_state()
+
+    clone = videobatch_gui.MainWindow()
+    qtbot.addWidget(clone)
+    clone._restore_workflow_splitter_state()
+
+    restored_columns = list(clone.workflow_columns.sizes())
+    assert all(
+        abs(current - target) < clone.WORKFLOW_REBALANCE_THRESHOLD_PX
+        for current, target in zip(restored_columns, column_sizes)
+    )
+
+    for splitter, target_sizes in zip(clone.workflow_splitters, row_sizes):
+        current_sizes = list(splitter.sizes())
+        assert all(
+            abs(current - target) < clone.WORKFLOW_REBALANCE_THRESHOLD_PX
+            for current, target in zip(current_sizes, target_sizes)
+        )
