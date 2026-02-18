@@ -154,3 +154,4 @@
 - [x] Ausgabe-Organisation auf Datumsordner mit Tracks/Musik erweitert, Transfer-Validierung ergänzt und Strukturansicht rekursiv für Unterordner-Ausgaben aktiviert
 
 - [x] QA-Preflight erweitert: Tool-Importpruefung um CLI-Kommando-Check mit Auto-Reparaturpfad und Tests abgesichert
+- [x] videobatch_gui.py in Module (gui/dialogs, gui/widgets, gui/controllers) aufgeteilt, Kernlogik nach core/gui_logic.py verschoben und Tests ergänzt
