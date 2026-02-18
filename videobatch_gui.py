@@ -1398,6 +1398,7 @@ class InfoDashboard(QtWidgets.QWidget):
     def __init__(self, texts: Optional[Dict[str, str]] = None):
         super().__init__()
         self.texts = texts or {}
+        self._metric_cards: List[QtWidgets.QFrame] = []
         self.total_label = QtWidgets.QLabel("0")
         self.total_label.setAccessibleName("Gesamtzahl")
         self.done_label = QtWidgets.QLabel("0")
@@ -1438,21 +1439,20 @@ class InfoDashboard(QtWidgets.QWidget):
         self.selection_label = QtWidgets.QLabel()
         self.selection_label.setAccessibleName("Auswahlstatus")
 
-        cards_layout = QtWidgets.QHBoxLayout()
-        cards_layout.setSpacing(8)
-        cards_layout.addWidget(
-            self._build_metric_card("Gesamt", self.total_label)
+        self.cards_layout = QtWidgets.QGridLayout()
+        self.cards_layout.setSpacing(8)
+        self.cards_layout.setContentsMargins(0, 0, 0, 0)
+        self._metric_cards.extend(
+            [
+                self._build_metric_card("Gesamt", self.total_label),
+                self._build_metric_card("Fertig", self.done_label),
+                self._build_metric_card("Fehler", self.err_label),
+                self._build_metric_card("Fortschritt", self.progress_value),
+                self._build_metric_card("Bilder", self.selected_images_label),
+                self._build_metric_card("Audios", self.selected_audios_label),
+            ]
         )
-        cards_layout.addWidget(
-            self._build_metric_card("Fertig", self.done_label)
-        )
-        cards_layout.addWidget(
-            self._build_metric_card("Fehler", self.err_label)
-        )
-        cards_layout.addWidget(
-            self._build_metric_card("Fortschritt", self.progress_value)
-        )
-        cards_layout.addStretch(1)
+        self._reflow_metric_cards(self.width())
 
         status_row = QtWidgets.QHBoxLayout()
         status_row.setSpacing(10)
@@ -1464,10 +1464,32 @@ class InfoDashboard(QtWidgets.QWidget):
         lay.setSpacing(8)
         lay.addWidget(summary)
         lay.addWidget(self.selection_label)
-        lay.addLayout(cards_layout)
+        lay.addLayout(self.cards_layout)
         lay.addLayout(status_row)
         lay.addWidget(self.mini_log)
         self.set_selection_counts(0, 0)
+
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._reflow_metric_cards(event.size().width())
+
+    def _reflow_metric_cards(self, available_width: object) -> None:
+        try:
+            usable_width = max(int(available_width), 1)
+        except (TypeError, ValueError):
+            logger.warning(
+                "Dashboard-Reflow: verfuegbare Breite ist ungueltig (%r). Nutze 1 Spalte.",
+                available_width,
+            )
+            usable_width = 1
+
+        columns = max(1, min(3, usable_width // 250))
+        while self.cards_layout.count() > 0:
+            self.cards_layout.takeAt(0)
+        for index, card in enumerate(self._metric_cards):
+            row = index // columns
+            col = index % columns
+            self.cards_layout.addWidget(card, row, col)
 
     def _safe_non_negative_int(self, value: object, field_name: str) -> int:
         try:
@@ -1498,6 +1520,10 @@ class InfoDashboard(QtWidgets.QWidget):
 
         card = QtWidgets.QFrame()
         card.setProperty("dashboardCard", True)
+        card.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
         lay = QtWidgets.QVBoxLayout(card)
         lay.setContentsMargins(8, 6, 8, 6)
         lay.setSpacing(2)
