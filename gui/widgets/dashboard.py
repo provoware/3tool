@@ -3,8 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional
 
-from PySide6 import QtGui, QtWidgets
-from PySide6.QtCore import Qt
+from PySide6 import QtCore, QtGui, QtWidgets
 
 from core.gui_logic import (
     clamp_progress,
@@ -100,7 +99,10 @@ class InfoDashboard(QtWidgets.QWidget):
         title_label = QtWidgets.QLabel(title)
         title_label.setProperty("metricLabel", True)
         value_label.setProperty("metricValue", True)
-        value_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        value_label.setAlignment(
+            QtCore.Qt.AlignmentFlag.AlignLeft
+            | QtCore.Qt.AlignmentFlag.AlignVCenter
+        )
 
         card = QtWidgets.QFrame()
         card.setProperty("dashboardCard", True)

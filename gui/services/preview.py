@@ -19,7 +19,10 @@ def play_audio_preview(
 
 
 def stop_audio_preview(player: QtMultimedia.QMediaPlayer) -> bool:
-    if player.playbackState() == QtMultimedia.QMediaPlayer.StoppedState:
+    if (
+        player.playbackState()
+        == QtMultimedia.QMediaPlayer.PlaybackState.StoppedState
+    ):
         return False
     player.stop()
     return True

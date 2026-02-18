@@ -7,6 +7,21 @@ from typing import Iterable
 logger = logging.getLogger("VideoBatchTool")
 
 
+def _coerce_to_int(value: object) -> int | None:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return None
+        return int(stripped)
+    return None
+
+
 def parse_non_negative_int(
     value: object, field_name: str, default: int = 0
 ) -> int:
@@ -14,7 +29,10 @@ def parse_non_negative_int(
     if not isinstance(field_name, str) or not field_name.strip():
         raise ValueError("field_name muss ein nicht-leerer String sein")
     try:
-        parsed = int(value)
+        parsed_value = _coerce_to_int(value)
+        if parsed_value is None:
+            raise ValueError
+        parsed = parsed_value
     except (TypeError, ValueError):
         logger.warning(
             "Ungueltiger Wert fuer '%s': %r. Nutze %s.",
@@ -50,7 +68,10 @@ def clamp_progress(progress: object) -> int:
 def resolve_dashboard_columns(available_width: object) -> int:
     """Return a stable column count for dashboard cards."""
     try:
-        usable_width = max(int(available_width), 1)
+        width_value = _coerce_to_int(available_width)
+        if width_value is None:
+            raise ValueError
+        usable_width = max(width_value, 1)
     except (TypeError, ValueError):
         logger.warning(
             "Dashboard-Reflow: verfuegbare Breite ist ungueltig (%r). Nutze 1 Spalte.",

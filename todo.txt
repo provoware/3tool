@@ -163,3 +163,5 @@
 
 - [x] AGENTS.md release-orientiert geschärft und Launcher-Feedback-Texte vollständig in JSON modularisiert
 - [x] Aktions- und Bereichslayout weiter modularisiert: einheitliche Button-Groessen zentralisiert und Workflow-Minimalgroessen über gemeinsame Helper vereinheitlicht
+
+- [x] Mypy-Altlasten in GUI-Dateien bereinigt (Qt6-Enum-Konstanten modernisiert und Optional-Guards ergänzt)
