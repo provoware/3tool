@@ -21,14 +21,18 @@ def wrap_button(
     wrapper = QtWidgets.QFrame()
     wrapper.setProperty("actionTile", True)
     lay = QtWidgets.QVBoxLayout(wrapper)
-    lay.setContentsMargins(8, 8, 8, 8)
-    lay.setSpacing(2)
+    lay.setContentsMargins(10, 10, 10, 10)
+    lay.setSpacing(6)
     button.setSizePolicy(
         QtWidgets.QSizePolicy.Policy.Expanding,
         QtWidgets.QSizePolicy.Policy.Fixed,
     )
     detail = QtWidgets.QLabel(sublabel)
     detail.setWordWrap(True)
+    detail.setAlignment(
+        QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignTop
+    )
+    detail.setMinimumHeight(32)
     detail.setProperty("actionTileDetail", True)
     lay.addWidget(button)
     lay.addWidget(detail)
@@ -85,6 +89,10 @@ def create_action_buttons(
     wrappers = [wrap_button(buttons[key], label) for key, label in subtitles]
     for wrapper in wrappers:
         wrapper.setMinimumWidth(190)
+        wrapper.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.MinimumExpanding,
+        )
 
     layout = QtWidgets.QGridLayout()
     layout.setSpacing(4)
