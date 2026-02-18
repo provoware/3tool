@@ -143,3 +143,5 @@
 - [x] Einstellungen-UI: Sichtbarkeit aller Buttons/Steuerelemente in allen Themes vereinheitlicht und Kontrast verbessert
 
 - [x] Aktions-Buttons responsiv gemacht (automatischer Umbruch ohne verdeckte Elemente) und mit GUI-Tests abgesichert
+
+- [x] GUI-Layout: Einstellungsbereich scrollbar gemacht und Aktionsraster auf dynamische 1-4 Spalten mit skalierter Mindestgröße erweitert

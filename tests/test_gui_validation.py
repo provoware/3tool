@@ -121,6 +121,53 @@ def test_action_buttons_reflow_to_two_columns_on_medium_width(
     assert used_columns == {0, 1}
 
 
+def test_action_buttons_reflow_uses_four_columns_on_large_width(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win._reflow_action_buttons(available_width=1400)
+
+    positions = []
+    for idx in range(win.top_buttons_layout.count()):
+        row, col, _, _ = win.top_buttons_layout.getItemPosition(idx)
+        positions.append((row, col))
+    used_columns = {col for _, col in positions}
+    assert used_columns == {0, 1, 2, 3}
+
+
+def test_action_buttons_reflow_recovers_from_invalid_width_type(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert "libGL.so.1" in gui_runtime_error
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win._reflow_action_buttons(available_width="ungueltig")
+
+    positions = []
+    for idx in range(win.top_buttons_layout.count()):
+        row, col, _, _ = win.top_buttons_layout.getItemPosition(idx)
+        positions.append((row, col))
+    used_columns = {col for _, col in positions}
+    assert used_columns == {0}
+    assert "verfügbare Breite ist ungültig" in win.log_edit.toPlainText()
+
+
 def test_action_buttons_reflow_to_single_column_on_small_width(
     request, gui_runtime_available, gui_runtime_error
 ):
