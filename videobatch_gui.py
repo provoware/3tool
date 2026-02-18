@@ -1145,8 +1145,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.out_dir_edit.setAccessibleName("Zielordner")
         self.out_dir_edit.setAccessibleDescription("Pfad für fertige Videos")
         self.btn_out_open = QtWidgets.QToolButton()
-        self.btn_out_open.setText("Öffnen")
-        self.btn_out_open.setToolTip("Ausgabeordner im Dateimanager öffnen")
+        self.btn_out_open.setText(self._ui_text("ui.buttons.open", "Öffnen"))
+        self.btn_out_open.setToolTip(
+            self._ui_text(
+                "ui.tooltips.open_output_dir",
+                "Ausgabeordner im Dateimanager öffnen",
+            )
+        )
         self.btn_out_open.setAccessibleName("Ordner öffnen")
         self.btn_out_open.setAccessibleDescription(
             "Ordner im Dateimanager anzeigen"
@@ -1166,8 +1171,15 @@ class MainWindow(QtWidgets.QMainWindow):
             "Standardpfad für Projektdateien"
         )
         self.btn_project_dir = QtWidgets.QToolButton()
-        self.btn_project_dir.setText("Auswählen")
-        self.btn_project_dir.setToolTip("Standard-Projektordner auswählen")
+        self.btn_project_dir.setText(
+            self._ui_text("ui.buttons.select", "Auswählen")
+        )
+        self.btn_project_dir.setToolTip(
+            self._ui_text(
+                "ui.tooltips.select_default_project_dir",
+                "Standard-Projektordner auswählen",
+            )
+        )
         self.btn_project_dir.setAccessibleName("Projektordner auswählen")
         self.btn_project_dir.setAccessibleDescription(
             "Ordner für Projektdateien auswählen"
@@ -1238,7 +1250,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mode_combo.addItems(
             ["Standard", "Slideshow", "Video + Audio", "Mehrere Audios, 1 Bild"]
         )
-        self.mode_combo.setToolTip("Verarbeitungsmodus wählen")
+        self.mode_combo.setToolTip(
+            self._ui_text(
+                "ui.tooltips.processing_mode", "Verarbeitungsmodus wählen"
+            )
+        )
         self.mode_combo.setCurrentText(
             self.settings.value("encode/mode", "Standard", str)
         )
@@ -1538,7 +1554,11 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.structure_clear_btn = QtWidgets.QToolButton()
         self.structure_clear_btn.setText("X")
-        self.structure_clear_btn.setToolTip("Pfad-Filter löschen")
+        self.structure_clear_btn.setToolTip(
+            self._ui_text(
+                "ui.tooltips.clear_path_filter", "Pfad-Filter löschen"
+            )
+        )
         self.structure_clear_btn.setAccessibleName("Pfad-Filter löschen")
         self.structure_clear_btn.clicked.connect(
             lambda: self.structure_search.setText("")
@@ -1571,7 +1591,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.log_path_edit.setAccessibleDescription(
             "Speicherort der Logdateien"
         )
-        self.log_path_edit.setToolTip("Speicherort der Protokolldateien")
+        self.log_path_edit.setToolTip(
+            self._ui_text(
+                "ui.tooltips.log_files_location",
+                "Speicherort der Protokolldateien",
+            )
+        )
         self.log_path_btn = QtWidgets.QPushButton("Pfad kopieren")
         self.log_path_btn.setToolTip(
             "Log-Ordner in die Zwischenablage kopieren"
@@ -1790,38 +1815,64 @@ class MainWindow(QtWidgets.QMainWindow):
         self._on_focus_changed(None, self.table)
 
     # ----- UI helpers -----
+    def _ui_text(self, key: str, fallback: str) -> str:
+        return text_with_fallback(UI_TEXTS, key, fallback)
+
     def _build_menus(self):
         menubar = self.menuBar()
 
         m_datei = menubar.addMenu("Datei")
         act_project_root = QAction("Projektordner wählen", self)
-        act_project_root.setToolTip("Startordner für Dialoge festlegen")
+        act_project_root.setToolTip(
+            self._ui_text(
+                "menu.tooltips.project_root",
+                "Startordner für Dialoge festlegen",
+            )
+        )
         act_project_root.triggered.connect(self._choose_project_root)
         m_datei.addAction(act_project_root)
         act_load = QAction("Projekt laden", self)
-        act_load.setToolTip("Gespeichertes Projekt laden")
+        act_load.setToolTip(
+            self._ui_text(
+                "menu.tooltips.load_project", "Gespeichertes Projekt laden"
+            )
+        )
         act_load.setShortcut(QtGui.QKeySequence("Ctrl+O"))
         act_load.triggered.connect(self._load_project)
         m_datei.addAction(act_load)
         act_save = QAction("Projekt speichern", self)
-        act_save.setToolTip("Projekt sichern")
+        act_save.setToolTip(
+            self._ui_text("menu.tooltips.save_project", "Projekt sichern")
+        )
         act_save.setShortcut(QtGui.QKeySequence("Ctrl+S"))
         act_save.triggered.connect(self._save_project)
         m_datei.addAction(act_save)
         act_quit = QAction("Beenden", self)
-        act_quit.setToolTip("Programm schließen")
+        act_quit.setToolTip(
+            self._ui_text("menu.tooltips.quit_app", "Programm schließen")
+        )
         act_quit.triggered.connect(self.close)
         m_datei.addAction(act_quit)
 
         m_ansicht = menubar.addMenu("Ansicht")
         act_font_plus = QAction("Schrift +", self)
-        act_font_plus.setToolTip("Schriftgröße erhöhen")
+        act_font_plus.setToolTip(
+            self._ui_text("menu.tooltips.font_increase", "Schriftgröße erhöhen")
+        )
         act_font_plus.triggered.connect(lambda: self._change_font(1))
         act_font_minus = QAction("Schrift -", self)
-        act_font_minus.setToolTip("Schriftgröße verkleinern")
+        act_font_minus.setToolTip(
+            self._ui_text(
+                "menu.tooltips.font_decrease", "Schriftgröße verkleinern"
+            )
+        )
         act_font_minus.triggered.connect(lambda: self._change_font(-1))
         act_font_reset = QAction("Schrift Reset", self)
-        act_font_reset.setToolTip("Schriftgröße zurücksetzen")
+        act_font_reset.setToolTip(
+            self._ui_text(
+                "menu.tooltips.font_reset", "Schriftgröße zurücksetzen"
+            )
+        )
         act_font_reset.triggered.connect(lambda: self._set_font(13))
         m_ansicht.addActions([act_font_plus, act_font_minus, act_font_reset])
         self.act_show_help = QAction(
@@ -1859,28 +1910,55 @@ class MainWindow(QtWidgets.QMainWindow):
             checkable=True,
             checked=self.copy_only,
         )
-        self.act_copy_only.setToolTip("Originaldateien behalten")
+        self.act_copy_only.setToolTip(
+            self._ui_text("menu.tooltips.copy_only", "Originaldateien behalten")
+        )
         self.act_copy_only.triggered.connect(self._toggle_copy_mode)
         m_option.addAction(self.act_copy_only)
         self.act_debug = QAction(
             "Debug-Log", self, checkable=True, checked=self.debug_mode
         )
-        self.act_debug.setToolTip("Detailiertes Protokoll aktivieren")
+        self.act_debug.setToolTip(
+            self._ui_text(
+                "menu.tooltips.enable_debug_log",
+                "Detailiertes Protokoll aktivieren",
+            )
+        )
         self.act_debug.triggered.connect(self._toggle_debug)
         m_option.addAction(self.act_debug)
 
         m_hilfe = menubar.addMenu("Hilfe")
         act_doc = QAction("README öffnen", self)
-        act_doc.setToolTip("Dokumentation anzeigen")
+        act_doc.setToolTip(
+            self._ui_text(
+                "menu.tooltips.show_documentation",
+                "Dokumentation anzeigen",
+            )
+        )
         act_doc.triggered.connect(self._open_readme)
         act_log = QAction("Logdatei öffnen", self)
-        act_log.setToolTip("Letzte Meldungen anzeigen")
+        act_log.setToolTip(
+            self._ui_text(
+                "menu.tooltips.show_latest_logs",
+                "Letzte Meldungen anzeigen",
+            )
+        )
         act_log.triggered.connect(self._open_logfile)
         act_help = QAction("Kurzanleitung", self)
-        act_help.setToolTip("Kurzes Hilfefenster anzeigen")
+        act_help.setToolTip(
+            self._ui_text(
+                "menu.tooltips.show_quick_help",
+                "Kurzes Hilfefenster anzeigen",
+            )
+        )
         act_help.triggered.connect(self._show_help_window)
         act_wizard = QAction("Geführter Start", self)
-        act_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen")
+        act_wizard.setToolTip(
+            self._ui_text(
+                "menu.tooltips.open_guided_wizard",
+                "Schritt-für-Schritt-Assistent öffnen",
+            )
+        )
         act_wizard.triggered.connect(self._show_guided_wizard)
         m_hilfe.addAction(act_doc)
         m_hilfe.addAction(act_log)
@@ -2037,8 +2115,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self._log("Ausgabeordner fehlt.", logging.WARNING)
             QtWidgets.QMessageBox.information(
                 self,
-                "Ausgabeordner fehlt",
-                "Bitte zuerst einen Ausgabeordner festlegen.",
+                self._ui_text(
+                    "dialogs.output_dir_missing.title",
+                    "Ausgabeordner fehlt",
+                ),
+                self._ui_text(
+                    "dialogs.output_dir_missing.body",
+                    "Bitte zuerst einen Ausgabeordner festlegen.",
+                ),
             )
             return
         out_path = Path(path).expanduser()
@@ -2055,7 +2139,10 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             QtWidgets.QMessageBox.critical(
                 self,
-                "Ausgabeordner fehlerhaft",
+                self._ui_text(
+                    "dialogs.output_dir_invalid.title",
+                    "Ausgabeordner fehlerhaft",
+                ),
                 "Ordner konnte nicht erstellt werden.\n"
                 "Ursache: fehlende Rechte oder ungültiger Pfad.\n"
                 "Nächster Schritt: anderen Ordner wählen oder Rechte prüfen.\n"
@@ -2081,7 +2168,10 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         selected = QtWidgets.QFileDialog.getExistingDirectory(
             self,
-            "Standard-Projektordner auswählen",
+            self._ui_text(
+                "dialogs.default_project_dir.title",
+                "Standard-Projektordner auswählen",
+            ),
             start_dir,
         )
         if not selected:
@@ -2103,7 +2193,10 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             QtWidgets.QMessageBox.warning(
                 self,
-                "Projektordner ungültig",
+                self._ui_text(
+                    "dialogs.project_dir_invalid.title",
+                    "Projektordner ungültig",
+                ),
                 "Der Ordner konnte nicht erstellt werden.\n"
                 "Ursache: kein Zugriff oder ungültiger Pfad.\n"
                 "Nächster Schritt: anderen Ordner wählen.\n"
@@ -2129,7 +2222,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if not result.is_valid:
             QtWidgets.QMessageBox.warning(
                 self,
-                "Template ungültig",
+                self._ui_text(
+                    "dialogs.template_invalid.title", "Template ungültig"
+                ),
                 result.message,
             )
             self._log(
@@ -3129,7 +3224,11 @@ class MainWindow(QtWidgets.QMainWindow):
             "PL: Ustaw obraz zapasowy i maksymalnie dwa pliki audio zapasowe. "
             "Pliki pozostają zapisane trwale."
         )
-        QtWidgets.QMessageBox.information(self, "Fallback-Medien", info)
+        QtWidgets.QMessageBox.information(
+            self,
+            self._ui_text("dialogs.fallback_media.title", "Fallback-Medien"),
+            info,
+        )
         image_file, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Fallback-Bild wählen",
@@ -3311,18 +3410,36 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _suggest_add_images(self):
         msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("Bilder fehlen")
-        msg.setText("Bitte zuerst Bilder auswählen.")
+        msg.setWindowTitle(
+            self._ui_text("dialogs.missing_images.title", "Bilder fehlen")
+        )
+        msg.setText(
+            self._ui_text(
+                "dialogs.missing_images.body", "Bitte zuerst Bilder auswählen."
+            )
+        )
         msg.setInformativeText(
-            "Tipp: Du kannst einzelne Dateien oder einen Ordner wählen."
+            self._ui_text(
+                "dialogs.missing_images.info",
+                "Tipp: Du kannst einzelne Dateien oder einen Ordner wählen.",
+            )
         )
         btn_files = msg.addButton(
-            "Bilder wählen", QtWidgets.QMessageBox.AcceptRole
+            self._ui_text(
+                "dialogs.missing_images.choose_files", "Bilder wählen"
+            ),
+            QtWidgets.QMessageBox.AcceptRole,
         )
         btn_folder = msg.addButton(
-            "Bildordner wählen", QtWidgets.QMessageBox.ActionRole
+            self._ui_text(
+                "dialogs.missing_images.choose_folder", "Bildordner wählen"
+            ),
+            QtWidgets.QMessageBox.ActionRole,
         )
-        msg.addButton("Abbrechen", QtWidgets.QMessageBox.RejectRole)
+        msg.addButton(
+            self._ui_text("ui.buttons.cancel", "Abbrechen"),
+            QtWidgets.QMessageBox.RejectRole,
+        )
         msg.exec()
         if msg.clickedButton() == btn_files:
             self._pick_images()
@@ -3331,18 +3448,36 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _suggest_add_audios(self):
         msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("Audios fehlen")
-        msg.setText("Bitte Audiodateien auswählen.")
+        msg.setWindowTitle(
+            self._ui_text("dialogs.missing_audios.title", "Audios fehlen")
+        )
+        msg.setText(
+            self._ui_text(
+                "dialogs.missing_audios.body", "Bitte Audiodateien auswählen."
+            )
+        )
         msg.setInformativeText(
-            "Tipp: Ein Audio pro Bild, oder nutze den Modus 'Mehrere Audios, 1 Bild'."
+            self._ui_text(
+                "dialogs.missing_audios.info",
+                "Tipp: Ein Audio pro Bild, oder nutze den Modus 'Mehrere Audios, 1 Bild'.",
+            )
         )
         btn_files = msg.addButton(
-            "Audios wählen", QtWidgets.QMessageBox.AcceptRole
+            self._ui_text(
+                "dialogs.missing_audios.choose_files", "Audios wählen"
+            ),
+            QtWidgets.QMessageBox.AcceptRole,
         )
         btn_folder = msg.addButton(
-            "Audioordner wählen", QtWidgets.QMessageBox.ActionRole
+            self._ui_text(
+                "dialogs.missing_audios.choose_folder", "Audioordner wählen"
+            ),
+            QtWidgets.QMessageBox.ActionRole,
         )
-        msg.addButton("Abbrechen", QtWidgets.QMessageBox.RejectRole)
+        msg.addButton(
+            self._ui_text("ui.buttons.cancel", "Abbrechen"),
+            QtWidgets.QMessageBox.RejectRole,
+        )
         msg.exec()
         if msg.clickedButton() == btn_files:
             self._pick_audios()
@@ -3641,7 +3776,10 @@ class MainWindow(QtWidgets.QMainWindow):
             path = p.output or p.image_path or p.audio_path
             if path:
                 QtWidgets.QApplication.clipboard().setText(str(path))
-                self.statusBar().showMessage("Pfad kopiert", 2000)
+                self.statusBar().showMessage(
+                    self._ui_text("messages.path_copied", "Pfad kopiert"),
+                    2000,
+                )
                 self._log(f"Pfad kopiert: {path}")
         elif action == act_remove:
             self._push_history()
