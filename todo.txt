@@ -139,3 +139,5 @@
 - [x] CLI-Verbesserung im QA-Preflight: Profile, Tool-Liste und --validate-only mit Tests ergänzt
 
 - [x] Launcher-Theme-Logik zentralisiert (validierte Theme-Aufloesung + Logging in core) und mit Tests abgesichert
+
+- [x] Einstellungen-UI: Sichtbarkeit aller Buttons/Steuerelemente in allen Themes vereinheitlicht und Kontrast verbessert

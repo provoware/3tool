@@ -158,8 +158,8 @@
     },
     {
       "path": "core/themes.py",
-      "size": 9522,
-      "sha256": "748ff3a0da7b04a9c452e5a9b4e5843238dffc32ee13218cb13a3bd8d7c52d2a"
+      "size": 12287,
+      "sha256": "c0b406adfeabe2d4849a29367b3ed62025205382a95d12478786a7f122917abc"
     },
     {
       "path": "core/ui_profiles.py",
@@ -193,8 +193,8 @@
     },
     {
       "path": "ereignislog.txt",
-      "size": 63284,
-      "sha256": "55ed92fb2b4f02e87beed5f2b847023d5eac56e405e71ef37501b2e2512aad70"
+      "size": 64234,
+      "sha256": "2ca802fa6c9877b818462de11fccc4b757a1aae2930c08a5869ad11df19f5fab"
     },
     {
       "path": "fortschrittsinfo.md",
@@ -333,8 +333,8 @@
     },
     {
       "path": "tests/test_themes.py",
-      "size": 1360,
-      "sha256": "2daec79988e70ef89d47e264aba298ea28a098b48fc055a0f8cfbec25c30a4dc"
+      "size": 1696,
+      "sha256": "764fa8cc2ed294d4cef6fbc3db9d83a1bcc5af3677e35668c34899dcbf23840f"
     },
     {
       "path": "tests/test_ui_profiles.py",
@@ -358,8 +358,8 @@
     },
     {
       "path": "todo.txt",
-      "size": 11130,
-      "sha256": "06d0f40ad7602e51e81ebb844c89a378c2422e4c0308a59032087fa14bf6c6b2"
+      "size": 11253,
+      "sha256": "4e7449fd4550f21fd4733fa8e141131bd04a29f5e490fbf341ee8f0d41bb78f1"
     },
     {
       "path": "videobatch_extra.py",

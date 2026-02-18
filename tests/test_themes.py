@@ -42,3 +42,12 @@ def test_accessible_themes_have_good_input_field_contrast() -> None:
         ratio = themes._contrast_ratio(colors[0], colors[1])
         assert ratio is not None
         assert ratio >= 7.0
+
+
+def test_themes_style_settings_controls_consistently() -> None:
+    loaded = themes.load_themes()
+    for name, css in loaded.items():
+        assert "QToolButton{" in css, name
+        assert "QCheckBox::indicator" in css, name
+        assert "QRadioButton::indicator" in css, name
+        assert "QComboBox::drop-down" in css, name
