@@ -57,12 +57,42 @@ class InfoDashboard(QtWidgets.QWidget):
         self.cards_layout.setContentsMargins(0, 0, 0, 0)
         self._metric_cards.extend(
             [
-                self._build_metric_card("Gesamt", self.total_label),
-                self._build_metric_card("Fertig", self.done_label),
-                self._build_metric_card("Fehler", self.err_label),
-                self._build_metric_card("Fortschritt", self.progress_value),
-                self._build_metric_card("Bilder", self.selected_images_label),
-                self._build_metric_card("Audios", self.selected_audios_label),
+                self._build_metric_card(
+                    text_with_fallback(
+                        self.texts, "dashboard.counts.total", "Gesamt"
+                    ),
+                    self.total_label,
+                ),
+                self._build_metric_card(
+                    text_with_fallback(
+                        self.texts, "dashboard.counts.done", "Fertig"
+                    ),
+                    self.done_label,
+                ),
+                self._build_metric_card(
+                    text_with_fallback(
+                        self.texts, "dashboard.counts.errors", "Fehler"
+                    ),
+                    self.err_label,
+                ),
+                self._build_metric_card(
+                    text_with_fallback(
+                        self.texts, "dashboard.counts.progress", "Fortschritt"
+                    ),
+                    self.progress_value,
+                ),
+                self._build_metric_card(
+                    text_with_fallback(
+                        self.texts, "dashboard.counts.images", "Bilder"
+                    ),
+                    self.selected_images_label,
+                ),
+                self._build_metric_card(
+                    text_with_fallback(
+                        self.texts, "dashboard.counts.audios", "Audios"
+                    ),
+                    self.selected_audios_label,
+                ),
             ]
         )
         self._reflow_metric_cards(self.width())

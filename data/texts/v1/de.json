@@ -6,7 +6,9 @@
       "total": "Gesamt",
       "done": "Fertig",
       "errors": "Fehler",
-      "progress": "Fortschritt"
+      "progress": "Fortschritt",
+      "images": "Bilder",
+      "audios": "Audios"
     },
     "status": {
       "ffmpeg_ok": "ffmpeg: OK",
@@ -51,6 +53,32 @@
         "summary": "Erfolgreich: {ok_count}/{total_count}",
         "summary_offline_suffix": " | Offline uebersprungen: {offline_skips}"
       }
+    }
+  },
+  "dialog": {
+    "project_root": {
+      "title": "Projektordner wählen"
+    },
+    "image_folder": {
+      "title": "Ordner mit Bildern wählen"
+    },
+    "file_picker": {
+      "change_directory": "Ordner wechseln",
+      "directory": "Ordner:",
+      "search_placeholder": "Filter (Dateiname)",
+      "sort": "Sortieren:",
+      "search": "Suche:",
+      "zoom": "Zoom:",
+      "selected_count": "0 ausgewählt",
+      "apply_selection": "Auswahl übernehmen",
+      "cancel": "Abbrechen",
+      "choose_directory": "Ordner wählen"
+    }
+  },
+  "error": {
+    "project_root": {
+      "invalid_title": "Projektordner ungültig",
+      "invalid_body": "Der ausgewählte Ordner ist nicht verfügbar oder ungültig."
     }
   }
 }

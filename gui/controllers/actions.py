@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
+from core.ui_texts import text_with_fallback
+
 
 @dataclass
 class MainWindowState:
@@ -28,3 +30,19 @@ def build_initial_state(
     return MainWindowState(
         last_image_dir=last_image_dir, last_audio_dir=last_audio_dir
     )
+
+
+def validate_project_root_candidate(path: Path) -> bool:
+    if not isinstance(path, Path):
+        return False
+    return path.exists() and path.is_dir()
+
+
+def resolve_text(
+    texts: dict[str, str],
+    key: str,
+    fallback: str,
+) -> str:
+    if not isinstance(texts, dict):
+        raise TypeError("texts muss ein Dict sein")
+    return text_with_fallback(texts, key, fallback)

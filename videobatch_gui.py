@@ -17,20 +17,18 @@ import tempfile
 import threading
 import urllib.parse
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
-from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from PySide6 import QtCore, QtGui, QtMultimedia, QtWidgets
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
 from core.media_validation import (
     AUDIO_EXTENSIONS,
     IMAGE_EXTENSIONS,
-    validate_media_pair,
 )
 from core.fallback_media import (
     dumps_audio_list,
@@ -46,10 +44,11 @@ from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
-from core.utils import build_out_name, human_time, probe_duration
+from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
-from gui.dialogs.file_picker import FilePickerDialog, make_thumb
+from gui.dialogs.file_picker import FilePickerDialog
 from gui.main_window import build_initial_state
+from gui.views.main_window_view import create_action_buttons
 from gui.services.preview import play_audio_preview, stop_audio_preview
 from gui.services.runtime_paths import (
     build_default_runtime_paths,
@@ -70,7 +69,6 @@ from gui.state.project_state import (
     set_project_root,
 )
 from gui.views.action_orchestration import choose_project_root_dialog
-from gui.views.table_columns import COLUMNS
 from gui.widgets.dashboard import InfoDashboard
 
 # ---------- Paths ----------
@@ -121,131 +119,7 @@ def default_downloads_dir() -> Path:
 
 
 # ---------- Datenmodell ----------
-
-
-@dataclass
-class PairItem:
-    image_path: str
-    audio_path: Optional[str] = None
-    duration: float = 0.0
-    output: str = ""
-    status: str = "WARTET"
-    progress: float = 0.0
-    thumb: Optional[QtGui.QPixmap] = field(default=None, repr=False)
-    valid: bool = True
-    validation_msg: str = ""
-
-    def update_duration(self):
-        if self.audio_path:
-            self.duration = probe_duration(self.audio_path)
-
-    def load_thumb(self):
-        if self.thumb is None and self.image_path:
-            self.thumb = make_thumb(self.image_path)
-
-    def validate(self):
-        result = validate_media_pair(self.image_path, self.audio_path)
-        self.valid = result.valid
-        self.validation_msg = result.message
-
-
-class PairTableModel(QAbstractTableModel):
-    def __init__(self, pairs: List[PairItem]):
-        super().__init__()
-        self.pairs = pairs
-
-    def rowCount(self, parent=QModelIndex()):
-        return len(self.pairs)
-
-    def columnCount(self, parent=QModelIndex()):
-        return len(COLUMNS)
-
-    def headerData(self, s, o, role=Qt.DisplayRole):
-        if role != Qt.DisplayRole:
-            return None
-        return COLUMNS[s] if o == Qt.Horizontal else str(s + 1)
-
-    def data(self, idx, role=Qt.DisplayRole):
-        if not idx.isValid():
-            return None
-        item = self.pairs[idx.row()]
-        col = idx.column()
-        if role == Qt.DisplayRole:
-            if col == 0:
-                return str(idx.row() + 1)
-            if col == 2:
-                return item.image_path
-            if col == 3:
-                return item.audio_path or "—"
-            if col == 4:
-                return human_time(item.duration) if item.duration else "?"
-            if col == 5:
-                return item.output or "—"
-            if col == 6:
-                return f"{int(item.progress)}%"
-            if col == 7:
-                return item.status
-        if role == Qt.DecorationRole and col == 1:
-            item.load_thumb()
-            return item.thumb
-        if role == Qt.ToolTipRole:
-            if col in (2, 3, 5):
-                return {
-                    2: item.image_path,
-                    3: item.audio_path or "",
-                    5: item.output or "",
-                }[col]
-            if not item.valid:
-                return item.validation_msg
-        if role == Qt.ForegroundRole and not item.valid:
-            return QtGui.QBrush(Qt.red)
-        return None
-
-    def flags(self, idx):
-        if not idx.isValid():
-            return Qt.NoItemFlags
-        f = Qt.ItemIsEnabled | Qt.ItemIsSelectable
-        if idx.column() in (2, 3, 5):
-            f |= Qt.ItemIsEditable
-        return f
-
-    def setData(self, idx, value, role=Qt.EditRole):
-        if role != Qt.EditRole or not idx.isValid():
-            return False
-        item = self.pairs[idx.row()]
-        col = idx.column()
-        if col == 2:
-            item.image_path = value
-            item.thumb = None
-        elif col == 3:
-            item.audio_path = value
-            item.update_duration()
-        elif col == 5:
-            item.output = value
-        else:
-            return False
-        item.validate()
-        self.dataChanged.emit(idx, idx)
-        return True
-
-    def add_pairs(self, new_pairs: List[PairItem]):
-        self.beginInsertRows(
-            QModelIndex(), len(self.pairs), len(self.pairs) + len(new_pairs) - 1
-        )
-        self.pairs.extend(new_pairs)
-        self.endInsertRows()
-
-    def remove_rows(self, rows: List[int]):
-        for r in sorted(rows, reverse=True):
-            if 0 <= r < len(self.pairs):
-                self.beginRemoveRows(QModelIndex(), r, r)
-                self.pairs.pop(r)
-                self.endRemoveRows()
-
-    def clear(self):
-        self.beginResetModel()
-        self.pairs.clear()
-        self.endResetModel()
+from gui.views.pair_table import PairItem, PairTableModel
 
 
 # ---------- Worker ----------
@@ -1724,63 +1598,26 @@ class MainWindow(QtWidgets.QMainWindow):
         bl.addWidget(self.log_edit)
 
         # Buttons
-        self.btn_add_images = QtWidgets.QPushButton("Bilder wählen")
-        self.btn_add_audios = QtWidgets.QPushButton("Audios wählen")
-        self.btn_auto_pair = QtWidgets.QPushButton("Auto-Paaren")
-        self.btn_clear = QtWidgets.QPushButton("Alles löschen")
-        self.btn_undo = QtWidgets.QPushButton("Undo")
-        self.btn_save = QtWidgets.QPushButton("Projekt speichern")
-        self.btn_load = QtWidgets.QPushButton("Projekt laden")
-        self.btn_encode = QtWidgets.QPushButton("START")
-        self.btn_encode.setProperty("accentRole", "primaryAction")
-        self.btn_encode.setProperty("readyPulse", "off")
-        self.btn_stop = QtWidgets.QPushButton("Stopp")
-        self.btn_stop.setEnabled(False)
-        self.btn_wizard = QtWidgets.QPushButton("Geführter Start")
-
-        self.btn_add_images.setToolTip("Bilder (Fotos) auswählen")
-        self.btn_add_audios.setToolTip("Audiodateien auswählen")
-        self.btn_auto_pair.setToolTip("Bilder und Audios automatisch koppeln")
-        self.btn_clear.setToolTip("Listen komplett leeren")
-        self.btn_undo.setToolTip("Letzte Änderung rückgängig machen")
-        self.btn_save.setToolTip("Aktuellen Stand speichern")
-        self.btn_load.setToolTip("Gespeichertes Projekt laden")
-        self.btn_encode.setToolTip("Encoding starten")
-        self.btn_stop.setToolTip("Aktuellen Vorgang abbrechen")
-        self.btn_wizard.setToolTip("Schritt-für-Schritt-Assistent öffnen")
-
-        self._encode_ready_timer = QtCore.QTimer(self)
-        self._encode_ready_timer.setInterval(500)
-        self._encode_ready_timer.timeout.connect(
-            self._toggle_encode_ready_style
+        action_buttons = create_action_buttons(
+            self,
+            on_timer_tick=self._toggle_encode_ready_style,
         )
+        self.btn_add_images = action_buttons.buttons["add_images"]
+        self.btn_add_audios = action_buttons.buttons["add_audios"]
+        self.btn_auto_pair = action_buttons.buttons["auto_pair"]
+        self.btn_clear = action_buttons.buttons["clear"]
+        self.btn_undo = action_buttons.buttons["undo"]
+        self.btn_save = action_buttons.buttons["save"]
+        self.btn_load = action_buttons.buttons["load"]
+        self.btn_encode = action_buttons.buttons["encode"]
+        self.btn_stop = action_buttons.buttons["stop"]
+        self.btn_wizard = action_buttons.buttons["wizard"]
+        self._encode_ready_timer = action_buttons.timer
         self._encode_ready_on = False
-
-        top_buttons = QtWidgets.QGridLayout()
-        top_buttons.setSpacing(4)
-        top_buttons.setContentsMargins(4, 4, 4, 4)
-        self.top_buttons_layout = top_buttons
-        btn_defs = [
-            (self.btn_add_images, "Bilder oder Ordner auswählen"),
-            (self.btn_add_audios, "Audiodateien hinzufügen"),
-            (self.btn_auto_pair, "Dateien automatisch koppeln"),
-            (self.btn_wizard, "Assistent für Einsteiger öffnen"),
-            (self.btn_clear, "Listen komplett leeren"),
-            (self.btn_undo, "Letzten Schritt rückgängig"),
-            (self.btn_save, "Projekt auf Platte sichern"),
-            (self.btn_load, "Gespeichertes Projekt laden"),
-            (self.btn_encode, "Videos jetzt erstellen"),
-            (self.btn_stop, "Laufenden Vorgang abbrechen"),
-        ]
-        self._action_button_wrappers = [
-            self._wrap_button(btn, tip) for btn, tip in btn_defs
-        ]
-        for wrapper in self._action_button_wrappers:
-            wrapper.setMinimumWidth(190)
+        self.top_buttons_layout = action_buttons.layout
+        self._action_button_wrappers = action_buttons.wrappers
         self._reflow_action_buttons(available_width=0)
-        btn_box = QtWidgets.QGroupBox("Aktionen")
-        btn_box.setLayout(top_buttons)
-        self.btn_box = btn_box
+        self.btn_box = action_buttons.box
 
         dashboard_header = QtWidgets.QGroupBox("DashboardHeader")
         dashboard_header_layout = QtWidgets.QVBoxLayout(dashboard_header)
@@ -1798,7 +1635,7 @@ class MainWindow(QtWidgets.QMainWindow):
         col2 = QtWidgets.QSplitter(Qt.Vertical)
         col2.setChildrenCollapsible(False)
         col2.setHandleWidth(10)
-        col2.addWidget(btn_box)
+        col2.addWidget(self.btn_box)
         col2.addWidget(table_box)
         col3 = QtWidgets.QSplitter(Qt.Vertical)
         col3.setChildrenCollapsible(False)
@@ -1820,7 +1657,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for section in (
             pool_box,
             self.settings_widget,
-            btn_box,
+            self.btn_box,
             table_box,
             help_box,
             self.log_box,
@@ -1832,7 +1669,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._workflow_sections = (
             pool_box,
             self.settings_widget,
-            btn_box,
+            self.btn_box,
             table_box,
             help_box,
             self.log_box,
@@ -1936,7 +1773,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "Hilfe": help_box,
             "Protokoll": self.log_box,
             "Einstellungen": settings_box,
-            "Aktionen": btn_box,
+            "Aktionen": self.btn_box,
         }
         self._section_resize_targets = {
             "Dateilisten": (0, 0),
@@ -2576,7 +2413,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _choose_project_root(self) -> None:
         start_dir = self._get_last_dir("ui/last_project_root_dir", Path.cwd())
-        project_root = choose_project_root_dialog(self, start_dir)
+        project_root = choose_project_root_dialog(self, start_dir, UI_TEXTS)
         if project_root is None:
             return
         self._set_project_root(project_root)
@@ -2817,6 +2654,7 @@ class MainWindow(QtWidgets.QMainWindow):
             start_dir=start_dir,
             suffixes=suffixes,
             mode=mode,
+            texts=UI_TEXTS,
         )
         if dialog.exec():
             return dialog.selected_files()
@@ -2829,7 +2667,13 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if mode == "Slideshow":
             d = QtWidgets.QFileDialog.getExistingDirectory(
-                self, "Ordner mit Bildern wählen", start_dir
+                self,
+                text_with_fallback(
+                    UI_TEXTS,
+                    "dialog.image_folder.title",
+                    "Ordner mit Bildern wählen",
+                ),
+                start_dir,
             )
             if d:
                 self._set_last_dir("ui/last_image_dir", d)

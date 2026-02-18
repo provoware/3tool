@@ -169,3 +169,5 @@
 
 - [x] Primäres Startkommando `python3 -m app` eingeführt, Bootstrap zentralisiert, Legacy-Startwege auf Hauptpfad umgeleitet, Doku vereinheitlicht und Smoke-Tests je Startmodus ergänzt
 - [x] Konfigurationsmodell versioniert (schema_version), Migration v1->v2 mit Backup/Rollback umgesetzt und globale Config-Mutationen auf Session-Laden/Speichern umgestellt
+
+- [x] Kontrollierte Entkopplung fortgefuehrt: View-Aufbau nach gui/views ausgelagert, Actions-Controller erweitert, Dialog-/Fehlertexte per ui_texts-Keys zentralisiert und Tests fuer Actions/FilePicker/Dashboard ergaenzt
