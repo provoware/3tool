@@ -612,3 +612,64 @@ def test_workflow_tab_order_is_defined_with_core_sequence(
         win.log_edit,
     ]
     assert win._tab_order_chain == expected_chain
+
+
+def test_row_error_focuses_failed_row_and_updates_live_status(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win.pairs = [
+        videobatch_gui.PairItem(
+            image_path="/tmp/image-a.jpg",
+            audio_path="/tmp/audio-a.mp3",
+            output="/tmp/out-a.mp4",
+        ),
+        videobatch_gui.PairItem(
+            image_path="/tmp/image-b.jpg",
+            audio_path="/tmp/audio-b.mp3",
+            output="/tmp/out-b.mp4",
+        ),
+    ]
+    win.model.layoutChanged.emit()
+
+    win._on_row_error(1, "Fehlendes Audio")
+
+    assert win.table.currentIndex().row() == 1
+    assert win._active_section_name == "Paare"
+    assert win.live_status_label.text().startswith("Fehler in Zeile 2")
+    assert "nächster schritt" in win.live_status_label.text().lower()
+
+
+def test_accessibility_metadata_assigns_section_descriptions(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    assert win.statusBar().accessibleName() == "Statusleiste"
+    assert "Live-Status" in win.live_status_label.accessibleName()
+    assert "nächsten Schritten" not in win.statusBar().accessibleDescription()
+    assert "nächsten Schritten" not in win.table.accessibleDescription()
+    assert "Master-Detail" in win.table.accessibleDescription()

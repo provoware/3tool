@@ -216,8 +216,8 @@
   - [ ] Fokusdarstellung auch für Tabellenzellen ergänzen
   - [x] Workflow-basierte Tab-Order vollständig definieren
   - [x] Tastatur-Sprunglinks ergänzen (z. B. „Zu Pairing“, „Zu Export“)
-  - [ ] Screenreader-Rollen und Live-Statusfeld für kurze Status-/Fehlermeldungen ergänzen
-  - [ ] Bei Fehlern Fokus auf Fehlkarte setzen und Kurztext vorlesen lassen
+  - [x] Screenreader-Rollen und Live-Statusfeld für kurze Status-/Fehlermeldungen ergänzen
+  - [x] Bei Fehlern Fokus auf Fehlkarte setzen und Kurztext vorlesen lassen
   - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
   - [ ] Großschrift-Modus als echten Modus umsetzen (Padding, Zeilenhöhe, Icons, Tooltip-Dauer, kein Text-Cutoff)
 

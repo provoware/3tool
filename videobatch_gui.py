@@ -26,15 +26,17 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
-from core.media_validation import (
-    AUDIO_EXTENSIONS,
-    IMAGE_EXTENSIONS,
-)
 from core.fallback_media import (
     dumps_audio_list,
     loads_audio_list,
     persist_fallback_media,
 )
+from core.gui_logic import (
+    compute_workflow_min_size,
+    normalize_layout_width,
+    resolve_action_layout_columns,
+)
+from core.media_validation import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS
 from core.output_management import (
     build_dated_output_dir,
     transfer_with_validation,
@@ -44,28 +46,22 @@ from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
-from core.gui_logic import (
-    compute_workflow_min_size,
-    normalize_layout_width,
-    resolve_action_layout_columns,
-)
 from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
 from gui.dialogs.file_picker import FilePickerDialog
 from gui.main_window import build_initial_state
-from gui.views.main_window_view import create_action_buttons
 from gui.services.preview import play_audio_preview, stop_audio_preview
-from gui.services.runtime_paths import (
-    build_default_runtime_paths,
-    check_ffmpeg,
-    safe_move,
-)
 from gui.services.project_io import (
     build_project_payload,
     load_project_file,
     make_project_relative,
     resolve_project_path,
     save_project_file,
+)
+from gui.services.runtime_paths import (
+    build_default_runtime_paths,
+    check_ffmpeg,
+    safe_move,
 )
 from gui.state.project_state import (
     get_project_root,
@@ -74,6 +70,7 @@ from gui.state.project_state import (
     set_project_root,
 )
 from gui.views.action_orchestration import choose_project_root_dialog
+from gui.views.main_window_view import create_action_buttons
 from gui.widgets.dashboard import InfoDashboard
 
 # ---------- Paths ----------
@@ -1793,7 +1790,18 @@ class MainWindow(QtWidgets.QMainWindow):
                 selected_audios=0,
             )
         )
+        self.live_status_label = QtWidgets.QLabel()
+        self.live_status_label.setObjectName("liveStatusLabel")
+        self.live_status_label.setAccessibleName("Live-Status")
+        self.live_status_label.setAccessibleDescription(
+            "Kurze Status- und Fehlermeldungen in einfacher Sprache"
+        )
+        self.live_status_label.setText(
+            "Bereit. Nächster Schritt: Dateien auswählen und dann automatisch zuordnen."
+        )
+        self.live_status_label.setMinimumWidth(260)
         self.statusBar().addPermanentWidget(self.count_label)
+        self.statusBar().addPermanentWidget(self.live_status_label)
 
         self.copy_only = False
         self._build_menus()
@@ -1877,6 +1885,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "Hilfe": (2, 0),
             "Protokoll": (2, 1),
         }
+        self._configure_accessibility_metadata()
         QtWidgets.QApplication.instance().focusChanged.connect(
             self._on_focus_changed
         )
@@ -1886,6 +1895,49 @@ class MainWindow(QtWidgets.QMainWindow):
     # ----- UI helpers -----
     def _ui_text(self, key: str, fallback: str) -> str:
         return text_with_fallback(UI_TEXTS, key, fallback)
+
+    def _announce_live_status(
+        self, message: str, timeout_ms: int = 4000
+    ) -> None:
+        clean_message = " ".join((message or "").split())
+        if not clean_message:
+            return
+        self.live_status_label.setText(clean_message)
+        self.live_status_label.setToolTip(clean_message)
+        self.statusBar().showMessage(clean_message, timeout_ms)
+
+    def _configure_accessibility_metadata(self) -> None:
+        section_descriptions = {
+            "Dateilisten": (
+                "Eingabe-Bereich. Hier wählen Sie Bilder und Audios aus."
+            ),
+            "Einstellungen": (
+                "Validierung-Bereich. Hier stellen Sie Qualität und Ausgabe ein."
+            ),
+            "Aktionen": (
+                "Start-Bereich. Hier starten, stoppen oder speichern Sie den Workflow."
+            ),
+            "Paare": (
+                "Zuordnung-Bereich. Tabelle mit Bild, Audio, Status und Ergebnis."
+            ),
+            "Hilfe": "Hilfe-Bereich mit einfachen Erklärungen.",
+            "Protokoll": (
+                "Output-Bereich mit Logs. Zeigt Fehler und nächsten Schritt."
+            ),
+        }
+        for section_name, box in self._section_boxes.items():
+            box.setAccessibleName(section_name)
+            box.setAccessibleDescription(
+                section_descriptions.get(section_name, section_name)
+            )
+        self.table.setAccessibleName("Pairing-Tabelle")
+        self.table.setAccessibleDescription(
+            "Master-Detail-Tabelle für Zuordnungen und Fehlermeldungen"
+        )
+        self.statusBar().setAccessibleName("Statusleiste")
+        self.statusBar().setAccessibleDescription(
+            "Live-Status mit kurzen Meldungen und nächsten Schritten"
+        )
 
     def _init_workflow_shortcuts(self) -> None:
         section_shortcuts = (
@@ -1917,9 +1969,9 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         target.setFocus(Qt.ShortcutFocusReason)
         self._on_focus_changed(None, target)
-        self.statusBar().showMessage(
+        self._announce_live_status(
             f"Sprunglink aktiv: {section_name} fokussiert.",
-            4000,
+            timeout_ms=4000,
         )
 
     def _init_workflow_tab_order(self) -> None:
@@ -2368,9 +2420,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 active_name = name
         if active_name:
             self._active_section_name = active_name
-            self.focus_hint_label.setText(
-                f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, dann den nächsten Schritt starten. Sprunglinks: Strg+1 bis Strg+6."
+            hint = (
+                f"Aktiver Bereich: {active_name}. Tipp: Erst hier arbeiten, "
+                "dann den nächsten Schritt starten. Sprunglinks: Strg+1 bis Strg+6."
             )
+            self.focus_hint_label.setText(hint)
+            self.focus_hint_label.setAccessibleDescription(hint)
 
     def _apply_log_level(self, level_name: str) -> None:
         level_name = (level_name or "INFO").upper()
@@ -2764,6 +2819,10 @@ class MainWindow(QtWidgets.QMainWindow):
         box.setText(message)
         box.setDetailedText(self._log_details())
         box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        self._announce_live_status(
+            f"{title}: {message}. Nächster Schritt: Hinweise prüfen und erneut starten.",
+            timeout_ms=6000,
+        )
         box.exec()
 
     def _normalize_error_message(self, msg: str) -> str:
@@ -3832,6 +3891,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self.table.scrollTo(
                 idx, QtWidgets.QAbstractItemView.PositionAtCenter
             )
+            self.table.setCurrentIndex(idx)
+            self.table.selectRow(row)
+            self.table.setFocus(Qt.OtherFocusReason)
+            self._announce_live_status(
+                (
+                    f"Fehler in Zeile {row + 1}: {msg}. "
+                    "Nächster Schritt: Zeile prüfen und Eingabe korrigieren."
+                ),
+                timeout_ms=6000,
+            )
         self._show_error_dialog("Fehler in Zeile", msg)
         self._update_counts()
         self._flag_row_error(row, msg)
@@ -4174,9 +4243,9 @@ class MainWindow(QtWidgets.QMainWindow):
             path = p.output or p.image_path or p.audio_path
             if path:
                 QtWidgets.QApplication.clipboard().setText(str(path))
-                self.statusBar().showMessage(
+                self._announce_live_status(
                     self._ui_text("messages.path_copied", "Pfad kopiert"),
-                    2000,
+                    timeout_ms=2000,
                 )
                 self._log(f"Pfad kopiert: {path}")
         elif action == act_remove:
@@ -4190,8 +4259,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if not index.isValid():
             return
         if index.column() in (2, 3, 5):
-            self.statusBar().showMessage(
-                self.model.data(index, Qt.DisplayRole), 5000
+            self._announce_live_status(
+                self.model.data(index, Qt.DisplayRole),
+                timeout_ms=5000,
             )
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
