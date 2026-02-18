@@ -191,3 +191,5 @@
 - [x] Grafische Flexibilitaet verbessert: neues Theme "Solarisiert Barrierefrei", zentrale Kontrastvalidierung pro Theme und Tests erweitert
 
 - [x] Dashboard- und Aktionskarten-Reflow gegen Textüberlagerung bei großer Schrift/DPI gehärtet und GUI-Tests ergänzt
+
+- [x] Start-Reparaturorchestrierung gehaertet: Eingaben/Check-Ergebnisse strikt validiert, laienfreundliche Naechstschritt-Hinweise ergänzt und Tests erweitert

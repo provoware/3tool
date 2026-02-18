@@ -46,3 +46,31 @@ def test_apply_repairs_returns_tuple(monkeypatch, tmp_path: Path) -> None:
     result_checks, repairs = apply_repairs("python3", tmp_path, tmp_path)
     assert result_checks == check
     assert repairs == []
+
+
+def test_apply_repairs_validates_python_binary(tmp_path: Path) -> None:
+    try:
+        apply_repairs("", tmp_path, tmp_path)
+    except ValueError as exc:
+        message = str(exc)
+        assert "nicht-leerer String" in message
+        assert "python3 --version" in message
+    else:
+        raise AssertionError("ValueError erwartet")
+
+
+def test_apply_repairs_rejects_empty_startup_results(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        "core.startup.repair_orchestrator.run_startup_checks",
+        lambda *_args, **_kwargs: [],
+    )
+    try:
+        apply_repairs("python3", tmp_path, tmp_path)
+    except RuntimeError as exc:
+        assert "keine Pruefergebnisse" in str(exc)
+        assert "./scripts/qa.sh" in str(exc)
+    else:
+        raise AssertionError("RuntimeError erwartet")
