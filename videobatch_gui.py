@@ -100,6 +100,8 @@ SLIDESHOW_IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".webp")
 OUTPUT_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov")
 MAX_PREVIEW_CACHE_ITEMS = 180
 _RUNTIME_PATHS = build_default_runtime_paths()
+TABLE_ROW_RESIZE_SAMPLE_LIMIT = 150
+TABLE_MIN_WIDTH_FOR_HSCROLL_OFF = 920
 
 
 def get_used_dir() -> Path:
@@ -1128,8 +1130,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.table.setAccessibleDescription("Liste der Bild- und Audio-Paare")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
-        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setWordWrap(True)
+        self.table.setTextElideMode(Qt.ElideNone)
+        self.table.setHorizontalScrollMode(
+            QtWidgets.QAbstractItemView.ScrollPerPixel
+        )
+        self._table_row_resize_pending = False
+        self.model.dataChanged.connect(
+            lambda *_: self._schedule_table_row_resize()
+        )
+        self.model.layoutChanged.connect(self._schedule_table_row_resize)
+        self.model.modelReset.connect(self._schedule_table_row_resize)
+        self.model.rowsInserted.connect(
+            lambda *_: self._schedule_table_row_resize()
+        )
+        self.model.rowsRemoved.connect(
+            lambda *_: self._schedule_table_row_resize()
+        )
+        self._schedule_table_row_resize()
 
         self.help_pane = HelpPane(self._current_theme_tokens)
         self.help_pane.setAccessibleName("Hilfe-Bereich")
@@ -3747,6 +3766,41 @@ class MainWindow(QtWidgets.QMainWindow):
     def _resize_columns(self):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.Stretch)
+        self._update_table_horizontal_scroll_policy()
+        self._schedule_table_row_resize()
+
+    def _schedule_table_row_resize(self) -> None:
+        if not hasattr(self, "table") or self._table_row_resize_pending:
+            return
+        self._table_row_resize_pending = True
+        QtCore.QTimer.singleShot(0, self._apply_table_row_heights)
+
+    def _apply_table_row_heights(self) -> None:
+        if not hasattr(self, "table"):
+            self._table_row_resize_pending = False
+            return
+        self._table_row_resize_pending = False
+        row_count = self.model.rowCount()
+        if row_count <= 0:
+            return
+        sample_count = min(row_count, TABLE_ROW_RESIZE_SAMPLE_LIMIT)
+        max_height = self.table.verticalHeader().defaultSectionSize()
+        for row in range(sample_count):
+            self.table.resizeRowToContents(row)
+            max_height = max(max_height, self.table.rowHeight(row))
+        if row_count > sample_count:
+            max_height = max(
+                max_height, self.table.verticalHeader().minimumSectionSize()
+            )
+            self.table.verticalHeader().setDefaultSectionSize(max_height)
+
+    def _update_table_horizontal_scroll_policy(self) -> None:
+        if not hasattr(self, "table"):
+            return
+        width = self.table.viewport().width()
+        allow_off = width >= TABLE_MIN_WIDTH_FOR_HSCROLL_OFF
+        policy = Qt.ScrollBarAlwaysOff if allow_off else Qt.ScrollBarAsNeeded
+        self.table.setHorizontalScrollBarPolicy(policy)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
