@@ -58,6 +58,19 @@ Damit sind Änderungen transparent nachvollziehbar.
 5. Typprüfung (`mypy`)
 6. Tests (`pytest`)
 
+
+## GUI-Layout-Standards (kurz)
+
+- Dialoge nutzen skalierbare EM-Konstanten statt fixer Pixelwerte
+  (abhängig von Schriftgröße und DPI).
+- Mindestgrößen werden mit `minimumSize` und `QSizePolicy` abgesichert,
+  damit Kern-Controls auch bei kleinen Fenstern sichtbar bleiben.
+- `QSplitter` nutzt relative Gewichte über `setStretchFactor` für stabile
+  Flächenverteilung zwischen Listen- und Vorschau-Bereich.
+- Vorschau-Zoom basiert auf verfügbarer Fläche (`contentsRect`) statt auf
+  festen Pixel-Basen; dadurch bleibt die Darstellung bei hoher Skalierung
+  robust.
+
 ## Hinweise für robuste Erweiterungen
 
 - Neue Konfigurationswerte immer zentral validieren.
