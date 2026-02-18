@@ -28,16 +28,15 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
 from core.paths import config_dir, log_dir, user_data_dir
+from core.output_management import (
+    build_dated_output_dir,
+    transfer_with_validation,
+)
 from core.plugins import PluginManager
 from core.themes import load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
-from core.utils import (
-    build_out_name,
-    human_time,
-    mark_used_filename,
-    probe_duration,
-)
+from core.utils import build_out_name, human_time, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
 from core.fallback_media import (
     dumps_audio_list,
@@ -113,28 +112,15 @@ def default_downloads_dir() -> Path:
 
 
 def safe_move(src: Path, dst_dir: Path, copy_only: bool = False) -> Path:
-    dst_dir.mkdir(parents=True, exist_ok=True)
-    target_name = mark_used_filename(src)
-    tgt = dst_dir / target_name
-    if tgt.exists():
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        tgt = (
-            dst_dir
-            / f"{Path(target_name).stem}_{timestamp}{src.suffix.lower()}"
-        )
-    try:
-        if copy_only:
-            shutil.copy2(src, tgt)
-        else:
-            shutil.move(src, tgt)
-    except Exception:
-        shutil.copy2(src, tgt)
-        if not copy_only:
-            try:
-                src.unlink()
-            except Exception as e:
-                print("Fehler beim Löschen:", e, file=sys.stderr)
-    return tgt
+    result = transfer_with_validation(
+        src,
+        dst_dir,
+        copy_only=copy_only,
+        suffix_label="benutzt",
+    )
+    if not result.validated:
+        raise IOError(result.detail)
+    return result.target
 
 
 def make_thumb(path: str, size: Tuple[int, int] = (160, 90)) -> QtGui.QPixmap:
@@ -723,8 +709,11 @@ class EncodeWorker(QtCore.QObject):
             item.status = "ENCODIERE"
             item.progress = 0.0
             self.row_progress.emit(index, 0.0)
-            out_dir = Path(self.settings["out_dir"]).resolve()
-            out_dir.mkdir(parents=True, exist_ok=True)
+            out_dir = build_dated_output_dir(
+                Path(self.settings["out_dir"]),
+                self.settings.get("mode", "Standard"),
+            )
+            self.log.emit(f"Ausgabeordner gesetzt: {out_dir}")
             w, h = self.settings["width"], self.settings["height"]
             crf = self.settings["crf"]
             preset = self.settings["preset"]
@@ -947,16 +936,34 @@ class EncodeWorker(QtCore.QObject):
                         break
         if all(p.status == "FERTIG" for p in self.pairs):
             try:
-                dst = get_used_dir()
+                used_root = get_used_dir() / datetime.now().strftime("%Y-%m-%d")
+                tracks_dir = used_root / "tracks"
+                musik_dir = used_root / "musik"
                 moved = 0
                 for p in self.pairs:
                     for f in (p.image_path, p.audio_path):
-                        if f and Path(f).exists():
-                            safe_move(Path(f), dst, copy_only=self.copy_only)
+                        if not f or not Path(f).exists():
+                            continue
+                        src_path = Path(f)
+                        target_dir = (
+                            musik_dir
+                            if src_path.suffix.lower() in AUDIO_EXTENSIONS
+                            else tracks_dir
+                        )
+                        result = transfer_with_validation(
+                            src_path,
+                            target_dir,
+                            copy_only=self.copy_only,
+                            suffix_label="benutzt",
+                        )
+                        if result.validated:
                             moved += 1
+                        self.log.emit(
+                            f"Eingabe-Datei {result.action}: {result.target} | {result.detail}"
+                        )
                 self.log.emit(
-                    f"{moved} Dateien nach {dst} "
-                    f"{'kopiert' if self.copy_only else 'verschoben'}."
+                    f"{moved} Dateien nach {used_root} "
+                    f"{'kopiert' if self.copy_only else 'verschoben'} und validiert."
                 )
             except Exception as e:
                 self.log.emit(f"Archivierung fehlgeschlagen: {e}")
@@ -3189,7 +3196,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 try:
                     output_files = [
                         str(p)
-                        for p in sorted(out_path.iterdir())
+                        for p in sorted(out_path.rglob("*"))
                         if p.is_file() and p.suffix.lower() in OUTPUT_EXTENSIONS
                     ]
                 except Exception as exc:
