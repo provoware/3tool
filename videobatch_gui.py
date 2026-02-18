@@ -998,6 +998,8 @@ class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
     WORKFLOW_SECTION_MIN_WIDTH = 180
     WORKFLOW_SECTION_MIN_HEIGHT = 190
+    WORKFLOW_COLUMN_DEFAULT_WEIGHTS = (35, 30, 35)
+    WORKFLOW_SPLITTER_STATE_VERSION = 1
     WORKFLOW_BREAKPOINT_SMALL = 1024
     WORKFLOW_BREAKPOINT_MEDIUM = 1440
     WORKFLOW_STACK_GUARD_WIDTH = 860
@@ -1703,14 +1705,38 @@ class MainWindow(QtWidgets.QMainWindow):
         self.workflow_columns.addWidget(col1)
         self.workflow_columns.addWidget(col2)
         self.workflow_columns.addWidget(col3)
-        self.workflow_columns.setSizes([1, 1, 1])
+        self.workflow_columns.setSizes(
+            self._scaled_sizes(
+                self.WORKFLOW_COLUMN_DEFAULT_WEIGHTS,
+                max(self.workflow_columns.width(), 1),
+            )
+        )
         for idx in range(3):
             self.workflow_columns.setCollapsible(idx, False)
         for col in (col1, col2, col3):
-            col.setSizes([1, 1])
+            col.setSizes(
+                self._scaled_sizes(
+                    (1, 1),
+                    max(col.height(), 1),
+                )
+            )
             col.setCollapsible(0, False)
             col.setCollapsible(1, False)
         self.workflow_splitters = [col1, col2, col3]
+        self._layout_splitter_keys = {
+            "columns": "ui/workflow_splitter_columns_v1",
+            "rows": [
+                "ui/workflow_splitter_col1_rows_v1",
+                "ui/workflow_splitter_col2_rows_v1",
+                "ui/workflow_splitter_col3_rows_v1",
+            ],
+        }
+        self._user_layout_touched = False
+        self.workflow_columns.splitterMoved.connect(
+            self._on_user_splitter_moved
+        )
+        for splitter in self.workflow_splitters:
+            splitter.splitterMoved.connect(self._on_user_splitter_moved)
 
         for section in (
             pool_box,
@@ -1816,6 +1842,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._apply_interface_profile(self.interface_combo.currentText())
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
+        self._restore_workflow_splitter_state()
         QtGui.QShortcut(QtGui.QKeySequence("F1"), self).activated.connect(
             self._show_help_window
         )
@@ -2079,10 +2106,13 @@ class MainWindow(QtWidgets.QMainWindow):
         column_sizes = [base, base, base]
         column_sizes[active_column] = focus
         current_column_sizes = self.workflow_columns.sizes()
-        if force or self._needs_significant_resize(
-            current_column_sizes,
-            column_sizes,
-            self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+        if force or (
+            not self._user_layout_touched
+            and self._needs_significant_resize(
+                current_column_sizes,
+                column_sizes,
+                self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+            )
         ):
             self.workflow_columns.setSizes(column_sizes)
 
@@ -2101,21 +2131,97 @@ class MainWindow(QtWidgets.QMainWindow):
                 sizes = [base_h, base_h]
                 sizes[row] = focus_h
                 current_sizes = splitter.sizes()
-                if force or self._needs_significant_resize(
-                    current_sizes,
-                    sizes,
-                    self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+                if force or (
+                    not self._user_layout_touched
+                    and self._needs_significant_resize(
+                        current_sizes,
+                        sizes,
+                        self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+                    )
                 ):
                     splitter.setSizes(sizes)
             else:
                 sizes = [base_h, base_h]
                 current_sizes = splitter.sizes()
-                if force or self._needs_significant_resize(
-                    current_sizes,
-                    sizes,
-                    self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+                if force or (
+                    not self._user_layout_touched
+                    and self._needs_significant_resize(
+                        current_sizes,
+                        sizes,
+                        self.WORKFLOW_REBALANCE_THRESHOLD_PX,
+                    )
                 ):
                     splitter.setSizes(sizes)
+
+    @staticmethod
+    def _scaled_sizes(
+        weights: Sequence[int],
+        total: int,
+    ) -> List[int]:
+        if not weights:
+            return []
+        safe_total = max(1, int(total))
+        safe_weights = [max(1, int(weight)) for weight in weights]
+        weight_sum = sum(safe_weights)
+        if weight_sum <= 0:
+            return [1] * len(safe_weights)
+        sizes = [
+            max(1, int(safe_total * weight / weight_sum))
+            for weight in safe_weights
+        ]
+        diff = safe_total - sum(sizes)
+        sizes[-1] = max(1, sizes[-1] + diff)
+        return sizes
+
+    def _on_user_splitter_moved(self, *_args: object) -> None:
+        self._user_layout_touched = True
+
+    def _restore_workflow_splitter_state(self) -> None:
+        version = int(
+            self.settings.value(
+                "ui/workflow_splitter_state_version",
+                0,
+            )
+            or 0
+        )
+        if version != self.WORKFLOW_SPLITTER_STATE_VERSION:
+            self._user_layout_touched = False
+            self._request_workflow_rebalance(force=True)
+            return
+
+        columns_state = self.settings.value(
+            self._layout_splitter_keys["columns"],
+            b"",
+            bytes,
+        )
+        has_restored = False
+        if columns_state:
+            has_restored = self.workflow_columns.restoreState(columns_state)
+
+        for index, splitter in enumerate(self.workflow_splitters):
+            key = self._layout_splitter_keys["rows"][index]
+            row_state = self.settings.value(key, b"", bytes)
+            if row_state:
+                has_restored = splitter.restoreState(row_state) or has_restored
+
+        self._user_layout_touched = has_restored
+        if not has_restored:
+            self._request_workflow_rebalance(force=True)
+
+    def _save_workflow_splitter_state(self) -> None:
+        self.settings.setValue(
+            "ui/workflow_splitter_state_version",
+            self.WORKFLOW_SPLITTER_STATE_VERSION,
+        )
+        self.settings.setValue(
+            self._layout_splitter_keys["columns"],
+            self.workflow_columns.saveState(),
+        )
+        for index, splitter in enumerate(self.workflow_splitters):
+            self.settings.setValue(
+                self._layout_splitter_keys["rows"][index],
+                splitter.saveState(),
+            )
 
     @staticmethod
     def _needs_significant_resize(
@@ -3824,7 +3930,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def _update_interface_profile(self, profile: str) -> None:
         self.settings.setValue("ui/interface_profile", profile)
         self._apply_interface_profile(profile)
-        self._request_workflow_rebalance(force=True)
+        self._request_workflow_rebalance(force=False)
         self._log(
             f"Interface-Profil gesetzt: {profile}. "
             "Tipp: Seniorenfreundlich ist für sehschwache Nutzer optimiert."
@@ -3938,7 +4044,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._resize_columns()
         action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
         self._reflow_action_buttons(action_width)
-        self._request_workflow_rebalance(force=True)
+        self._request_workflow_rebalance(force=False)
 
     def _table_menu(self, pos: QtCore.QPoint):
         index = self.table.indexAt(pos)
@@ -3982,6 +4088,7 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        self._save_workflow_splitter_state()
         self.settings.setValue("ui/geometry", self.saveGeometry())
         self.settings.setValue("ui/window_state", self.saveState())
         self.settings.setValue("ui/clear_after", self.clear_after.isChecked())
