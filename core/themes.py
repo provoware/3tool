@@ -7,8 +7,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 BASE_COMPONENT_STYLE = (
     "QPushButton{min-height:32px;padding:6px 12px;font-weight:600;border-radius:8px;} "
     "QToolButton{min-height:32px;padding:6px 10px;font-weight:600;border-radius:8px;} "
-    "QPushButton:disabled{opacity:0.75;} "
-    "QToolButton:disabled{opacity:0.75;} "
+    "QPushButton:disabled{opacity:0.82;} "
+    "QToolButton:disabled{opacity:0.82;} "
     "QLineEdit,QSpinBox,QComboBox,QPlainTextEdit,QTextBrowser{"
     "min-height:30px;padding:4px 8px;border-radius:6px;} "
     "QCheckBox,QRadioButton{spacing:8px;padding:2px 0;} "
@@ -25,6 +25,8 @@ BASE_COMPONENT_STYLE = (
     "QFrame[dashboardCard='true']{border:1px solid #7a8699;border-radius:10px;padding:6px;} "
     "QLabel[metricLabel='true']{font-size:11px;font-weight:600;letter-spacing:0.3px;} "
     "QLabel[metricValue='true']{font-size:24px;font-weight:700;} "
+    "QWidget[responsive='compact'] QPushButton,QWidget[responsive='compact'] QToolButton{min-height:28px;padding:4px 8px;} "
+    "QWidget[responsive='expanded'] QPushButton,QWidget[responsive='expanded'] QToolButton{min-height:38px;padding:8px 14px;} "
 )
 
 ACTIVE_SECTION_STYLE = (
@@ -260,6 +262,59 @@ THEME_TOKENS: Dict[str, Dict[str, str]] = {
         "preview_danger_border": "#ffffff",
         "preview_danger_fg": "#ffffff",
     },
+    "Solarisiert Barrierefrei": {
+        "widget_bg": "#fdf6e3",
+        "widget_fg": "#073642",
+        "button_bg": "#073642",
+        "button_fg": "#fdf6e3",
+        "button_border": "#002b36",
+        "button_hover": "#0b4f62",
+        "button_pressed": "#002b36",
+        "indicator_border": "#073642",
+        "indicator_bg": "#fdf6e3",
+        "indicator_checked": "#005f87",
+        "dropdown_bg": "#073642",
+        "scroll_handle": "#586e75",
+        "field_bg": "#ffffff",
+        "field_fg": "#073642",
+        "field_border": "#073642",
+        "header_bg": "#073642",
+        "header_fg": "#fdf6e3",
+        "selection_bg": "#005f87",
+        "selection_fg": "#fdf6e3",
+        "progress_bg": "#eee8d5",
+        "progress_fg": "#073642",
+        "progress_border": "#073642",
+        "progress_chunk": "#005f87",
+        "focus_color": "#b58900",
+        "action_primary_bg": "#005f87",
+        "action_primary_fg": "#fdf6e3",
+        "action_primary_border": "#004f70",
+        "action_primary_hover": "#0a739f",
+        "action_primary_pressed": "#004f70",
+        "action_primary_disabled_bg": "#839496",
+        "action_primary_disabled_fg": "#fdf6e3",
+        "action_primary_focus": "#b58900",
+        "action_ready_bg_a": "#0d6f42",
+        "action_ready_bg_b": "#14844f",
+        "preview_info_bg": "#eaf5ff",
+        "preview_info_border": "#005f87",
+        "preview_info_fg": "#004f70",
+        "preview_success_bg": "#e8f7ef",
+        "preview_success_border": "#0d6f42",
+        "preview_success_fg": "#0d6f42",
+        "preview_danger_bg": "#fff1eb",
+        "preview_danger_border": "#9c2f00",
+        "preview_danger_fg": "#9c2f00",
+    },
+}
+
+CONTRAST_REQUIREMENTS: Dict[str, Tuple[str, str, float]] = {
+    "widget": ("widget_fg", "widget_bg", 7.0),
+    "field": ("field_fg", "field_bg", 7.0),
+    "button": ("button_fg", "button_bg", 4.5),
+    "selection": ("selection_fg", "selection_bg", 4.5),
+    "primary_action": ("action_primary_fg", "action_primary_bg", 4.5),
 }
 
 
@@ -348,7 +403,7 @@ def load_themes(logger: Optional[logging.Logger] = None) -> Dict[str, str]:
             ", ".join(sorted(set(duplicates))),
         )
 
-    _warn_low_contrast(themes, active_logger)
+    _warn_low_contrast(active_logger)
     return themes
 
 
@@ -358,39 +413,41 @@ def get_theme_tokens(name: str) -> Dict[str, str]:
     return dict(THEME_TOKENS[name])
 
 
-def _warn_low_contrast(themes: Dict[str, str], logger: logging.Logger) -> None:
-    for name, css in themes.items():
-        widget_colors = _extract_widget_colors(css)
-        if not widget_colors:
-            continue
-        foreground, background = widget_colors
-        ratio = _contrast_ratio(foreground, background)
-        if ratio is not None and ratio < 7.0:
-            logger.warning(
-                "Theme '%s' hat niedrigen Grundkontrast (%.2f:1) zwischen %s und %s.",
-                name,
-                ratio,
-                foreground,
-                background,
-            )
+def _warn_low_contrast(logger: logging.Logger) -> None:
+    for name in THEME_TOKENS:
+        report = validate_theme_contrast(name)
+        for section, (ratio, minimum_ratio, passed) in report.items():
+            if not passed:
+                logger.warning(
+                    "Theme '%s' hat niedrigen %s-Kontrast (%.2f:1, erwartet >= %.2f:1).",
+                    name,
+                    section,
+                    ratio,
+                    minimum_ratio,
+                )
 
-        input_colors = _extract_input_colors(css)
-        if not input_colors:
-            logger.warning(
-                "Theme '%s' hat keine klaren Eingabefarben fuer Felder.",
-                name,
+
+def validate_theme_contrast(
+    theme_name: str,
+) -> Dict[str, Tuple[float, float, bool]]:
+    """Validate required contrast pairs for a theme.
+
+    Returns mapping section -> (ratio, minimum_ratio, passed).
+    """
+    if not isinstance(theme_name, str) or not theme_name.strip():
+        raise ValueError("theme_name muss ein nicht-leerer String sein")
+    if theme_name not in THEME_TOKENS:
+        raise ValueError(f"Unbekanntes Theme: {theme_name}")
+    tokens = THEME_TOKENS[theme_name]
+    report: Dict[str, Tuple[float, float, bool]] = {}
+    for section, (fg_key, bg_key, minimum_ratio) in CONTRAST_REQUIREMENTS.items():
+        ratio = _contrast_ratio(tokens[fg_key], tokens[bg_key])
+        if ratio is None:
+            raise ValueError(
+                f"Theme '{theme_name}' hat ungueltige Farbe fuer '{section}'."
             )
-            continue
-        input_foreground, input_background = input_colors
-        input_ratio = _contrast_ratio(input_foreground, input_background)
-        if input_ratio is not None and input_ratio < 7.0:
-            logger.warning(
-                "Theme '%s' hat niedrigen Feldkontrast (%.2f:1) zwischen %s und %s.",
-                name,
-                input_ratio,
-                input_foreground,
-                input_background,
-            )
+        report[section] = (ratio, minimum_ratio, ratio >= minimum_ratio)
+    return report
 
 
 def _extract_widget_colors(css: str) -> Optional[Tuple[str, str]]:

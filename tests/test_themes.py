@@ -2,14 +2,32 @@ import core.themes as themes
 from pathlib import Path
 
 
-def test_theme_catalog_is_limited_to_four_profiles() -> None:
+def test_theme_catalog_includes_accessible_profiles() -> None:
     loaded = themes.load_themes()
     assert list(loaded.keys()) == [
         "Modern",
         "Nachtblau Pro",
         "Hochkontrast Hell",
         "Hochkontrast Dunkel",
+        "Solarisiert Barrierefrei",
     ]
+
+
+def test_validate_theme_contrast_covers_required_sections() -> None:
+    report = themes.validate_theme_contrast("Solarisiert Barrierefrei")
+    assert sorted(report.keys()) == sorted(themes.CONTRAST_REQUIREMENTS.keys())
+    for ratio, minimum_ratio, passed in report.values():
+        assert ratio >= minimum_ratio
+        assert passed
+
+
+def test_validate_theme_contrast_rejects_invalid_theme_name() -> None:
+    import pytest
+
+    with pytest.raises(ValueError):
+        themes.validate_theme_contrast("")
+    with pytest.raises(ValueError):
+        themes.validate_theme_contrast("Unbekannt")
 
 
 def test_accessible_themes_have_good_widget_contrast() -> None:
