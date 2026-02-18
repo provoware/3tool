@@ -44,6 +44,11 @@ from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
 from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
 from core.ui_texts import load_ui_texts, text_with_fallback
+from core.gui_logic import (
+    compute_workflow_min_size,
+    normalize_layout_width,
+    resolve_action_layout_columns,
+)
 from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
 from gui.dialogs.file_picker import FilePickerDialog
@@ -2421,88 +2426,54 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
     def _normalize_action_layout_width(self, available_width: int) -> int:
-        if isinstance(available_width, int):
-            return available_width
-        self._log(
-            "Interner Layout-Hinweis: verfügbare Breite ist ungültig, nutze sicheren Standard.",
-            logging.WARNING,
-        )
-        return 0
+        width = normalize_layout_width(available_width)
+        if width == 0 and available_width != 0:
+            self._log(
+                "Interner Layout-Hinweis: verfügbare Breite ist ungültig, nutze sicheren Standard.",
+                logging.WARNING,
+            )
+        return width
 
     def _resolve_action_columns(
         self,
         wrappers: Sequence[QtWidgets.QWidget],
         available_width: int,
     ) -> Tuple[int, int]:
-        spacing = max(self.top_buttons_layout.horizontalSpacing(), 0)
         margins = self.top_buttons_layout.contentsMargins()
-        usable_width = max(
-            available_width - margins.left() - margins.right(),
-            240,
-        )
         button_font = QtGui.QFontMetrics(self.btn_encode.font())
-        dynamic_min_width = max(
-            160,
-            button_font.horizontalAdvance("Gespeichertes Projekt laden") + 60,
+        return resolve_action_layout_columns(
+            available_width=available_width,
+            minimum_widths=[w.minimumWidth() for w in wrappers],
+            spacing=self.top_buttons_layout.horizontalSpacing(),
+            margin_left=margins.left(),
+            margin_right=margins.right(),
+            button_label_width=button_font.horizontalAdvance(
+                "Gespeichertes Projekt laden"
+            ),
         )
-        min_cell_width = max(
-            max((w.minimumWidth() for w in wrappers), default=190),
-            dynamic_min_width,
-        )
-        max_columns = 4 if usable_width >= 1100 else 3
-        columns = max(
-            1,
-            min(max_columns, usable_width // max(min_cell_width + spacing, 1)),
-        )
-        return columns, max_columns
 
     def _compute_workflow_min_size(self) -> Tuple[int, int]:
-        base_font = self._font_size if isinstance(self._font_size, int) else 13
-        base_font = max(10, min(36, int(base_font)))
-        dpi_scale = self._workflow_dpi_scale_factor()
-        font_scale = max(1.0, base_font / 13.0)
-        scale = max(dpi_scale, font_scale)
-
         available_width = self.width()
         if hasattr(self, "workflow_columns"):
             available_width = max(self.workflow_columns.width(), self.width())
-        available_width = max(available_width, 480)
-        layout_meta = self._workflow_layout_meta(available_width)
-        target_columns = max(1, int(layout_meta["columns"]))
-
-        usable_width = max(
-            available_width
-            - (
-                self.workflow_columns.handleWidth()
-                * (len(self.workflow_splitters))
-            ),
-            self.WORKFLOW_SECTION_MIN_WIDTH,
-        )
-        max_per_section = max(
-            self.WORKFLOW_SECTION_MIN_WIDTH,
-            int(usable_width / target_columns),
-        )
-        dynamic_width = int(self.WORKFLOW_SECTION_MIN_WIDTH * scale)
-        min_width = min(
-            max_per_section, max(self.WORKFLOW_SECTION_MIN_WIDTH, dynamic_width)
-        )
-
         available_height = self.height()
         if hasattr(self, "workflow_columns"):
             available_height = max(
-                self.workflow_columns.height(), self.height()
+                self.workflow_columns.height(),
+                self.height(),
             )
-        available_height = max(available_height, 360)
-        max_per_section_h = max(
-            self.WORKFLOW_SECTION_MIN_HEIGHT,
-            int(available_height / 2),
+        layout_meta = self._workflow_layout_meta(available_width)
+        return compute_workflow_min_size(
+            font_size=self._font_size,
+            dpi_scale=self._workflow_dpi_scale_factor(),
+            available_width=available_width,
+            available_height=available_height,
+            layout_columns=layout_meta["columns"],
+            splitter_handle_width=self.workflow_columns.handleWidth(),
+            splitter_count=len(self.workflow_splitters),
+            section_min_width=self.WORKFLOW_SECTION_MIN_WIDTH,
+            section_min_height=self.WORKFLOW_SECTION_MIN_HEIGHT,
         )
-        dynamic_height = int(self.WORKFLOW_SECTION_MIN_HEIGHT * scale)
-        min_height = min(
-            max_per_section_h,
-            max(self.WORKFLOW_SECTION_MIN_HEIGHT, dynamic_height),
-        )
-        return min_width, min_height
 
     def _workflow_dpi_scale_factor(self) -> float:
         screen = self.screen() or QtWidgets.QApplication.primaryScreen()
