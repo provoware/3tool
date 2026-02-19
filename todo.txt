@@ -249,3 +249,4 @@
   - [ ] Tabellen auf Master-Detail umstellen
   - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren
   - [x] UI-Smoke-Tests für Auflösungen + Großschrift automatisieren
+- [x] Start-Preflight-Report um Kontextfelder, strikte Ergebnisvalidierung und Laien-Next-Steps erweitert
