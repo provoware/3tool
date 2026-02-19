@@ -1,6 +1,8 @@
 import importlib
 import sys
 
+from PySide6 import QtCore
+
 from core import launcher_checks
 
 
@@ -739,3 +741,60 @@ def test_accessibility_metadata_assigns_section_descriptions(
     assert "nächsten Schritten" not in win.statusBar().accessibleDescription()
     assert "nächsten Schritten" not in win.table.accessibleDescription()
     assert "Master-Detail" in win.table.accessibleDescription()
+
+
+def test_dashboard_quick_status_cards_show_text_and_state(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    dashboard.set_quick_status(
+        image_count=2,
+        audio_count=0,
+        pair_count=1,
+        ffmpeg_ok=False,
+        output_ready=True,
+    )
+
+    cards = dashboard._status_cards
+    assert "2 bereit" in cards["images"].text()
+    assert cards["images"].property("statusState") == "ok"
+    assert cards["audios"].property("statusState") == "warn"
+    assert cards["ffmpeg"].property("statusState") == "warn"
+    assert cards["output"].property("statusState") == "ok"
+
+
+def test_dashboard_status_card_click_emits_card_key(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    dashboard = videobatch_gui.InfoDashboard()
+    qtbot.addWidget(dashboard)
+
+    received = []
+    dashboard.cardActivated.connect(received.append)
+
+    card = dashboard._status_cards["pairs"]
+    qtbot.mouseClick(card, QtCore.Qt.LeftButton)
+
+    assert received == ["pairs"]

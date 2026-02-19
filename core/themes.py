@@ -27,6 +27,7 @@ BASE_COMPONENT_STYLE = (
     "QLabel[metricValue='true']{font-size:1.7em;font-weight:700;} "
     "QFrame[actionTile='true']{border:1px solid #7a8699;border-radius:0.72em;} "
     "QLabel[actionTileDetail='true']{font-size:0.95em;line-height:1.25;} "
+    "QPushButton[dashboardStatusCard='true']{text-align:left;font-weight:700;line-height:1.35;min-height:4.4em;} "
     "QWidget[responsive='compact'] QPushButton,QWidget[responsive='compact'] QToolButton{min-height:2.1em;padding:0.3em 0.58em;} "
     "QWidget[responsive='expanded'] QPushButton,QWidget[responsive='expanded'] QToolButton{min-height:2.8em;padding:0.58em 1em;} "
 )
@@ -369,6 +370,16 @@ def _build_theme_css(tokens: Dict[str, str]) -> str:
         f"QPushButton[accentRole='primaryAction']:focus{{outline:2px solid {tokens['action_primary_focus']};outline-offset:1px;border-color:{tokens['action_primary_focus']};}} "
         f"QPushButton[accentRole='primaryAction'][readyPulse='a']{{background-color:{tokens['action_ready_bg_a']};}} "
         f"QPushButton[accentRole='primaryAction'][readyPulse='b']{{background-color:{tokens['action_ready_bg_b']};}}"
+        f"QPushButton[dashboardStatusCard='true'][statusState='ok']{{"
+        f"background-color:{tokens['preview_success_bg']};"
+        f"color:{tokens['preview_success_fg']};"
+        f"border:2px solid {tokens['preview_success_border']};"
+        "}} "
+        f"QPushButton[dashboardStatusCard='true'][statusState='warn']{{"
+        f"background-color:{tokens['preview_info_bg']};"
+        f"color:{tokens['preview_info_fg']};"
+        f"border:2px solid {tokens['preview_info_border']};"
+        "}} "
         + BASE_COMPONENT_STYLE
         + ACTIVE_SECTION_STYLE
     )
