@@ -59,6 +59,7 @@ def test_workflow_min_size_ist_robust() -> None:
         splitter_count=2,
         section_min_width=300,
         section_min_height=260,
+        density_multiplier=1.2,
     )
     assert min_width >= 300
     assert min_height >= 260

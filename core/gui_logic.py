@@ -190,6 +190,7 @@ def compute_workflow_min_size(
     splitter_count: object,
     section_min_width: object,
     section_min_height: object,
+    density_multiplier: object = 1.0,
 ) -> tuple[int, int]:
     """Compute adaptive workflow minimum size (DPI + font aware)."""
     safe_font = parse_non_negative_int(font_size, "schriftgroesse", default=13)
@@ -200,7 +201,12 @@ def compute_workflow_min_size(
         parsed_dpi_scale = 1.0
     safe_dpi_scale = max(parsed_dpi_scale, 1.0)
     font_scale = max(1.0, safe_font / 13.0)
-    scale = max(safe_dpi_scale, font_scale)
+    try:
+        parsed_density = float(density_multiplier)
+    except (TypeError, ValueError):
+        parsed_density = 1.0
+    safe_density = min(max(parsed_density, 0.85), 1.9)
+    scale = max(safe_dpi_scale, font_scale) * safe_density
 
     safe_columns = max(
         1,
@@ -223,7 +229,9 @@ def compute_workflow_min_size(
         ),
     )
     safe_available_width = max(
-        parse_non_negative_int(available_width, "workflow_verfuegbare_breite", 480),
+        parse_non_negative_int(
+            available_width, "workflow_verfuegbare_breite", 480
+        ),
         480,
     )
     safe_handle_width = parse_non_negative_int(
@@ -258,17 +266,20 @@ def compute_workflow_min_size(
         ),
         360,
     )
-    max_per_section_h = max(safe_section_min_height, int(safe_available_height / 2))
+    max_per_section_h = max(
+        safe_section_min_height, int(safe_available_height / 2)
+    )
     dynamic_height = int(safe_section_min_height * scale)
     min_height = min(
         max_per_section_h,
         max(safe_section_min_height, dynamic_height),
     )
     logger.debug(
-        "Workflow-Mindestgroesse: %sx%s (scale=%.2f, columns=%s)",
+        "Workflow-Mindestgroesse: %sx%s (scale=%.2f, density=%.2f, columns=%s)",
         min_width,
         min_height,
         scale,
+        safe_density,
         safe_columns,
     )
     return min_width, min_height

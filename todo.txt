@@ -196,12 +196,13 @@
 
 ## Offene Punkte (neu)
 
+- [x] Adaptive Density als Einstellung eingefuehrt (Kompakt/Standard/Groß), DPI+Schriftgroesse verknuepft und mit GUI-/Profil-Tests abgesichert
 - [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
   - [ ] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
   - [ ] Workflow-Layout auf 2 Spalten umstellen (links Schritte, rechts Ergebnis/Preview) plus optionales Details/Log unten
   - [ ] Tabellen auf Master-Detail-Pattern umstellen (kompakte Tabelle + Detailpanel)
   - [ ] Breakpoint-Verhalten ohne Splitter-Orientierungswechsel umsetzen (Kompaktmodus via QStackedWidget)
-  - [ ] Adaptive Density als Einstellung einführen (kompakt/normal/groß mit proportionaler Skalierung)
+  - [x] Adaptive Density als Einstellung einführen (kompakt/normal/groß mit proportionaler Skalierung)
   - [ ] Visuelle Hierarchie erzwingen: Export-Button + Preview als sticky Bereich sichtbar halten
 
 - [ ] B) Dynamik & Reflow: Nutzer-Layout nicht sabotieren
