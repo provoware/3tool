@@ -224,7 +224,7 @@
   - [ ] Großschrift-Modus als echten Modus umsetzen (Padding, Zeilenhöhe, Icons, Tooltip-Dauer, kein Text-Cutoff)
 
 - [ ] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“
-  - [ ] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
+  - [x] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
   - [ ] Inline-Validierung mit Badges/Tooltips ausbauen, Dialoge nur für kritische Entscheidungen
   - [ ] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzen
   - [ ] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
@@ -245,7 +245,7 @@
   - [x] Theme: starre Pixel-Min-Heights entfernt und auf skalierbare em-Werte umgestellt
   - [x] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen
   - [x] Workflow-Tab-Order verbindlich definieren
-  - [ ] Klickbares Status-Dashboard mit Ampel-Karten liefern
+  - [x] Klickbares Status-Dashboard mit Ampel-Karten liefern
   - [ ] Tabellen auf Master-Detail umstellen
   - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren
   - [ ] UI-Smoke-Tests für Auflösungen + Großschrift automatisieren

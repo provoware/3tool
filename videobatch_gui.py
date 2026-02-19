@@ -1083,6 +1083,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ff_ok = check_ffmpeg()
         self.dashboard = InfoDashboard(UI_TEXTS)
         self.dashboard.set_env(ff_ok, True)
+        self.dashboard.cardActivated.connect(self._handle_dashboard_card_action)
         if not ff_ok:
             self._show_error_dialog(
                 "FFmpeg fehlt",
@@ -2989,6 +2990,14 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.dashboard.set_counts(pair_count, fin_count, err_count)
         self.dashboard.set_selection_counts(selected_images, selected_audios)
+        output_ready = self._is_output_directory_ready()
+        self.dashboard.set_quick_status(
+            image_count=img_count,
+            audio_count=aud_count,
+            pair_count=pair_count,
+            ffmpeg_ok=check_ffmpeg(),
+            output_ready=output_ready,
+        )
         self._update_encode_ready_indicator(pair_count)
 
     def _update_encode_ready_indicator(self, pair_count: int) -> None:
@@ -3005,6 +3014,30 @@ class MainWindow(QtWidgets.QMainWindow):
     def _toggle_encode_ready_style(self) -> None:
         self._encode_ready_on = not self._encode_ready_on
         self._sync_encode_button_state()
+
+    def _is_output_directory_ready(self) -> bool:
+        out_dir = self.out_dir_edit.text().strip()
+        if not out_dir:
+            return False
+        out_path = Path(out_dir).expanduser()
+        return out_path.exists() and out_path.is_dir()
+
+    def _handle_dashboard_card_action(self, card_key: str) -> None:
+        actions = {
+            "images": ("Dateilisten", self.pool_tabs),
+            "audios": ("Dateilisten", self.pool_tabs),
+            "pairs": ("Paare", self.table),
+            "ffmpeg": ("Einstellungen", self.settings_widget),
+            "output": ("Einstellungen", self.out_dir_edit),
+        }
+        section = actions.get(card_key)
+        if section is None:
+            self._announce_live_status(
+                "Unbekannte Dashboard-Aktion. Bitte Bereich manuell wählen."
+            )
+            return
+        section_name, target = section
+        self._focus_workflow_section(section_name, target)
 
     def _refresh_structure_view(self) -> None:
         if not hasattr(self, "structure_tree"):
@@ -3053,6 +3086,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         output_root = add_root("Output", 0)
         output_dir = self.out_dir_edit.text().strip()
+        output_ready = False
         output_files: List[str] = []
         if output_dir:
             out_path = Path(output_dir).expanduser()
@@ -3060,6 +3094,7 @@ class MainWindow(QtWidgets.QMainWindow):
             output_dir_item.setData(0, Qt.UserRole, str(out_path))
             output_root.addChild(output_dir_item)
             if out_path.exists() and out_path.is_dir():
+                output_ready = True
                 try:
                     output_files = [
                         str(p)
@@ -3089,6 +3124,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 ["Kein Ausgabeordner gesetzt."]
             )
             output_root.addChild(hint_item)
+
+        self.dashboard.set_quick_status(
+            image_count=len(image_paths),
+            audio_count=len(audio_paths),
+            pair_count=sum(
+                1 for p in self.pairs if p.image_path and p.audio_path
+            ),
+            ffmpeg_ok=check_ffmpeg(),
+            output_ready=output_ready,
+        )
 
         max_outputs = 200
         for path in output_files[:max_outputs]:
