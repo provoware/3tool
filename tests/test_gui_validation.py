@@ -848,3 +848,89 @@ def test_dashboard_status_card_click_emits_card_key(
     qtbot.mouseClick(card, QtCore.Qt.LeftButton)
 
     assert received == ["pairs"]
+
+
+def test_drop_list_item_ignore_toggle_updates_label_and_font(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    widget = videobatch_gui.DropListWidget("Test", (".png",))
+    qtbot.addWidget(widget)
+    widget.add_files(["/tmp/beispiel.png"])
+    item = widget.item(0)
+
+    first_toggle = widget._toggle_item_ignored(item)
+    assert first_toggle is True
+    assert item.text().endswith("(ignoriert)")
+    assert item.font().strikeOut()
+
+    second_toggle = widget._toggle_item_ignored(item)
+    assert second_toggle is False
+    assert not item.text().endswith("(ignoriert)")
+    assert not item.font().strikeOut()
+
+
+def test_drop_list_rename_item_label_uses_dialog_input(
+    request, gui_runtime_available, gui_runtime_error, monkeypatch
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    widget = videobatch_gui.DropListWidget("Test", (".png",))
+    qtbot.addWidget(widget)
+    widget.add_files(["/tmp/beispiel.png"])
+    item = widget.item(0)
+
+    monkeypatch.setattr(
+        videobatch_gui.QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("NeuName.png", True)),
+    )
+
+    assert widget._rename_item_label(item)
+    assert item.text() == "NeuName.png"
+
+
+def test_drop_list_rename_item_keeps_ignore_suffix(
+    request, gui_runtime_available, gui_runtime_error, monkeypatch
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    widget = videobatch_gui.DropListWidget("Test", (".png",))
+    qtbot.addWidget(widget)
+    widget.add_files(["/tmp/beispiel.png"])
+    item = widget.item(0)
+    widget._set_item_ignored(item, True)
+
+    monkeypatch.setattr(
+        videobatch_gui.QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("Alias.png", True)),
+    )
+
+    assert widget._rename_item_label(item)
+    assert item.text() == "Alias.png (ignoriert)"

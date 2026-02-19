@@ -227,7 +227,7 @@
   - [x] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
   - [ ] Inline-Validierung mit Badges/Tooltips ausbauen, Dialoge nur für kritische Entscheidungen
   - [ ] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzen
-  - [ ] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
+  - [x] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
   - [ ] Undo/Redo für UI-Aktionen (Pairing-Änderungen, Entfernen, Auto-Pair) einführen
 
 - [ ] E) Robustheit & Codequalität

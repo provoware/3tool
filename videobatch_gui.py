@@ -516,6 +516,7 @@ class EncodeWorker(QtCore.QObject):
 # ---------- UI Widgets ----------
 class DropListWidget(QtWidgets.QListWidget):
     files_dropped = Signal(list)
+    IGNORE_ROLE = Qt.UserRole + 10
 
     def __init__(self, title: str, patterns: Tuple[str, ...]):
         super().__init__()
@@ -620,6 +621,43 @@ class DropListWidget(QtWidgets.QListWidget):
     def selected_paths(self) -> List[str]:
         return [i.data(Qt.UserRole) for i in self.selectedItems()]
 
+    def _set_item_ignored(
+        self, item: QtWidgets.QListWidgetItem, ignored: bool
+    ) -> None:
+        item.setData(self.IGNORE_ROLE, ignored)
+        font = item.font()
+        font.setStrikeOut(ignored)
+        item.setFont(font)
+        path = str(item.data(Qt.UserRole) or "")
+        suffix = " (ignoriert)" if ignored else ""
+        item.setText(f"{Path(path).name}{suffix}" if path else item.text())
+
+    def _toggle_item_ignored(self, item: QtWidgets.QListWidgetItem) -> bool:
+        now_ignored = bool(item.data(self.IGNORE_ROLE))
+        self._set_item_ignored(item, not now_ignored)
+        return not now_ignored
+
+    def _rename_item_label(self, item: QtWidgets.QListWidgetItem) -> bool:
+        raw_path = item.data(Qt.UserRole)
+        if not isinstance(raw_path, str) or not raw_path.strip():
+            return False
+        old_path = Path(raw_path)
+        new_name, ok = QtWidgets.QInputDialog.getText(
+            self,
+            "Anzeigename ändern",
+            "Neuer Name (nur Anzeige im Tool):",
+            text=old_path.name,
+        )
+        if not ok:
+            return False
+        new_name = new_name.strip()
+        if not new_name:
+            return False
+        ignored = bool(item.data(self.IGNORE_ROLE))
+        suffix = " (ignoriert)" if ignored else ""
+        item.setText(f"{new_name}{suffix}")
+        return True
+
     def contextMenuEvent(self, e: QtGui.QContextMenuEvent):
         item = self.itemAt(e.pos())
         if not item:
@@ -628,6 +666,12 @@ class DropListWidget(QtWidgets.QListWidget):
         menu = QtWidgets.QMenu(self)
         act_open = menu.addAction("Im Ordner zeigen")
         act_copy = menu.addAction("Pfad kopieren")
+        act_rename = menu.addAction("Umbenennen")
+        act_ignore = menu.addAction(
+            "Ignorieren aufheben"
+            if bool(item.data(self.IGNORE_ROLE))
+            else "Ignorieren"
+        )
         act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
         act = menu.exec(e.globalPos())
@@ -637,6 +681,14 @@ class DropListWidget(QtWidgets.QListWidget):
         elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             self.window()._log(f"Pfad kopiert: {path}")
+        elif act == act_rename:
+            if self._rename_item_label(item):
+                self.window()._log(f"Anzeigename geändert: {path}")
+        elif act == act_ignore:
+            ignored = self._toggle_item_ignored(item)
+            self.window()._log(
+                f"Eintrag {'ignoriert' if ignored else 'reaktiviert'}: {path}"
+            )
         elif act == act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
@@ -669,6 +721,12 @@ class ImageListWidget(DropListWidget):
         menu = QtWidgets.QMenu(self)
         act_open = menu.addAction("Im Ordner zeigen")
         act_copy = menu.addAction("Pfad kopieren")
+        act_rename = menu.addAction("Umbenennen")
+        act_ignore = menu.addAction(
+            "Ignorieren aufheben"
+            if bool(item.data(self.IGNORE_ROLE))
+            else "Ignorieren"
+        )
         act_fav = menu.addAction("Zu Favoriten")
         act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
@@ -679,6 +737,14 @@ class ImageListWidget(DropListWidget):
         elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             self.window()._log(f"Pfad kopiert: {path}")
+        elif act == act_rename:
+            if self._rename_item_label(item):
+                self.window()._log(f"Anzeigename geändert: {path}")
+        elif act == act_ignore:
+            ignored = self._toggle_item_ignored(item)
+            self.window()._log(
+                f"Eintrag {'ignoriert' if ignored else 'reaktiviert'}: {path}"
+            )
         elif act == act_remove:
             self.takeItem(self.row(item))
             self.window()._log(f"Eintrag entfernt: {path}")
@@ -704,6 +770,12 @@ class AudioListWidget(DropListWidget):
         act_stop = menu.addAction("Vorschau stoppen")
         act_open = menu.addAction("Im Ordner zeigen")
         act_copy = menu.addAction("Pfad kopieren")
+        act_rename = menu.addAction("Umbenennen")
+        act_ignore = menu.addAction(
+            "Ignorieren aufheben"
+            if bool(item.data(self.IGNORE_ROLE))
+            else "Ignorieren"
+        )
         act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
         act = menu.exec(e.globalPos())
@@ -718,6 +790,14 @@ class AudioListWidget(DropListWidget):
         elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             wnd._log(f"Pfad kopiert: {path}")
+        elif act == act_rename:
+            if self._rename_item_label(item):
+                wnd._log(f"Anzeigename geändert: {path}")
+        elif act == act_ignore:
+            ignored = self._toggle_item_ignored(item)
+            wnd._log(
+                f"Eintrag {'ignoriert' if ignored else 'reaktiviert'}: {path}"
+            )
         elif act == act_remove:
             self.takeItem(self.row(item))
             wnd._log(f"Eintrag entfernt: {path}")
@@ -749,6 +829,12 @@ class FavoriteListWidget(DropListWidget):
         menu = QtWidgets.QMenu(self)
         act_open = menu.addAction("Im Ordner zeigen")
         act_copy = menu.addAction("Pfad kopieren")
+        act_rename = menu.addAction("Umbenennen")
+        act_ignore = menu.addAction(
+            "Ignorieren aufheben"
+            if bool(item.data(self.IGNORE_ROLE))
+            else "Ignorieren"
+        )
         act_use = menu.addAction("Zum Arbeitsbereich")
         act_remove = menu.addAction("Entfernen")
         sort_actions = self._add_sort_menu(menu)
@@ -759,6 +845,14 @@ class FavoriteListWidget(DropListWidget):
         elif act == act_copy:
             QtWidgets.QApplication.clipboard().setText(str(path))
             self.window()._log(f"Pfad kopiert: {path}")
+        elif act == act_rename:
+            if self._rename_item_label(item):
+                self.window()._log(f"Anzeigename geändert: {path}")
+        elif act == act_ignore:
+            ignored = self._toggle_item_ignored(item)
+            self.window()._log(
+                f"Eintrag {'ignoriert' if ignored else 'reaktiviert'}: {path}"
+            )
         elif act == act_use:
             self.use_fav.emit(path)
             self.window()._log(f"Favorit genutzt: {path}")
