@@ -221,7 +221,7 @@
   - [x] Screenreader-Rollen und Live-Statusfeld für kurze Status-/Fehlermeldungen ergänzen
   - [x] Bei Fehlern Fokus auf Fehlkarte setzen und Kurztext vorlesen lassen
   - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
-  - [ ] Großschrift-Modus als echten Modus umsetzen (Padding, Zeilenhöhe, Icons, Tooltip-Dauer, kein Text-Cutoff)
+  - [x] Großschrift-Modus als echten Modus umgesetzt (skalierbares Padding, größere Zeilenhöhe, längere Tooltip-Dauer, kein Text-Cutoff im Standardlayout)
 
 - [ ] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“
   - [x] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
