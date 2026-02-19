@@ -21,6 +21,11 @@ class InterfaceProfile:
     log_font_delta: int
 
 
+@dataclass(frozen=True)
+class DensityProfile:
+    multiplier: float
+
+
 SPACING_PROFILES = {
     "Kompakt": SpacingProfile(grid=2, margins=2, main=4),
     "Standard": SpacingProfile(grid=4, margins=4, main=6),
@@ -53,6 +58,12 @@ INTERFACE_PROFILES = {
         compact_button_min_width=168,
         log_font_delta=3,
     ),
+}
+
+DENSITY_PROFILES = {
+    "Kompakt": DensityProfile(multiplier=0.9),
+    "Standard": DensityProfile(multiplier=1.0),
+    "Groß": DensityProfile(multiplier=1.18),
 }
 
 
@@ -107,5 +118,42 @@ def resolve_interface_profile(
         "Interface-Profil aktiv: %s (grosse Bedienelemente, control_height=%s)",
         name if name in INTERFACE_PROFILES else "Standard",
         resolved.control_height,
+    )
+    return resolved
+
+
+def resolve_density_multiplier(
+    name: str,
+    *,
+    font_size: object,
+    dpi_scale: object,
+) -> float:
+    if not isinstance(name, str) or not name.strip():
+        LOGGER.warning(
+            "Ungueltiges Dichteprofil %r erhalten, nutze Standard.",
+            name,
+        )
+        name = "Standard"
+
+    profile = DENSITY_PROFILES.get(name, DENSITY_PROFILES["Standard"])
+    try:
+        parsed_font_size = float(font_size)
+    except (TypeError, ValueError):
+        parsed_font_size = 13.0
+    try:
+        parsed_dpi_scale = float(dpi_scale)
+    except (TypeError, ValueError):
+        parsed_dpi_scale = 1.0
+
+    safe_font_scale = max(parsed_font_size / 13.0, 1.0)
+    safe_dpi_scale = max(parsed_dpi_scale, 1.0)
+    combined = profile.multiplier * max(safe_font_scale, safe_dpi_scale)
+    resolved = min(max(combined, 0.85), 1.9)
+    LOGGER.info(
+        "Dichteprofil aktiv: %s (faktor=%.2f, font_scale=%.2f, dpi=%.2f)",
+        name if name in DENSITY_PROFILES else "Standard",
+        resolved,
+        safe_font_scale,
+        safe_dpi_scale,
     )
     return resolved

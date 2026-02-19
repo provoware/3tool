@@ -44,7 +44,11 @@ from core.output_management import (
 from core.paths import config_dir, log_dir, user_data_dir
 from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
-from core.ui_profiles import resolve_interface_profile, resolve_spacing_profile
+from core.ui_profiles import (
+    resolve_density_multiplier,
+    resolve_interface_profile,
+    resolve_spacing_profile,
+)
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
@@ -1388,6 +1392,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spacing_combo.addItems(
             ["Kompakt", "Standard", "Großzügig", "Barrierefrei"]
         )
+        self.density_combo = QtWidgets.QComboBox()
+        self.density_combo.addItems(["Kompakt", "Standard", "Groß"])
+        self.density_combo.setCurrentText(
+            self.settings.value("ui/density_profile", "Standard", str)
+        )
+        self.density_combo.setAccessibleName("Dichte")
+        self.density_combo.setAccessibleDescription(
+            "Packungsdichte der Oberfläche: kompakt, standard oder groß"
+        )
         self.spacing_combo.setCurrentText(
             self.settings.value("ui/spacing_profile", "Standard", str)
         )
@@ -1510,6 +1523,12 @@ class MainWindow(QtWidgets.QMainWindow):
             "Abstände",
             self.spacing_combo,
             "Kompakt, Standard oder großzügig",
+        )
+        self._add_form(
+            form,
+            "Dichte",
+            self.density_combo,
+            "Steuert, wie luftig oder dicht die Oberfläche wirkt",
         )
         self._add_form(
             form,
@@ -1844,6 +1863,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spacing_combo.currentTextChanged.connect(
             self._update_spacing_profile
         )
+        self.density_combo.currentTextChanged.connect(
+            self._update_density_profile
+        )
         self.interface_combo.currentTextChanged.connect(
             self._update_interface_profile
         )
@@ -1861,6 +1883,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._apply_theme(self.settings.value("ui/theme", "Modern"))
         self._apply_spacing_profile(self.spacing_combo.currentText())
         self._apply_interface_profile(self.interface_combo.currentText())
+        self._apply_density_profile(self.density_combo.currentText())
         self.restoreGeometry(self.settings.value("ui/geometry", b"", bytes))
         self.restoreState(self.settings.value("ui/window_state", b"", bytes))
         self._restore_workflow_splitter_state()
@@ -2167,7 +2190,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if hasattr(self, "font_value_label"):
             self.font_value_label.setText(str(size))
         self.settings.setValue("ui/font_size", size)
-        self._update_workflow_section_constraints()
+        if hasattr(self, "density_combo"):
+            self._apply_density_profile(self.density_combo.currentText())
+        else:
+            self._update_workflow_section_constraints()
         self._log(f"Schriftgröße gesetzt auf {size}")
 
     def _apply_font(self):
@@ -2675,7 +2701,9 @@ class MainWindow(QtWidgets.QMainWindow):
             ),
         )
 
-    def _compute_workflow_min_size(self) -> Tuple[int, int]:
+    def _compute_workflow_min_size(
+        self, *, density_multiplier: float = 1.0
+    ) -> Tuple[int, int]:
         available_width = self.width()
         if hasattr(self, "workflow_columns"):
             available_width = max(self.workflow_columns.width(), self.width())
@@ -2696,6 +2724,7 @@ class MainWindow(QtWidgets.QMainWindow):
             splitter_count=len(self.workflow_splitters),
             section_min_width=self.WORKFLOW_SECTION_MIN_WIDTH,
             section_min_height=self.WORKFLOW_SECTION_MIN_HEIGHT,
+            density_multiplier=density_multiplier,
         )
 
     def _workflow_dpi_scale_factor(self) -> float:
@@ -4058,6 +4087,20 @@ class MainWindow(QtWidgets.QMainWindow):
         action_width = self.btn_box.width() if hasattr(self, "btn_box") else 0
         self._reflow_action_buttons(action_width)
 
+    def _update_density_profile(self, profile: str) -> None:
+        self.settings.setValue("ui/density_profile", profile)
+        self._apply_density_profile(profile)
+        self._log(f"Dichteprofil gesetzt: {profile}")
+
+    def _apply_density_profile(self, profile: str) -> None:
+        scale = resolve_density_multiplier(
+            profile,
+            font_size=self._font_size,
+            dpi_scale=self._workflow_dpi_scale_factor(),
+        )
+        self.settings.setValue("ui/density_scale", scale)
+        self._update_workflow_section_constraints()
+
     def _update_interface_profile(self, profile: str) -> None:
         self.settings.setValue("ui/interface_profile", profile)
         self._apply_interface_profile(profile)
@@ -4107,7 +4150,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.workflow_columns.orientation() != orientation:
             self.workflow_columns.setOrientation(orientation)
 
-        min_width, min_height = self._compute_workflow_min_size()
+        density_scale = self.settings.value("ui/density_scale", 1.0, float)
+        min_width, min_height = self._compute_workflow_min_size(
+            density_multiplier=density_scale
+        )
         list_min_height = max(140, int(min_height * 0.74))
         action_min_height = max(min_height, int(min_height * 1.08))
         preview_min_height = max(min_height, int(min_height * 1.12))

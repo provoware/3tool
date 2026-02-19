@@ -416,6 +416,33 @@ def test_workflow_min_size_clamps_for_large_font_profile(
     )
 
 
+def test_density_profile_changes_workflow_min_size(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.resize(1100, 800)
+
+    win.density_combo.setCurrentText("Kompakt")
+    compact_width, compact_height = win._compute_workflow_min_size(
+        density_multiplier=win.settings.value("ui/density_scale", 1.0, float)
+    )
+
+    win.density_combo.setCurrentText("Groß")
+    large_width, large_height = win._compute_workflow_min_size(
+        density_multiplier=win.settings.value("ui/density_scale", 1.0, float)
+    )
+
+    assert large_width >= compact_width
+    assert large_height >= compact_height
+
+
 def test_scaled_sizes_keep_total_and_positive(
     gui_runtime_available, gui_runtime_error
 ):

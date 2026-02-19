@@ -2,6 +2,7 @@ from typing import Any, cast
 from core.ui_profiles import (
     INTERFACE_PROFILES,
     SPACING_PROFILES,
+    resolve_density_multiplier,
     resolve_interface_profile,
     resolve_spacing_profile,
 )
@@ -60,3 +61,15 @@ def test_interface_profile_invalid_large_controls_falls_back() -> None:
         "Standard", large_controls=cast(Any, "ja")
     )
     assert profile == INTERFACE_PROFILES["Standard"]
+
+
+def test_density_profile_scales_with_font_and_dpi() -> None:
+    compact = resolve_density_multiplier("Kompakt", font_size=13, dpi_scale=1.0)
+    large = resolve_density_multiplier("Groß", font_size=20, dpi_scale=1.6)
+    assert compact < 1.0
+    assert large > compact
+
+
+def test_density_profile_invalid_input_falls_back() -> None:
+    fallback = resolve_density_multiplier("", font_size="x", dpi_scale="x")
+    assert 0.85 <= fallback <= 1.9
