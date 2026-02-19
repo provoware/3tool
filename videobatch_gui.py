@@ -1984,8 +1984,9 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcut.setContext(Qt.WidgetWithChildrenShortcut)
             shortcut.setWhatsThis(f"Springt direkt zum Bereich {section_name}.")
             shortcut.activated.connect(
-                lambda name=section_name,
-                target=widget: self._focus_workflow_section(name, target)
+                lambda name=section_name, target=widget: self._focus_workflow_section(
+                    name, target
+                )
             )
             self._workflow_shortcuts.append(shortcut)
 
@@ -4168,6 +4169,8 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_profile = resolve_interface_profile(profile, self.large_controls)
         font_size = self._font_size + ui_profile.log_font_delta
         height = ui_profile.control_height
+        readability_mode = "large" if self.large_controls else "standard"
+        self.setProperty("readabilityMode", readability_mode)
         for btn in self._action_buttons():
             btn.setMinimumHeight(height)
             btn.setMinimumWidth(ui_profile.compact_button_min_width)
@@ -4181,6 +4184,14 @@ class MainWindow(QtWidgets.QMainWindow):
             ui_profile.table_row_height
         )
         self.log_edit.setFont(QtGui.QFont("DejaVu Sans", font_size))
+        tooltip_ms = 22000 if self.large_controls else 12000
+        QtWidgets.QToolTip.setFont(QtGui.QFont("DejaVu Sans", font_size))
+        self.setToolTipDuration(tooltip_ms)
+        for widget in self.findChildren(QtWidgets.QWidget):
+            if widget.toolTip():
+                widget.setToolTipDuration(tooltip_ms)
+        self.style().unpolish(self)
+        self.style().polish(self)
         self._update_workflow_section_constraints()
 
     def _update_workflow_section_constraints(self) -> None:

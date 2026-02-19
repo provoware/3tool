@@ -30,6 +30,9 @@ BASE_COMPONENT_STYLE = (
     "QPushButton[dashboardStatusCard='true']{text-align:left;font-weight:700;line-height:1.35;min-height:4.4em;} "
     "QWidget[responsive='compact'] QPushButton,QWidget[responsive='compact'] QToolButton{min-height:2.1em;padding:0.3em 0.58em;} "
     "QWidget[responsive='expanded'] QPushButton,QWidget[responsive='expanded'] QToolButton{min-height:2.8em;padding:0.58em 1em;} "
+    "QWidget[readabilityMode='large'] QPushButton,QWidget[readabilityMode='large'] QToolButton{min-height:3.1em;padding:0.7em 1.15em;} "
+    "QWidget[readabilityMode='large'] QLineEdit,QWidget[readabilityMode='large'] QSpinBox,QWidget[readabilityMode='large'] QComboBox,QWidget[readabilityMode='large'] QPlainTextEdit{min-height:2.7em;padding:0.42em 0.72em;} "
+    "QWidget[readabilityMode='large'] QToolTip{padding:10px;} "
 )
 
 ACTIVE_SECTION_STYLE = (
@@ -379,9 +382,7 @@ def _build_theme_css(tokens: Dict[str, str]) -> str:
         f"background-color:{tokens['preview_info_bg']};"
         f"color:{tokens['preview_info_fg']};"
         f"border:2px solid {tokens['preview_info_border']};"
-        "}} "
-        + BASE_COMPONENT_STYLE
-        + ACTIVE_SECTION_STYLE
+        "}} " + BASE_COMPONENT_STYLE + ACTIVE_SECTION_STYLE
     )
 
 

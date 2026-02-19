@@ -492,6 +492,56 @@ def test_resize_rebalance_respects_user_splitter_layout(
     )
 
 
+def test_large_controls_enable_readability_mode_and_longer_tooltips(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win.large_controls_toggle.setChecked(False)
+    assert win.property("readabilityMode") == "standard"
+
+    win.large_controls_toggle.setChecked(True)
+
+    assert win.property("readabilityMode") == "large"
+    assert win.toolTipDuration() == 22000
+    assert win.large_controls_toggle.toolTipDuration() == 22000
+
+
+def test_large_controls_increase_action_and_row_sizes(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win.large_controls_toggle.setChecked(False)
+    compact_button_heights = [
+        btn.minimumHeight() for btn in win._action_buttons()
+    ]
+    compact_row_height = win.table.verticalHeader().defaultSectionSize()
+
+    win.large_controls_toggle.setChecked(True)
+    large_button_heights = [
+        btn.minimumHeight() for btn in win._action_buttons()
+    ]
+    large_row_height = win.table.verticalHeader().defaultSectionSize()
+
+    assert min(large_button_heights) >= min(compact_button_heights)
+    assert large_row_height > compact_row_height
+
+
 def test_splitter_state_is_saved_and_restored_per_splitter(
     request, gui_runtime_available, gui_runtime_error
 ):
