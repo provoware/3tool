@@ -250,3 +250,11 @@
   - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren
   - [x] UI-Smoke-Tests für Auflösungen + Großschrift automatisieren
 - [x] Start-Preflight-Report um Kontextfelder, strikte Ergebnisvalidierung und Laien-Next-Steps erweitert
+
+
+## Release-Status (automatisch aktualisiert)
+- [x] Datei-Manifest neu erstellt und mit aktuellem Stand synchronisiert
+- [ ] Release-Blocker: Workflow-Layout (A) auf semantische Zonen + 2-Spalten-Workflow umstellen
+- [ ] Release-Blocker: Interaktive Mini-Preview, erweiterte Kontextmenüs und Undo/Redo (D) fertigstellen
+- [ ] Release-Blocker: Zentrale Datenmodelle/Services finalisieren und grafische Fehlerzustände vereinheitlichen (E)
+- [ ] Finaler Go-Live-Check: `bash scripts/quality_check.sh && pytest -q && python videobatch_launcher.py --release-check`
