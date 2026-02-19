@@ -995,7 +995,8 @@ class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
     WORKFLOW_SECTION_MIN_WIDTH = 180
     WORKFLOW_SECTION_MIN_HEIGHT = 190
-    WORKFLOW_COLUMN_DEFAULT_WEIGHTS = (35, 30, 35)
+    WORKFLOW_COLUMN_DEFAULT_WEIGHTS = (30, 30, 40)
+    WORKFLOW_ROW_DEFAULT_WEIGHTS = ((38, 62), (62, 38), (65, 35))
     WORKFLOW_SPLITTER_STATE_VERSION = 1
     WORKFLOW_BREAKPOINT_SMALL = 1024
     WORKFLOW_BREAKPOINT_MEDIUM = 1440
@@ -1691,20 +1692,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.workflow_columns = QtWidgets.QSplitter(Qt.Horizontal)
         self.workflow_columns.setChildrenCollapsible(False)
         self.workflow_columns.setHandleWidth(10)
+        self.pool_box = pool_box
+        self.table_box = table_box
+        self.help_box = help_box
+
         col1 = QtWidgets.QSplitter(Qt.Vertical)
         col1.setChildrenCollapsible(False)
         col1.setHandleWidth(10)
-        col1.addWidget(pool_box)
+        col1.addWidget(self.pool_box)
         col1.addWidget(self.settings_widget)
         col2 = QtWidgets.QSplitter(Qt.Vertical)
         col2.setChildrenCollapsible(False)
         col2.setHandleWidth(10)
         col2.addWidget(self.btn_box)
-        col2.addWidget(table_box)
+        col2.addWidget(self.table_box)
         col3 = QtWidgets.QSplitter(Qt.Vertical)
         col3.setChildrenCollapsible(False)
         col3.setHandleWidth(10)
-        col3.addWidget(help_box)
+        col3.addWidget(self.help_box)
         col3.addWidget(self.log_box)
         self.workflow_columns.addWidget(col1)
         self.workflow_columns.addWidget(col2)
@@ -1717,10 +1722,10 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         for idx in range(3):
             self.workflow_columns.setCollapsible(idx, False)
-        for col in (col1, col2, col3):
+        for idx, col in enumerate((col1, col2, col3)):
             col.setSizes(
                 self._scaled_sizes(
-                    (1, 1),
+                    self.WORKFLOW_ROW_DEFAULT_WEIGHTS[idx],
                     max(col.height(), 1),
                 )
             )
@@ -1743,11 +1748,11 @@ class MainWindow(QtWidgets.QMainWindow):
             splitter.splitterMoved.connect(self._on_user_splitter_moved)
 
         for section in (
-            pool_box,
+            self.pool_box,
             self.settings_widget,
             self.btn_box,
-            table_box,
-            help_box,
+            self.table_box,
+            self.help_box,
             self.log_box,
         ):
             section.setMinimumSize(
@@ -1755,13 +1760,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.WORKFLOW_SECTION_MIN_HEIGHT,
             )
         self._workflow_sections = (
-            pool_box,
+            self.pool_box,
             self.settings_widget,
             self.btn_box,
-            table_box,
-            help_box,
+            self.table_box,
+            self.help_box,
             self.log_box,
         )
+        self._apply_workflow_splitter_policies()
 
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(dashboard_header)
@@ -1954,9 +1960,8 @@ class MainWindow(QtWidgets.QMainWindow):
             shortcut.setContext(Qt.WidgetWithChildrenShortcut)
             shortcut.setWhatsThis(f"Springt direkt zum Bereich {section_name}.")
             shortcut.activated.connect(
-                lambda name=section_name, target=widget: self._focus_workflow_section(
-                    name, target
-                )
+                lambda name=section_name,
+                target=widget: self._focus_workflow_section(name, target)
             )
             self._workflow_shortcuts.append(shortcut)
 
@@ -2217,15 +2222,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.workflow_columns.orientation() != orientation:
             self.workflow_columns.setOrientation(orientation)
 
-        sections = len(self.workflow_splitters)
-        if guard_stack:
-            base = max(1, int(available_height / max(sections, 1)))
-            focus = min(available_height, int(base * 1.25))
-        else:
-            base = max(1, int(available_width / max(sections, 1)))
-            focus = min(available_width, int(base * 1.25))
-        column_sizes = [base, base, base]
-        column_sizes[active_column] = focus
+        total_columns = available_height if guard_stack else available_width
+        column_weights = list(self.WORKFLOW_COLUMN_DEFAULT_WEIGHTS)
+        column_weights[active_column] += 10
+        column_sizes = self._scaled_sizes(column_weights, total_columns)
         current_column_sizes = self.workflow_columns.sizes()
         if force or (
             not self._user_layout_touched
@@ -2238,19 +2238,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.workflow_columns.setSizes(column_sizes)
 
         total_h = max(available_height, 1)
-        base_h = max(
-            1,
-            int(total_h * (0.44 if target_columns >= 3 else 0.5)),
-        )
-        focus_h = max(
-            1,
-            int(total_h * (0.56 if target_columns >= 3 else 0.62)),
-        )
         for idx, splitter in enumerate(self.workflow_splitters):
+            row_weights = list(self.WORKFLOW_ROW_DEFAULT_WEIGHTS[idx])
             if idx == active_column:
                 row = self._section_resize_targets.get(name, (idx, 0))[1]
-                sizes = [base_h, base_h]
-                sizes[row] = focus_h
+                row_weights[row] += 10
+                sizes = self._scaled_sizes(row_weights, total_h)
                 current_sizes = splitter.sizes()
                 if force or (
                     not self._user_layout_touched
@@ -2262,7 +2255,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 ):
                     splitter.setSizes(sizes)
             else:
-                sizes = [base_h, base_h]
+                sizes = self._scaled_sizes(row_weights, total_h)
                 current_sizes = splitter.sizes()
                 if force or (
                     not self._user_layout_touched
@@ -4115,8 +4108,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self.workflow_columns.setOrientation(orientation)
 
         min_width, min_height = self._compute_workflow_min_size()
+        list_min_height = max(140, int(min_height * 0.74))
+        action_min_height = max(min_height, int(min_height * 1.08))
+        preview_min_height = max(min_height, int(min_height * 1.12))
         for section in self._workflow_sections:
             section.setMinimumSize(min_width, min_height)
+        self.pool_box.setMinimumHeight(list_min_height)
+        self.table_box.setMinimumHeight(list_min_height)
+        self.btn_box.setMinimumHeight(action_min_height)
+        self.help_box.setMinimumHeight(preview_min_height)
+        self._apply_workflow_splitter_policies()
         logger.debug(
             "Layout-Skalierung aktualisiert: font=%s min=%sx%s columns=%s stack=%s",
             self._font_size,
@@ -4125,6 +4126,18 @@ class MainWindow(QtWidgets.QMainWindow):
             layout_meta["columns"],
             guard_stack,
         )
+
+    def _apply_workflow_splitter_policies(self) -> None:
+        if not hasattr(self, "workflow_columns") or not hasattr(
+            self, "workflow_splitters"
+        ):
+            return
+        for idx, stretch in enumerate((2, 2, 3)):
+            self.workflow_columns.setStretchFactor(idx, stretch)
+        row_stretches = ((1, 2), (3, 1), (3, 1))
+        for splitter, stretches in zip(self.workflow_splitters, row_stretches):
+            splitter.setStretchFactor(0, stretches[0])
+            splitter.setStretchFactor(1, stretches[1])
 
     def _global_exception(self, etype, value, tb):
         import traceback

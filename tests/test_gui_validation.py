@@ -652,6 +652,45 @@ def test_row_error_focuses_failed_row_and_updates_live_status(
     assert "nächster schritt" in win.live_status_label.text().lower()
 
 
+def test_workflow_splitter_policies_prioritize_preview_and_actions(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.resize(1260, 820)
+
+    win._update_workflow_section_constraints()
+    win._request_workflow_rebalance(force=True)
+    qtbot.wait(win.WORKFLOW_REBALANCE_DEBOUNCE_MS + 80)
+
+    assert win.workflow_columns.stretchFactor(
+        2
+    ) > win.workflow_columns.stretchFactor(0)
+    assert win.workflow_columns.stretchFactor(
+        2
+    ) > win.workflow_columns.stretchFactor(1)
+    assert win.workflow_splitters[1].stretchFactor(0) > win.workflow_splitters[
+        1
+    ].stretchFactor(1)
+
+    assert win.btn_box.minimumHeight() >= win.settings_widget.minimumHeight()
+    assert win.help_box.minimumHeight() >= win.log_box.minimumHeight()
+
+    col_sizes = list(win.workflow_columns.sizes())
+    assert col_sizes[2] >= col_sizes[0]
+    assert col_sizes[2] >= col_sizes[1]
+
+
 def test_accessibility_metadata_assigns_section_descriptions(
     request, gui_runtime_available, gui_runtime_error
 ):
