@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 import subprocess
 
@@ -71,14 +72,85 @@ def ensure_venv_python(project_root: Path) -> str:
 
 
 def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
+    if not isinstance(py, str) or not py.strip():
+        _fail(
+            "Interner Fehler: python command ist leer. "
+            "Naechster Schritt: Interpreter pruefen mit 'python3 --version'."
+        )
+    if not isinstance(user_data_path, Path):
+        _fail("Interner Fehler: user_data_path ist kein Path.")
+    if not isinstance(project_root, Path):
+        _fail("Interner Fehler: project_root ist kein Path.")
+
+    report_path = user_data_path / "logs" / "startup_preflight_report.json"
+
+    def _serialize_checks(
+        items: list[launcher_checks.CheckResult],
+    ) -> list[dict[str, str | bool | None]]:
+        return [
+            {
+                "key": item.key,
+                "title": item.title,
+                "ok": item.ok,
+                "detail": item.detail,
+                "fix_hint": item.fix_hint,
+                "blocking": item.blocking,
+            }
+            for item in items
+        ]
+
+    def _write_report(
+        *,
+        status: str,
+        checks_before: list[launcher_checks.CheckResult],
+        checks_after: list[launcher_checks.CheckResult],
+        repairs: list[launcher_checks.RepairResult],
+    ) -> None:
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "status": status,
+            "checks_before": _serialize_checks(checks_before),
+            "checks_after": _serialize_checks(checks_after),
+            "check_feedback": launcher_checks.build_check_feedback(
+                checks_after or checks_before
+            ),
+            "repair_feedback": launcher_checks.build_repair_feedback(repairs),
+            "beginner_hints": launcher_checks.beginner_recovery_hints(repairs),
+        }
+        report_path.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
     checks = launcher_checks.collect_checks(py, user_data_path, project_root)
     if all(item.ok for item in checks if item.blocking):
+        _write_report(
+            status="ok",
+            checks_before=checks,
+            checks_after=checks,
+            repairs=[],
+        )
         return
 
     repairs = launcher_checks.run_repairs(py, user_data_path, project_root)
-    checks = launcher_checks.collect_checks(py, user_data_path, project_root)
-    if all(item.ok for item in checks if item.blocking):
+    checks_after = launcher_checks.collect_checks(
+        py, user_data_path, project_root
+    )
+    if all(item.ok for item in checks_after if item.blocking):
+        _write_report(
+            status="repaired",
+            checks_before=checks,
+            checks_after=checks_after,
+            repairs=repairs,
+        )
         return
+
+    _write_report(
+        status="failed",
+        checks_before=checks,
+        checks_after=checks_after,
+        repairs=repairs,
+    )
 
     hints = launcher_checks.beginner_recovery_hints(repairs)
     hints_block = "\n".join(f" - {item}" for item in hints)
@@ -86,7 +158,8 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
         "Start-Bootstrap fehlgeschlagen. "
         "Ursache: Abhaengigkeiten/Tools konnten nicht geprueft oder repariert werden. "
         "Naechster Schritt: Hinweise ausfuehren.\n"
-        f"{hints_block}"
+        f"{hints_block}\n"
+        f"Ausfuehrlicher Report: {report_path}"
     )
 
 
