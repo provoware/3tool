@@ -348,6 +348,8 @@ def _build_theme_css(tokens: Dict[str, str]) -> str:
         f"QHeaderView::section{{background-color:{tokens['header_bg']};color:{tokens['header_fg']};}} "
         f"QTableView::item:selected,QListView::item:selected{{background-color:{tokens['selection_bg']};color:{tokens['selection_fg']};}} "
         f"QTableView::item:focus,QTreeView::item:focus,QListView::item:focus{{outline:2px solid {tokens['focus_color']};outline-offset:-1px;border:1px solid {tokens['focus_color']};}} "
+        f"QPushButton:focus,QToolButton:focus,QLineEdit:focus,QComboBox:focus,QSpinBox:focus,QPlainTextEdit:focus,QTextBrowser:focus{{border:2px solid {tokens['focus_color']};outline:none;}} "
+        f"QCheckBox:focus,QRadioButton:focus{{border:2px solid {tokens['focus_color']};border-radius:4px;outline:none;padding:2px;}} "
         f"QProgressBar{{background-color:{tokens['progress_bg']};color:{tokens['progress_fg']};border:2px solid {tokens['progress_border']};}} "
         f"QProgressBar::chunk{{background-color:{tokens['progress_chunk']};}} "
         f"QWidget:focus{{outline:2px solid {tokens['focus_color']};outline-offset:1px;}}"
@@ -364,7 +366,7 @@ def _build_theme_css(tokens: Dict[str, str]) -> str:
         f"color:{tokens['action_primary_disabled_fg']};"
         f"border-color:{tokens['action_primary_disabled_bg']};"
         "}} "
-        f"QPushButton[accentRole='primaryAction']:focus{{outline:2px solid {tokens['action_primary_focus']};outline-offset:1px;}} "
+        f"QPushButton[accentRole='primaryAction']:focus{{outline:2px solid {tokens['action_primary_focus']};outline-offset:1px;border-color:{tokens['action_primary_focus']};}} "
         f"QPushButton[accentRole='primaryAction'][readyPulse='a']{{background-color:{tokens['action_ready_bg_a']};}} "
         f"QPushButton[accentRole='primaryAction'][readyPulse='b']{{background-color:{tokens['action_ready_bg_b']};}}"
         + BASE_COMPONENT_STYLE

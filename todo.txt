@@ -212,7 +212,7 @@
 
 - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) mit Ersatz-Textfarbe und Tests umgesetzt
 - [ ] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
-  - [ ] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
+  - [x] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
   - [x] Fokusdarstellung auch für Tabellenzellen ergänzt (sichtbarer Zellfokus via Theme-Styles)
   - [x] Workflow-basierte Tab-Order vollständig definieren
   - [x] Tastatur-Sprunglinks ergänzen (z. B. „Zu Pairing“, „Zu Export“)
@@ -241,7 +241,7 @@
   - [x] Splitter-State pro Splitter persistieren und sauber wiederherstellen
   - [ ] Kompaktmodus via QStackedWidget statt Orientation-Flip einführen
   - [x] Theme: starre Pixel-Min-Heights entfernt und auf skalierbare em-Werte umgestellt
-  - [ ] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen
+  - [x] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen
   - [x] Workflow-Tab-Order verbindlich definieren
   - [ ] Klickbares Status-Dashboard mit Ampel-Karten liefern
   - [ ] Tabellen auf Master-Detail umstellen
