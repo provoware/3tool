@@ -196,6 +196,7 @@
 
 ## Offene Punkte (neu)
 
+- [x] Start-Bootstrap schreibt JSON-Preflight-Report mit Feedback/Hinweisen und Tests ergänzt
 - [x] Adaptive Density als Einstellung eingefuehrt (Kompakt/Standard/Groß), DPI+Schriftgroesse verknuepft und mit GUI-/Profil-Tests abgesichert
 - [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
   - [ ] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
