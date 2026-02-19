@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 import subprocess
+from datetime import datetime, timezone
 
 from core import launcher_checks
 from core.paths import cache_dir, config_dir, log_dir, user_data_dir, work_dir
@@ -84,6 +85,41 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
 
     report_path = user_data_path / "logs" / "startup_preflight_report.json"
 
+    def _validate_checks(
+        checks: list[launcher_checks.CheckResult],
+        *,
+        stage_name: str,
+    ) -> list[launcher_checks.CheckResult]:
+        if not checks:
+            _fail(
+                f"Interner Fehler: {stage_name} lieferte keine Ergebnisse. "
+                "Naechster Schritt: Vollcheck starten mit './scripts/qa.sh'."
+            )
+        if any(
+            not isinstance(item, launcher_checks.CheckResult)
+            for item in checks
+        ):
+            _fail(
+                f"Interner Fehler: {stage_name} lieferte ungueltige "
+                "Pruefobjekte. Naechster Schritt: Start im Debug-Modus "
+                "ausfuehren mit 'python3 app.py --mode gui --debug'."
+            )
+        return checks
+
+    def _validate_repairs(
+        repairs: list[launcher_checks.RepairResult],
+    ) -> list[launcher_checks.RepairResult]:
+        if any(
+            not isinstance(item, launcher_checks.RepairResult)
+            for item in repairs
+        ):
+            _fail(
+                "Interner Fehler: Reparatur lieferte ungueltige Ergebnisse. "
+                "Naechster Schritt: Reparatur erneut starten im Debug-Modus "
+                "mit 'python3 app.py --mode gui --debug'."
+            )
+        return repairs
+
     def _serialize_checks(
         items: list[launcher_checks.CheckResult],
     ) -> list[dict[str, str | bool | None]]:
@@ -108,7 +144,11 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
     ) -> None:
         report_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "status": status,
+            "python_cmd": py,
+            "project_root": str(project_root),
+            "report_path": str(report_path),
             "checks_before": _serialize_checks(checks_before),
             "checks_after": _serialize_checks(checks_after),
             "check_feedback": launcher_checks.build_check_feedback(
@@ -116,13 +156,21 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
             ),
             "repair_feedback": launcher_checks.build_repair_feedback(repairs),
             "beginner_hints": launcher_checks.beginner_recovery_hints(repairs),
+            "next_actions": [
+                "Debug-Modus aktivieren (erweiterte Protokolle): "
+                "python3 app.py --mode gui --debug",
+                "Kompletten Qualitaetslauf starten: ./scripts/qa.sh",
+            ],
         }
         report_path.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
 
-    checks = launcher_checks.collect_checks(py, user_data_path, project_root)
+    checks = _validate_checks(
+        launcher_checks.collect_checks(py, user_data_path, project_root),
+        stage_name="Start-Checks vor Reparatur",
+    )
     if all(item.ok for item in checks if item.blocking):
         _write_report(
             status="ok",
@@ -131,10 +179,12 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
             repairs=[],
         )
         return
-
-    repairs = launcher_checks.run_repairs(py, user_data_path, project_root)
-    checks_after = launcher_checks.collect_checks(
-        py, user_data_path, project_root
+    repairs = _validate_repairs(
+        launcher_checks.run_repairs(py, user_data_path, project_root)
+    )
+    checks_after = _validate_checks(
+        launcher_checks.collect_checks(py, user_data_path, project_root),
+        stage_name="Start-Checks nach Reparatur",
     )
     if all(item.ok for item in checks_after if item.blocking):
         _write_report(
