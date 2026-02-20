@@ -388,7 +388,11 @@ def _build_theme_css(tokens: Dict[str, str]) -> str:
         f"background-color:{tokens['preview_info_bg']};"
         f"color:{tokens['preview_info_fg']};"
         f"border:2px solid {tokens['preview_info_border']};"
-        "}} " + BASE_COMPONENT_STYLE + ACTIVE_SECTION_STYLE
+        "}} "
+        f"QLabel[previewStatus='success']{{background-color:{tokens['preview_success_bg']};color:{tokens['preview_success_fg']};border:2px solid {tokens['preview_success_border']};border-radius:0.6em;padding:0.45em 0.6em;font-weight:600;}} "
+        f"QLabel[previewStatus='info']{{background-color:{tokens['preview_info_bg']};color:{tokens['preview_info_fg']};border:2px solid {tokens['preview_info_border']};border-radius:0.6em;padding:0.45em 0.6em;font-weight:600;}} "
+        f"QLabel[previewStatus='danger']{{background-color:{tokens['preview_danger_bg']};color:{tokens['preview_danger_fg']};border:2px solid {tokens['preview_danger_border']};border-radius:0.6em;padding:0.45em 0.6em;font-weight:600;}} "
+        + BASE_COMPONENT_STYLE + ACTIVE_SECTION_STYLE
     )
 
 

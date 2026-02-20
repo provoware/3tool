@@ -227,7 +227,7 @@
 - [ ] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“
   - [x] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
   - [x] Inline-Validierung mit Badges/Tooltips ausbauen, Dialoge nur für kritische Entscheidungen
-  - [ ] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzen
+  - [x] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzt
   - [x] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
   - [x] Undo/Redo für UI-Aktionen (Pairing-Änderungen, Entfernen, Auto-Pair) einführen
 
@@ -256,6 +256,6 @@
 ## Release-Status (automatisch aktualisiert)
 - [x] Datei-Manifest neu erstellt und mit aktuellem Stand synchronisiert
 - [ ] Release-Blocker: Workflow-Layout (A) auf semantische Zonen + 2-Spalten-Workflow umstellen
-- [ ] Release-Blocker: Interaktive Mini-Preview, erweiterte Kontextmenüs und Undo/Redo (D) fertigstellen
+- [x] Release-Blocker: Interaktive Mini-Preview, erweiterte Kontextmenüs und Undo/Redo (D) fertiggestellt
 - [ ] Release-Blocker: Zentrale Datenmodelle/Services finalisieren und grafische Fehlerzustände vereinheitlichen (E)
 - [ ] Finaler Go-Live-Check: `bash scripts/quality_check.sh && pytest -q && python videobatch_launcher.py --release-check`

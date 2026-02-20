@@ -54,6 +54,7 @@ from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
 from gui.dialogs.file_picker import FilePickerDialog
 from gui.main_window import build_initial_state
+from gui.services.output_preview import build_mini_preview_summary
 from gui.services.preview import play_audio_preview, stop_audio_preview
 from gui.services.project_io import (
     build_project_payload,
@@ -1697,7 +1698,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
         table_box = QtWidgets.QGroupBox("Paare")
         tb_lay = QtWidgets.QVBoxLayout(table_box)
+        self.output_preview_summary = QtWidgets.QLabel(
+            "Mini-Vorschau: Noch keine Paare vorhanden."
+        )
+        self.output_preview_summary.setWordWrap(True)
+        self.output_preview_summary.setProperty("previewStatus", "info")
+        self.output_preview_summary.setAccessibleName("Mini-Vorschau")
+        self.output_preview_summary.setAccessibleDescription(
+            "Kurze Vorschau mit Match-Infos und Konfliktwarnungen"
+        )
+        self.output_preview_details = QtWidgets.QPlainTextEdit()
+        self.output_preview_details.setReadOnly(True)
+        self.output_preview_details.setMaximumBlockCount(20)
+        self.output_preview_details.setAccessibleName(
+            "Mini-Vorschau Details"
+        )
+        self.output_preview_details.setAccessibleDescription(
+            "Geplante Ausgaben und Konfliktwarnungen in einfacher Sprache"
+        )
         tb_lay.addWidget(self.table)
+        tb_lay.addWidget(self.output_preview_summary)
+        tb_lay.addWidget(self.output_preview_details)
 
         help_box = QtWidgets.QGroupBox("Hilfe")
         hb_lay = QtWidgets.QVBoxLayout(help_box)
@@ -3160,6 +3181,41 @@ class MainWindow(QtWidgets.QMainWindow):
             self._history.pop(0)
         self._sync_history_buttons()
 
+    def _refresh_output_preview(self) -> None:
+        summary = build_mini_preview_summary(
+            self.pairs,
+            self.out_dir_edit.text().strip(),
+            max_lines=4,
+        )
+        if summary.total_rows <= 0:
+            status = "info"
+            text = (
+                "Mini-Vorschau: Noch keine Paare vorhanden. "
+                "Nächster Schritt: Bilder und Audios auswählen."
+            )
+        elif summary.conflict_rows:
+            status = "danger"
+            text = (
+                "Mini-Vorschau: "
+                f"{summary.ready_rows}/{summary.total_rows} bereit, "
+                f"{len(summary.conflict_rows)} Konflikt(e)."
+            )
+        else:
+            status = "success"
+            text = (
+                "Mini-Vorschau: Alle Paare sind plausibel. "
+                f"Bereit: {summary.ready_rows}/{summary.total_rows}."
+            )
+        self.output_preview_summary.setProperty("previewStatus", status)
+        self.output_preview_summary.setText(text)
+        self.output_preview_summary.style().unpolish(
+            self.output_preview_summary
+        )
+        self.output_preview_summary.style().polish(self.output_preview_summary)
+        self.output_preview_summary.update()
+        details = "\n".join(summary.lines) if summary.lines else "Keine Details."
+        self.output_preview_details.setPlainText(details)
+
     def _update_counts(self):
         img_count = self.image_list.count()
         aud_count = self.audio_list.count()
@@ -3193,6 +3249,7 @@ class MainWindow(QtWidgets.QMainWindow):
             output_ready=output_ready,
         )
         self._update_encode_ready_indicator(pair_count)
+        self._refresh_output_preview()
 
     def _update_encode_ready_indicator(self, pair_count: int) -> None:
         if pair_count > 0 and not self.btn_stop.isEnabled():

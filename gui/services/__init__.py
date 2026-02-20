@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .output_preview import build_mini_preview_summary
 from .project_io import (
     build_project_payload,
     load_project_file,
@@ -33,6 +34,7 @@ __all__ = [
     "check_ffmpeg",
     "load_project_file",
     "make_project_relative",
+    "build_mini_preview_summary",
     "play_audio_preview",
     "resolve_project_path",
     "safe_move",
