@@ -196,6 +196,7 @@
 
 ## Offene Punkte (neu)
 
+- [x] Undo/Redo-Button mit Ctrl+Z/Ctrl+Y ergänzt und Zustände per History-Stacks abgesichert
 - [x] Start-Bootstrap schreibt JSON-Preflight-Report mit Feedback/Hinweisen und Tests ergänzt
 - [x] Adaptive Density als Einstellung eingefuehrt (Kompakt/Standard/Groß), DPI+Schriftgroesse verknuepft und mit GUI-/Profil-Tests abgesichert
 - [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
@@ -228,7 +229,7 @@
   - [x] Inline-Validierung mit Badges/Tooltips ausbauen, Dialoge nur für kritische Entscheidungen
   - [ ] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzen
   - [x] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
-  - [ ] Undo/Redo für UI-Aktionen (Pairing-Änderungen, Entfernen, Auto-Pair) einführen
+  - [x] Undo/Redo für UI-Aktionen (Pairing-Änderungen, Entfernen, Auto-Pair) einführen
 
 - [ ] E) Robustheit & Codequalität
   - [ ] Single Source of Truth mit zentralen Datenmodellen (ImagesModel, AudiosModel, PairsModel) ausbauen

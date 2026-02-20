@@ -1805,6 +1805,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_auto_pair = action_buttons.buttons["auto_pair"]
         self.btn_clear = action_buttons.buttons["clear"]
         self.btn_undo = action_buttons.buttons["undo"]
+        self.btn_redo = action_buttons.buttons["redo"]
         self.btn_save = action_buttons.buttons["save"]
         self.btn_load = action_buttons.buttons["load"]
         self.btn_encode = action_buttons.buttons["encode"]
@@ -1960,6 +1961,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._toggle_log(self.act_show_log.isChecked())
 
         self._history: List[List[PairItem]] = []
+        self._redo_history: List[List[PairItem]] = []
         self.thread: Optional[QtCore.QThread] = None
         self.worker: Optional[EncodeWorker] = None
 
@@ -1969,6 +1971,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_auto_pair.clicked.connect(self._auto_pair)
         self.btn_clear.clicked.connect(self._clear_all)
         self.btn_undo.clicked.connect(self._undo_last)
+        self.btn_redo.clicked.connect(self._redo_last)
         self.btn_save.clicked.connect(self._save_project)
         self.btn_load.clicked.connect(self._load_project)
         self.btn_encode.clicked.connect(self._start_encode)
@@ -2021,6 +2024,12 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QShortcut(QtGui.QKeySequence("F5"), self).activated.connect(
             self._start_encode
         )
+        QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Z"), self).activated.connect(
+            self._undo_last
+        )
+        QtGui.QShortcut(QtGui.QKeySequence("Ctrl+Y"), self).activated.connect(
+            self._redo_last
+        )
         self._init_workflow_shortcuts()
         self._init_workflow_tab_order()
         self._refresh_structure_view()
@@ -2046,6 +2055,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self._active_section_name = "Paare"
         self._on_focus_changed(None, self.table)
+        self._sync_history_buttons()
 
     # ----- UI helpers -----
     def _ui_text(self, key: str, fallback: str) -> str:
@@ -2831,6 +2841,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.btn_auto_pair,
             self.btn_clear,
             self.btn_undo,
+            self.btn_redo,
             self.btn_save,
             self.btn_load,
             self.btn_encode,
@@ -3118,7 +3129,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         self._log(f"Auto-Speichern ok ({reason}): {auto_path}")
 
-    def _push_history(self):
+    def _snapshot_pairs(self) -> List[PairItem]:
         snap = []
         for p in self.pairs:
             q = PairItem(p.image_path, p.audio_path)
@@ -3129,9 +3140,25 @@ class MainWindow(QtWidgets.QMainWindow):
             q.valid = p.valid
             q.validation_msg = p.validation_msg
             snap.append(q)
-        self._history.append(snap)
+        return snap
+
+    def _apply_pair_snapshot(self, snap: List[PairItem]) -> None:
+        self.model.clear()
+        self.model.add_pairs(snap)
+        self._update_counts()
+        self._resize_columns()
+        self._refresh_structure_view()
+
+    def _sync_history_buttons(self) -> None:
+        self.btn_undo.setEnabled(bool(self._history))
+        self.btn_redo.setEnabled(bool(self._redo_history))
+
+    def _push_history(self):
+        self._history.append(self._snapshot_pairs())
+        self._redo_history.clear()
         if len(self._history) > 30:
             self._history.pop(0)
+        self._sync_history_buttons()
 
     def _update_counts(self):
         img_count = self.image_list.count()
@@ -3572,13 +3599,24 @@ class MainWindow(QtWidgets.QMainWindow):
     def _undo_last(self):
         if not self._history:
             return
+        self._redo_history.append(self._snapshot_pairs())
+        if len(self._redo_history) > 30:
+            self._redo_history.pop(0)
         last = self._history.pop()
-        self.model.clear()
-        self.model.add_pairs(last)
-        self._update_counts()
-        self._resize_columns()
-        self._refresh_structure_view()
+        self._apply_pair_snapshot(last)
+        self._sync_history_buttons()
         self._log("Rückgängig ausgeführt")
+
+    def _redo_last(self):
+        if not self._redo_history:
+            return
+        self._history.append(self._snapshot_pairs())
+        if len(self._history) > 30:
+            self._history.pop(0)
+        upcoming = self._redo_history.pop()
+        self._apply_pair_snapshot(upcoming)
+        self._sync_history_buttons()
+        self._log("Wiederholen ausgeführt")
 
     # ----- save / load -----
     def _save_project(self):
