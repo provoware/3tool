@@ -21,8 +21,9 @@ def test_create_action_buttons_builds_expected_controls(qtbot):
     action_set = create_action_buttons(parent, on_timer_tick=_tick)
     assert action_set.box.title() == "Aktionen"
     assert "encode" in action_set.buttons
+    assert "redo" in action_set.buttons
     assert action_set.buttons["encode"].text() == "START"
-    assert len(action_set.wrappers) == 10
+    assert len(action_set.wrappers) == 11
     first_wrapper = action_set.wrappers[0]
     assert first_wrapper.minimumWidth() >= 190
     detail_labels = first_wrapper.findChildren(QtWidgets.QLabel)

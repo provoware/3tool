@@ -957,3 +957,40 @@ def test_inline_template_validation_sets_field_state_and_badge(
     assert win.output_template_edit.property("validationState") == "warn"
     assert win.output_template_validation_badge.isVisible()
     assert win.output_template_validation_badge.text().startswith("Prüfen:")
+
+
+def test_undo_redo_restores_pair_states(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    assert not win.btn_undo.isEnabled()
+    assert not win.btn_redo.isEnabled()
+
+    first = videobatch_gui.PairItem("/tmp/a.jpg", "/tmp/a.mp3")
+    second = videobatch_gui.PairItem("/tmp/b.jpg", "/tmp/b.mp3")
+
+    win.model.add_pairs([first])
+    win._push_history()
+    win.model.clear()
+    win.model.add_pairs([second])
+
+    win._undo_last()
+
+    assert win.pairs[0].image_path.endswith("a.jpg")
+    assert win.btn_redo.isEnabled()
+
+    win._redo_last()
+
+    assert win.pairs[0].image_path.endswith("b.jpg")
