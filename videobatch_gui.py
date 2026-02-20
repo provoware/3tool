@@ -1893,6 +1893,7 @@ class MainWindow(QtWidgets.QMainWindow):
             col.setCollapsible(0, False)
             col.setCollapsible(1, False)
         self.workflow_splitters = [col1, col2, col3]
+        self._workflow_column_splitters = (col1, col2, col3)
         self._layout_splitter_keys = {
             "columns": "ui/workflow_splitter_columns_v1",
             "rows": [
@@ -1930,6 +1931,19 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self._apply_workflow_splitter_policies()
 
+        self.workflow_stack = QtWidgets.QStackedWidget()
+        self.workflow_standard_page = QtWidgets.QWidget()
+        workflow_standard_layout = QtWidgets.QVBoxLayout(
+            self.workflow_standard_page
+        )
+        workflow_standard_layout.setContentsMargins(0, 0, 0, 0)
+        workflow_standard_layout.addWidget(self.workflow_columns)
+        self.workflow_stack.addWidget(self.workflow_standard_page)
+
+        self.workflow_compact_page = self._build_workflow_compact_page()
+        self.workflow_stack.addWidget(self.workflow_compact_page)
+        self._workflow_compact_mode = False
+
         central_layout = QtWidgets.QVBoxLayout()
         central_layout.addWidget(dashboard_header)
         self.focus_hint_label = QtWidgets.QLabel(
@@ -1944,7 +1958,7 @@ class MainWindow(QtWidgets.QMainWindow):
         feedback_row.addWidget(self.warning_badge, 1)
         feedback_row.addWidget(self.success_toast, 1)
         central_layout.addLayout(feedback_row)
-        central_layout.addWidget(self.workflow_columns, 1)
+        central_layout.addWidget(self.workflow_stack, 1)
         self.central_layout = central_layout
         central = QtWidgets.QWidget()
         central.setLayout(central_layout)
@@ -2384,6 +2398,61 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.style().polish(self.btn_encode)
         self.btn_encode.update()
 
+    def _set_workflow_compact_mode(self, enabled: bool) -> None:
+        compact = bool(enabled)
+        if compact == getattr(self, "_workflow_compact_mode", False):
+            return
+        self._mount_workflow_sections(compact)
+        self._workflow_compact_mode = compact
+        if hasattr(self, "workflow_stack"):
+            self.workflow_stack.setCurrentWidget(
+                self.workflow_compact_page if compact else self.workflow_standard_page
+            )
+
+    def _build_workflow_compact_page(self) -> QtWidgets.QWidget:
+        page = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(page)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+        labels = (
+            "1/3 Eingabe + Validierung",
+            "2/3 Zuordnung + Aktionen",
+            "3/3 Preview + Protokoll",
+        )
+        self._compact_zone_layouts: List[QtWidgets.QVBoxLayout] = []
+        for text in labels:
+            box = QtWidgets.QGroupBox(text)
+            box_layout = QtWidgets.QVBoxLayout(box)
+            box_layout.setContentsMargins(6, 6, 6, 6)
+            box_layout.setSpacing(6)
+            self._compact_zone_layouts.append(box_layout)
+            layout.addWidget(box, 1)
+        return page
+
+    def _mount_workflow_sections(self, compact: bool) -> None:
+        if compact:
+            zone_pairs = (
+                (self.pool_box, self.settings_widget),
+                (self.btn_box, self.table_box),
+                (self.help_box, self.log_box),
+            )
+            for zone_layout, widgets in zip(self._compact_zone_layouts, zone_pairs):
+                for widget in widgets:
+                    zone_layout.addWidget(widget)
+            return
+
+        for splitter, widgets in zip(
+            self._workflow_column_splitters,
+            (
+                (self.pool_box, self.settings_widget),
+                (self.btn_box, self.table_box),
+                (self.help_box, self.log_box),
+            ),
+        ):
+            for widget in widgets:
+                splitter.addWidget(widget)
+
+
     def _rebalance_workflow_layout(
         self,
         active_name: Optional[str] = None,
@@ -2397,16 +2466,10 @@ class MainWindow(QtWidgets.QMainWindow):
         available_width = max(self.workflow_columns.width(), 1)
         available_height = max(self.workflow_columns.height(), 1)
         layout_meta = self._workflow_layout_meta(available_width)
-        guard_stack = bool(layout_meta["force_stack"])
-        target_columns = int(layout_meta["columns"])
-        if target_columns <= 1:
-            guard_stack = True
+        compact_mode = bool(layout_meta["force_stack"])
+        self._set_workflow_compact_mode(compact_mode)
 
-        orientation = Qt.Vertical if guard_stack else Qt.Horizontal
-        if self.workflow_columns.orientation() != orientation:
-            self.workflow_columns.setOrientation(orientation)
-
-        total_columns = available_height if guard_stack else available_width
+        total_columns = available_width
         column_weights = list(self.WORKFLOW_COLUMN_DEFAULT_WEIGHTS)
         column_weights[active_column] += 10
         column_sizes = self._scaled_sizes(column_weights, total_columns)
@@ -4486,10 +4549,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         available_width = max(self.workflow_columns.width(), self.width())
         layout_meta = self._workflow_layout_meta(available_width)
-        guard_stack = bool(layout_meta["force_stack"])
-        orientation = Qt.Vertical if guard_stack else Qt.Horizontal
-        if self.workflow_columns.orientation() != orientation:
-            self.workflow_columns.setOrientation(orientation)
+        self._set_workflow_compact_mode(bool(layout_meta["force_stack"]))
 
         density_scale = self.settings.value("ui/density_scale", 1.0, float)
         min_width, min_height = self._compute_workflow_min_size(
@@ -4511,7 +4571,7 @@ class MainWindow(QtWidgets.QMainWindow):
             min_width,
             min_height,
             layout_meta["columns"],
-            guard_stack,
+            self._workflow_compact_mode,
         )
 
     def _apply_workflow_splitter_policies(self) -> None:

@@ -357,7 +357,7 @@ def test_focus_change_keeps_workflow_geometry_stable(
     )
 
 
-def test_workflow_reflows_to_vertical_stack_on_small_width(
+def test_workflow_uses_compact_stack_mode_on_small_width(
     request, gui_runtime_available, gui_runtime_error
 ):
     if not gui_runtime_available:
@@ -378,9 +378,10 @@ def test_workflow_reflows_to_vertical_stack_on_small_width(
     win._request_workflow_rebalance(force=True)
     qtbot.wait(win.WORKFLOW_REBALANCE_DEBOUNCE_MS + 80)
 
-    assert win.workflow_columns.orientation() == videobatch_gui.Qt.Vertical
+    assert win._workflow_compact_mode is True
+    assert win.workflow_stack.currentWidget() is win.workflow_compact_page
     assert all(
-        section.minimumWidth() <= win.workflow_columns.width()
+        section.minimumWidth() <= win.workflow_stack.width()
         for section in win._workflow_sections
     )
 
