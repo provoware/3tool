@@ -78,3 +78,28 @@ def test_table_displays_long_paths_with_wrap_and_without_elide(
         win.table.horizontalScrollBarPolicy()
         == QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded
     )
+
+
+def test_output_preview_widget_shows_conflict_warning(
+    qtbot, qapp, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    videobatch_gui = importlib.import_module("videobatch_gui")
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.show()
+
+    pair_a = videobatch_gui.PairItem("/tmp/a.jpg", "/tmp/a.mp3")
+    pair_a.output = "/tmp/out/same.mp4"
+    pair_b = videobatch_gui.PairItem("/tmp/b.jpg", "/tmp/b.mp3")
+    pair_b.output = "/tmp/out/same.mp4"
+    win.model.add_pairs([pair_a, pair_b])
+    win._update_counts()
+    qapp.processEvents()
+
+    assert "Konflikt" in win.output_preview_summary.text()
+    assert win.output_preview_summary.property("previewStatus") == "danger"
+    assert "Zeile" in win.output_preview_details.toPlainText()
