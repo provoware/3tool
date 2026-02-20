@@ -32,6 +32,8 @@ BASE_COMPONENT_STYLE = (
     "QLabel[feedbackKind='warning']{border:2px solid #b54708;border-radius:0.6em;background:#fffaeb;padding:0.4em 0.6em;} "
     "QLabel[feedbackKind='success']{border:2px solid #027a48;border-radius:0.6em;background:#ecfdf3;padding:0.42em 0.68em;font-weight:600;} "
     "QLabel[feedbackIcon='true']{font-size:1.35em;font-weight:700;} "
+    "QLineEdit[validationState='warn'],QComboBox[validationState='warn'],QSpinBox[validationState='warn']{border:2px solid #b42318;background:#fff5f5;} "
+    "QLineEdit[validationState='ok'],QComboBox[validationState='ok'],QSpinBox[validationState='ok']{border:2px solid #027a48;background:#f3fff7;} "
     "QWidget[responsive='compact'] QPushButton,QWidget[responsive='compact'] QToolButton{min-height:2.1em;padding:0.3em 0.58em;} "
     "QWidget[responsive='expanded'] QPushButton,QWidget[responsive='expanded'] QToolButton{min-height:2.8em;padding:0.58em 1em;} "
     "QWidget[readabilityMode='large'] QPushButton,QWidget[readabilityMode='large'] QToolButton{min-height:3.1em;padding:0.7em 1.15em;} "

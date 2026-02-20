@@ -76,7 +76,12 @@ from gui.state.project_state import (
 from gui.views.action_orchestration import choose_project_root_dialog
 from gui.views.main_window_view import create_action_buttons
 from gui.widgets.dashboard import InfoDashboard
-from gui.widgets.feedback import ErrorBanner, SuccessToast, WarningBadge
+from gui.widgets.feedback import (
+    ErrorBanner,
+    InlineValidationBadge,
+    SuccessToast,
+    WarningBadge,
+)
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -1557,6 +1562,11 @@ class MainWindow(QtWidgets.QMainWindow):
             project_wrap,
             "Standardordner für Projekte",
         )
+        self.project_dir_validation_badge = InlineValidationBadge()
+        self.project_dir_validation_badge.setAccessibleName(
+            "Validierung Projektordner"
+        )
+        form.addRow("", self.project_dir_validation_badge)
         self._add_form(
             form, "CRF", self.crf_spin, "Qualität (0=lossless, 23=Standard)"
         )
@@ -1571,6 +1581,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._add_form(
             form, "Audio-Bitrate", self.abitrate_edit, "z.B. 192k, 256k"
         )
+        self.abitrate_validation_badge = InlineValidationBadge()
+        self.abitrate_validation_badge.setAccessibleName(
+            "Validierung Audio-Bitrate"
+        )
+        form.addRow("", self.abitrate_validation_badge)
         template_row = QtWidgets.QHBoxLayout()
         template_row.setContentsMargins(0, 0, 0, 0)
         template_row.addWidget(self.output_template_edit, 1)
@@ -1596,6 +1611,11 @@ class MainWindow(QtWidgets.QMainWindow):
             template_wrap,
             "Preset statt Freitext nutzen: {audio_stem}, {zeitstempel}, {qualitaet}, {abmasse}",
         )
+        self.output_template_validation_badge = InlineValidationBadge()
+        self.output_template_validation_badge.setAccessibleName(
+            "Validierung Dateinamen-Template"
+        )
+        form.addRow("", self.output_template_validation_badge)
         self._add_form(
             form, "Modus", self.mode_combo, "z.B. Slideshow oder Video + Audio"
         )
@@ -2649,9 +2669,33 @@ class MainWindow(QtWidgets.QMainWindow):
         self.project_dir_edit.setText(selected)
         self._validate_project_dir()
 
+    def _set_inline_field_validation(
+        self,
+        field: QtWidgets.QWidget,
+        badge: InlineValidationBadge,
+        is_valid: bool,
+        message: str,
+    ) -> None:
+        clean_message = " ".join((message or "").split())
+        field.setProperty(
+            "validationState", "ok" if is_valid else "warn"
+        )
+        field.style().unpolish(field)
+        field.style().polish(field)
+        if clean_message:
+            badge.show_validation(is_valid, clean_message)
+        else:
+            badge.clear_validation()
+
     def _validate_project_dir(self):
         value = self.project_dir_edit.text().strip()
         if not value:
+            self._set_inline_field_validation(
+                self.project_dir_edit,
+                self.project_dir_validation_badge,
+                False,
+                "Projektordner fehlt. Nächster Schritt: Ordner auswählen.",
+            )
             return
         path = Path(value).expanduser()
         try:
@@ -2660,6 +2704,12 @@ class MainWindow(QtWidgets.QMainWindow):
             logger.exception(
                 "ui.project_dir_prepare_failed",
                 extra={"path": str(path), "error": str(exc)},
+            )
+            self._set_inline_field_validation(
+                self.project_dir_edit,
+                self.project_dir_validation_badge,
+                False,
+                "Projektordner konnte nicht erstellt werden. Nächster Schritt: anderen Ordner wählen oder Rechte prüfen.",
             )
             QtWidgets.QMessageBox.warning(
                 self,
@@ -2679,6 +2729,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings.setValue("project/default_dir", fallback)
             return
         self.settings.setValue("project/default_dir", str(path))
+        self._set_inline_field_validation(
+            self.project_dir_edit,
+            self.project_dir_validation_badge,
+            True,
+            f"Projektordner ist bereit: {path}",
+        )
         self._log(f"Standard-Projektordner gesetzt: {path}")
 
     def _copy_log_path(self):
@@ -2689,14 +2745,16 @@ class MainWindow(QtWidgets.QMainWindow):
         result = validate_output_template(self.output_template_edit.text())
         template = result.value
         self.output_template_edit.setText(template)
+        self._set_inline_field_validation(
+            self.output_template_edit,
+            self.output_template_validation_badge,
+            result.is_valid,
+            result.message
+            if not result.is_valid
+            else "Template ist gültig und gespeichert.",
+        )
         if not result.is_valid:
-            QtWidgets.QMessageBox.warning(
-                self,
-                self._ui_text(
-                    "dialogs.template_invalid.title", "Template ungültig"
-                ),
-                result.message,
-            )
+            self.warning_badge.show_warning(result.message)
             self._log(
                 f"Dateinamen-Template ungültig: {result.message}",
                 logging.ERROR,
@@ -3659,7 +3717,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.abitrate_edit.setText(abitrate)
         if bitrate_result.message and bitrate_result.is_valid:
             self._log(bitrate_result.message)
+        self._set_inline_field_validation(
+            self.abitrate_edit,
+            self.abitrate_validation_badge,
+            bitrate_result.is_valid,
+            bitrate_result.message
+            if bitrate_result.message
+            else "Audio-Bitrate ist gültig.",
+        )
         if require_valid and not bitrate_result.is_valid:
+            self.warning_badge.show_warning(bitrate_result.message)
             QtWidgets.QMessageBox.warning(
                 self,
                 "Ungültige Audiobitrate",
@@ -3673,7 +3740,16 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         output_template = template_result.value
         self.output_template_edit.setText(output_template)
+        self._set_inline_field_validation(
+            self.output_template_edit,
+            self.output_template_validation_badge,
+            template_result.is_valid,
+            template_result.message
+            if not template_result.is_valid
+            else "Template ist gültig.",
+        )
         if require_valid and not template_result.is_valid:
+            self.warning_badge.show_warning(template_result.message)
             QtWidgets.QMessageBox.warning(
                 self,
                 "Ungültiges Template",
