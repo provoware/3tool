@@ -76,6 +76,7 @@ from gui.state.project_state import (
 from gui.views.action_orchestration import choose_project_root_dialog
 from gui.views.main_window_view import create_action_buttons
 from gui.widgets.dashboard import InfoDashboard
+from gui.widgets.feedback import ErrorBanner, SuccessToast, WarningBadge
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -1803,6 +1804,10 @@ class MainWindow(QtWidgets.QMainWindow):
         dashboard_header_layout.setContentsMargins(8, 8, 8, 8)
         dashboard_header_layout.addWidget(self.dashboard)
 
+        self.error_banner = ErrorBanner(self)
+        self.warning_badge = WarningBadge(self)
+        self.success_toast = SuccessToast(self)
+
         self.workflow_columns = QtWidgets.QSplitter(Qt.Horizontal)
         self.workflow_columns.setChildrenCollapsible(False)
         self.workflow_columns.setHandleWidth(10)
@@ -1891,6 +1896,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.focus_hint_label.setAccessibleName("Hinweis aktiver Bereich")
         self.focus_hint_label.setWordWrap(True)
         central_layout.addWidget(self.focus_hint_label)
+        central_layout.addWidget(self.error_banner)
+        feedback_row = QtWidgets.QHBoxLayout()
+        feedback_row.setContentsMargins(0, 0, 0, 0)
+        feedback_row.addWidget(self.warning_badge, 1)
+        feedback_row.addWidget(self.success_toast, 1)
+        central_layout.addLayout(feedback_row)
         central_layout.addWidget(self.workflow_columns, 1)
         self.central_layout = central_layout
         central = QtWidgets.QWidget()
@@ -2937,6 +2948,9 @@ class MainWindow(QtWidgets.QMainWindow):
         box.setText(message)
         box.setDetailedText(self._log_details())
         box.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        self.error_banner.show_error(title, message)
+        if icon == QtWidgets.QMessageBox.Warning:
+            self.warning_badge.show_warning(message)
         self._announce_live_status(
             f"{title}: {message}. Nächster Schritt: Hinweise prüfen und erneut starten.",
             timeout_ms=6000,
@@ -4068,6 +4082,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._flag_row_error(row, msg)
 
     def _encode_finished(self):
+        self.error_banner.clear_message()
+        self.warning_badge.clear_warning()
         self.btn_encode.setEnabled(True)
         self.btn_stop.setEnabled(False)
         self.progress_total.setValue(100)
@@ -4086,6 +4102,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.raise_()
         self.activateWindow()
         done_count = sum(1 for pair in self.pairs if pair.status == "FERTIG")
+        self.success_toast.show_message(
+            f"Videogenerierung abgeschlossen: {done_count} Datei(en) erstellt.",
+            timeout_ms=5000,
+        )
         QtWidgets.QMessageBox.information(
             self,
             "Fertig",

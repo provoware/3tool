@@ -236,7 +236,7 @@
   - [x] Deterministische Layout-Defaults per Fensterverhältnis einführen (z. B. 35/30/35) statt setSizes([1,1,1])
   - [ ] Layout-Messung auf sizeHint/minimumSizeHint/content-aware umstellen statt starrer Faktoren
   - [x] UI-Smoke-Tests für 800x600/1366x768/1920x1080, 150% Großschrift, Dark/Light ergänzen
-  - [ ] Fehlerzustände grafisch standardisieren (ErrorBanner, WarningBadge, SuccessToast)
+  - [x] Fehlerzustände grafisch standardisieren (ErrorBanner, WarningBadge, SuccessToast)
 
 - [ ] High-Impact-Maßnahmen (Top 10)
   - [x] Rebalance aus resizeEvent entfernen oder strikt on-demand schalten
