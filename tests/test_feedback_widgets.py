@@ -70,3 +70,29 @@ def test_success_toast_auto_hides(
     qtbot.wait(1300)
 
     assert not toast.isVisible()
+
+
+def test_inline_validation_badge_shows_states(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    from gui.widgets.feedback import InlineValidationBadge
+
+    qtbot = request.getfixturevalue("qtbot")
+    badge = InlineValidationBadge()
+    qtbot.addWidget(badge)
+
+    badge.show_validation(False, "Template hat ungültige Zeichen")
+    assert badge.isVisible()
+    assert badge.property("feedbackKind") == "warning"
+    assert badge.text().startswith("Prüfen:")
+
+    badge.show_validation(True, "Template ist gültig")
+    assert badge.property("feedbackKind") == "success"
+    assert badge.text().startswith("OK:")
+
+    badge.clear_validation()
+    assert not badge.isVisible()

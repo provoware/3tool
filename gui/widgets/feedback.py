@@ -69,6 +69,34 @@ class WarningBadge(QtWidgets.QLabel):
         self.setVisible(False)
 
 
+class InlineValidationBadge(QtWidgets.QLabel):
+    """Inline-Hinweis direkt am Eingabefeld (ok/warn) mit Tooltip."""
+
+    def __init__(self, parent: QtWidgets.QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setVisible(False)
+        self.setWordWrap(True)
+        self.setProperty("feedbackKind", "warning")
+
+    def show_validation(self, is_valid: bool, message: str) -> None:
+        clean_msg = " ".join((message or "").split())
+        if not clean_msg:
+            self.clear_validation()
+            return
+        prefix = "OK" if is_valid else "Prüfen"
+        self.setProperty("feedbackKind", "success" if is_valid else "warning")
+        self.setText(f"{prefix}: {clean_msg}")
+        self.setToolTip(clean_msg)
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.setVisible(True)
+
+    def clear_validation(self) -> None:
+        self.clear()
+        self.setToolTip("")
+        self.setVisible(False)
+
+
 class SuccessToast(QtWidgets.QLabel):
     """Kurzlebige Erfolgs-/Statusmeldung im Hauptfenster."""
 
@@ -93,4 +121,3 @@ class SuccessToast(QtWidgets.QLabel):
     def _hide_message(self) -> None:
         self.clear()
         self.setVisible(False)
-

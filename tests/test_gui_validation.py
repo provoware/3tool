@@ -934,3 +934,26 @@ def test_drop_list_rename_item_keeps_ignore_suffix(
 
     assert widget._rename_item_label(item)
     assert item.text() == "Alias.png (ignoriert)"
+
+def test_inline_template_validation_sets_field_state_and_badge(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win.output_template_edit.setText("{ungueltig}")
+    win._validate_output_template()
+
+    assert win.output_template_edit.property("validationState") == "warn"
+    assert win.output_template_validation_badge.isVisible()
+    assert win.output_template_validation_badge.text().startswith("Prüfen:")
