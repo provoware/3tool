@@ -26,20 +26,30 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
-from core.fallback_media import (dumps_audio_list, loads_audio_list,
-                                 persist_fallback_media)
-from core.gui_logic import (compute_workflow_min_size, normalize_layout_width,
-                            resolve_action_cell_min_width,
-                            resolve_action_layout_columns)
+from core.fallback_media import (
+    dumps_audio_list,
+    loads_audio_list,
+    persist_fallback_media,
+)
+from core.gui_logic import (
+    compute_workflow_min_size,
+    normalize_layout_width,
+    resolve_action_cell_min_width,
+    resolve_action_layout_columns,
+)
 from core.media_validation import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS
-from core.output_management import (build_dated_output_dir,
-                                    transfer_with_validation)
+from core.output_management import (
+    build_dated_output_dir,
+    transfer_with_validation,
+)
 from core.paths import config_dir, log_dir, user_data_dir
 from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
-from core.ui_profiles import (resolve_density_multiplier,
-                              resolve_interface_profile,
-                              resolve_spacing_profile)
+from core.ui_profiles import (
+    resolve_density_multiplier,
+    resolve_interface_profile,
+    resolve_spacing_profile,
+)
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
@@ -47,18 +57,33 @@ from gui.dialogs.file_picker import FilePickerDialog
 from gui.main_window import build_initial_state
 from gui.services.output_preview import build_mini_preview_summary
 from gui.services.preview import play_audio_preview, stop_audio_preview
-from gui.services.project_io import (build_project_payload, load_project_file,
-                                     make_project_relative,
-                                     resolve_project_path, save_project_file)
-from gui.services.runtime_paths import (build_default_runtime_paths,
-                                        check_ffmpeg, safe_move)
-from gui.state.project_state import (get_project_root, get_project_start_dir,
-                                     set_last_project_path, set_project_root)
+from gui.services.project_io import (
+    build_project_payload,
+    load_project_file,
+    make_project_relative,
+    resolve_project_path,
+    save_project_file,
+)
+from gui.services.runtime_paths import (
+    build_default_runtime_paths,
+    check_ffmpeg,
+    safe_move,
+)
+from gui.state.project_state import (
+    get_project_root,
+    get_project_start_dir,
+    set_last_project_path,
+    set_project_root,
+)
 from gui.views.action_orchestration import choose_project_root_dialog
 from gui.views.main_window_view import create_action_buttons
 from gui.widgets.dashboard import InfoDashboard
-from gui.widgets.feedback import (ErrorBanner, InlineValidationBadge,
-                                  SuccessToast, WarningBadge)
+from gui.widgets.feedback import (
+    ErrorBanner,
+    InlineValidationBadge,
+    SuccessToast,
+    WarningBadge,
+)
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -1074,6 +1099,8 @@ class GuidedWizard(QtWidgets.QDialog):
 # ---------- MainWindow ----------
 class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
+    FONT_MIN = 10
+    FONT_MAX = 36
     WORKFLOW_SECTION_MIN_WIDTH = 180
     WORKFLOW_SECTION_MIN_HEIGHT = 190
     WORKFLOW_COLUMN_DEFAULT_WEIGHTS = (45, 55)
@@ -1126,6 +1153,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._pending_action_reflow = False
         self._pending_table_row_resize = False
         self._pending_hint_rewrap = False
+        self._ctrl_wheel_font_zoom_enabled = True
         self._ui_recalc_timer = QtCore.QTimer(self)
         self._ui_recalc_timer.setSingleShot(True)
         self._ui_recalc_timer.timeout.connect(self._run_debounced_ui_recalc)
@@ -2089,6 +2117,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._on_focus_changed(None, self.table)
         self._sync_history_buttons()
         self._sync_sticky_export_state()
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            app.installEventFilter(self)
 
     # ----- UI helpers -----
     def _ui_text(self, key: str, fallback: str) -> str:
@@ -2352,7 +2383,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._set_font(value)
 
     def _set_font(self, size: int):
-        size = max(10, min(36, size))
+        size = max(self.FONT_MIN, min(self.FONT_MAX, size))
         self._font_size = size
         self._apply_font()
         if hasattr(self, "font_slider") and self.font_slider.value() != size:
@@ -2369,6 +2400,40 @@ class MainWindow(QtWidgets.QMainWindow):
     def _apply_font(self):
         f = QtGui.QFont("DejaVu Sans", self._font_size)
         self.setFont(f)
+
+    def _font_zoom_step_from_wheel(self, event: object) -> int:
+        if not isinstance(event, QtGui.QWheelEvent):
+            return 0
+        angle_delta = event.angleDelta().y()
+        if angle_delta:
+            return 1 if angle_delta > 0 else -1
+        pixel_delta = event.pixelDelta().y()
+        if pixel_delta:
+            return 1 if pixel_delta > 0 else -1
+        return 0
+
+    def eventFilter(
+        self, watched: QtCore.QObject, event: QtCore.QEvent
+    ) -> bool:
+        if (
+            self._ctrl_wheel_font_zoom_enabled
+            and event.type() == QtCore.QEvent.Type.Wheel
+            and isinstance(event, QtGui.QWheelEvent)
+            and event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier
+            and self.isVisible()
+        ):
+            active_window = QtWidgets.QApplication.activeWindow()
+            if active_window is self or self.isAncestorOf(active_window):
+                step = self._font_zoom_step_from_wheel(event)
+                if step:
+                    self._change_font(step)
+                    self._announce_live_status(
+                        f"Skalierung angepasst: Schriftgröße {self._font_size}",
+                        timeout_ms=1800,
+                    )
+                    event.accept()
+                    return True
+        return super().eventFilter(watched, event)
 
     def _apply_theme(self, name: str):
         if name not in THEMES:
@@ -4760,6 +4825,9 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            app.removeEventFilter(self)
         self._save_workflow_splitter_state()
         self.settings.setValue("ui/geometry", self.saveGeometry())
         self.settings.setValue("ui/window_state", self.saveState())

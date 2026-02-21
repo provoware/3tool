@@ -446,6 +446,52 @@ def test_density_profile_changes_workflow_min_size(
     assert large_height >= compact_height
 
 
+def test_ctrl_wheel_scales_font_for_main_window(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+    win.show()
+    qtbot.waitExposed(win)
+
+    start_size = win._font_size
+    center = win.rect().center()
+
+    wheel_up = videobatch_gui.QtGui.QWheelEvent(
+        videobatch_gui.QtCore.QPointF(center),
+        videobatch_gui.QtCore.QPointF(center),
+        videobatch_gui.QtCore.QPoint(0, 0),
+        videobatch_gui.QtCore.QPoint(0, 120),
+        videobatch_gui.QtCore.Qt.MouseButton.NoButton,
+        videobatch_gui.QtCore.Qt.KeyboardModifier.ControlModifier,
+        videobatch_gui.QtCore.Qt.ScrollPhase.ScrollUpdate,
+        False,
+    )
+    videobatch_gui.QtWidgets.QApplication.sendEvent(win, wheel_up)
+
+    assert win._font_size == min(start_size + 1, win.FONT_MAX)
+
+    wheel_down = videobatch_gui.QtGui.QWheelEvent(
+        videobatch_gui.QtCore.QPointF(center),
+        videobatch_gui.QtCore.QPointF(center),
+        videobatch_gui.QtCore.QPoint(0, 0),
+        videobatch_gui.QtCore.QPoint(0, -120),
+        videobatch_gui.QtCore.Qt.MouseButton.NoButton,
+        videobatch_gui.QtCore.Qt.KeyboardModifier.ControlModifier,
+        videobatch_gui.QtCore.Qt.ScrollPhase.ScrollUpdate,
+        False,
+    )
+    videobatch_gui.QtWidgets.QApplication.sendEvent(win, wheel_down)
+
+    assert win._font_size == start_size
+
+
 def test_scaled_sizes_keep_total_and_positive(
     gui_runtime_available, gui_runtime_error
 ):
