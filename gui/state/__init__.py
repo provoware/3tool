@@ -1,3 +1,4 @@
+from .data_models import AudiosModel, ImagesModel, PairRecord, PairsModel
 from .project_state import (
     get_project_root,
     get_project_start_dir,
@@ -7,6 +8,10 @@ from .project_state import (
 from .runtime_state import RuntimePaths
 
 __all__ = [
+    "AudiosModel",
+    "ImagesModel",
+    "PairRecord",
+    "PairsModel",
     "RuntimePaths",
     "get_project_root",
     "get_project_start_dir",

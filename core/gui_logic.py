@@ -246,16 +246,20 @@ def compute_workflow_min_size(
     """Compute adaptive workflow minimum size (DPI + font aware)."""
     safe_font = parse_non_negative_int(font_size, "schriftgroesse", default=13)
     safe_font = max(10, min(36, int(safe_font)))
-    try:
-        parsed_dpi_scale = float(dpi_scale)
-    except (TypeError, ValueError):
-        parsed_dpi_scale = 1.0
+    parsed_dpi_scale = 1.0
+    if isinstance(dpi_scale, (int, float, str)):
+        try:
+            parsed_dpi_scale = float(dpi_scale)
+        except ValueError:
+            parsed_dpi_scale = 1.0
     safe_dpi_scale = max(parsed_dpi_scale, 1.0)
     font_scale = max(1.0, safe_font / 13.0)
-    try:
-        parsed_density = float(density_multiplier)
-    except (TypeError, ValueError):
-        parsed_density = 1.0
+    parsed_density = 1.0
+    if isinstance(density_multiplier, (int, float, str)):
+        try:
+            parsed_density = float(density_multiplier)
+        except ValueError:
+            parsed_density = 1.0
     safe_density = min(max(parsed_density, 0.85), 1.9)
     scale = max(safe_dpi_scale, font_scale) * safe_density
 

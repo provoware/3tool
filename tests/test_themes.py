@@ -148,7 +148,9 @@ def test_gui_primary_action_has_no_hardcoded_button_colors() -> None:
         assert value not in gui_source
 
 
-def test_theme_css_has_border_based_focus_strategy_for_keyboard_navigation() -> None:
+def test_theme_css_has_border_based_focus_strategy_for_keyboard_navigation() -> (
+    None
+):
     for name, token_map in themes.THEME_TOKENS.items():
         css = themes._build_theme_css(token_map)
         assert "QPushButton:focus" in css, name

@@ -72,7 +72,9 @@ def ensure_venv_python(project_root: Path) -> str:
     return str(launcher_checks.venv_python(project_root))
 
 
-def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
+def run_preflight(  # noqa: C901
+    py: str, user_data_path: Path, project_root: Path
+) -> None:
     if not isinstance(py, str) or not py.strip():
         _fail(
             "Interner Fehler: python command ist leer. "

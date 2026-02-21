@@ -136,14 +136,19 @@ def resolve_density_multiplier(
         name = "Standard"
 
     profile = DENSITY_PROFILES.get(name, DENSITY_PROFILES["Standard"])
-    try:
-        parsed_font_size = float(font_size)
-    except (TypeError, ValueError):
-        parsed_font_size = 13.0
-    try:
-        parsed_dpi_scale = float(dpi_scale)
-    except (TypeError, ValueError):
-        parsed_dpi_scale = 1.0
+    parsed_font_size = 13.0
+    if isinstance(font_size, (int, float, str)):
+        try:
+            parsed_font_size = float(font_size)
+        except ValueError:
+            parsed_font_size = 13.0
+
+    parsed_dpi_scale = 1.0
+    if isinstance(dpi_scale, (int, float, str)):
+        try:
+            parsed_dpi_scale = float(dpi_scale)
+        except ValueError:
+            parsed_dpi_scale = 1.0
 
     safe_font_scale = max(parsed_font_size / 13.0, 1.0)
     safe_dpi_scale = max(parsed_dpi_scale, 1.0)

@@ -808,7 +808,10 @@ def test_pair_table_uses_master_detail_splitter_with_detail_panel(
     win = videobatch_gui.MainWindow()
     qtbot.addWidget(win)
 
-    assert win.table_detail_splitter.orientation() == QtCore.Qt.Vertical
+    assert (
+        win.table_detail_splitter.orientation()
+        == QtCore.Qt.Orientation.Vertical
+    )
     assert win.table_detail_splitter.count() == 2
     assert win.table_detail_panel.title() == "Details zur Auswahl"
     assert win.table_detail_splitter.widget(0) is win.table
@@ -902,11 +905,11 @@ def test_dashboard_status_card_click_emits_card_key(
     dashboard = videobatch_gui.InfoDashboard()
     qtbot.addWidget(dashboard)
 
-    received = []
+    received: list[str] = []
     dashboard.cardActivated.connect(received.append)
 
     card = dashboard._status_cards["pairs"]
-    qtbot.mouseClick(card, QtCore.Qt.LeftButton)
+    qtbot.mouseClick(card, QtCore.Qt.MouseButton.LeftButton)
 
     assert received == ["pairs"]
 

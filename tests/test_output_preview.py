@@ -39,7 +39,9 @@ def test_output_preview_flags_missing_inputs_and_duplicates() -> None:
 
 def test_output_preview_respects_line_limit() -> None:
     pairs = [
-        DummyPair(image_path=f"/tmp/{i}.jpg", audio_path=f"/tmp/{i}.mp3", output="")
+        DummyPair(
+            image_path=f"/tmp/{i}.jpg", audio_path=f"/tmp/{i}.mp3", output=""
+        )
         for i in range(6)
     ]
 
