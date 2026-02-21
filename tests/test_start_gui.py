@@ -1,3 +1,4 @@
+import pytest
 import start_gui
 from core.config import Config, apply_simple_mode_defaults
 
@@ -100,7 +101,8 @@ def test_main_forwards_to_primary_entry(monkeypatch) -> None:
 
     monkeypatch.setattr("app.main", _fake_primary)
 
-    result = start_gui.main()
+    with pytest.warns(DeprecationWarning, match="start_gui.py ist veraltet"):
+        result = start_gui.main()
 
     assert result == 0
     assert captured["args"] == ["--mode", "gui", "--debug"]
