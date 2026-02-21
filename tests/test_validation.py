@@ -1,5 +1,9 @@
-from core.validation import (DEFAULT_AUDIO_BITRATE, DEFAULT_OUTPUT_TEMPLATE,
-                             normalize_audio_bitrate, validate_output_template)
+from core.validation import (
+    DEFAULT_AUDIO_BITRATE,
+    DEFAULT_OUTPUT_TEMPLATE,
+    normalize_audio_bitrate,
+    validate_output_template,
+)
 
 
 def test_normalize_audio_bitrate_accepts_plain_number():

@@ -1,11 +1,15 @@
 from pathlib import Path
 
-from core.gui_logic import (clamp_progress, compute_workflow_min_size,
-                            format_human_size, normalize_layout_width,
-                            parse_non_negative_int,
-                            resolve_action_cell_min_width,
-                            resolve_action_layout_columns,
-                            resolve_dashboard_columns)
+from core.gui_logic import (
+    clamp_progress,
+    compute_workflow_min_size,
+    format_human_size,
+    normalize_layout_width,
+    parse_non_negative_int,
+    resolve_action_cell_min_width,
+    resolve_action_layout_columns,
+    resolve_dashboard_columns,
+)
 from gui.controllers.actions import build_initial_state
 
 

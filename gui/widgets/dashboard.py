@@ -5,8 +5,11 @@ from typing import Dict, List, Optional
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from core.gui_logic import (clamp_progress, parse_non_negative_int,
-                            resolve_dashboard_columns)
+from core.gui_logic import (
+    clamp_progress,
+    parse_non_negative_int,
+    resolve_dashboard_columns,
+)
 from core.ui_texts import text_with_fallback
 
 logger = logging.getLogger("VideoBatchTool")
