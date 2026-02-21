@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 import app
 import start_gui
 import videobatch_launcher
@@ -78,7 +80,8 @@ def test_legacy_start_gui_forwards_to_primary(monkeypatch) -> None:
 
     monkeypatch.setattr("app.main", _fake_primary)
 
-    result = start_gui.main()
+    with pytest.warns(DeprecationWarning, match="start_gui.py ist veraltet"):
+        result = start_gui.main()
 
     assert result == 0
     assert captured["args"] == ["--mode", "gui", "--debug", "--simple-mode"]
