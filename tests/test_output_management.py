@@ -4,9 +4,11 @@ from pathlib import Path
 import pytest
 
 from core import output_management
-from core.output_management import (build_dated_output_dir,
-                                    classify_output_category,
-                                    transfer_with_validation)
+from core.output_management import (
+    build_dated_output_dir,
+    classify_output_category,
+    transfer_with_validation,
+)
 
 
 def test_classify_output_category_maps_audio_to_musik() -> None:

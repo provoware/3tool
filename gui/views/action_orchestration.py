@@ -5,8 +5,10 @@ from typing import Dict, Optional
 
 from PySide6 import QtWidgets
 
-from gui.controllers.actions import (resolve_text,
-                                     validate_project_root_candidate)
+from gui.controllers.actions import (
+    resolve_text,
+    validate_project_root_candidate,
+)
 
 
 def choose_project_root_dialog(

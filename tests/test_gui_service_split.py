@@ -1,8 +1,10 @@
 from pathlib import Path
 
-from gui.services.project_io import (build_project_payload,
-                                     make_project_relative,
-                                     resolve_project_path)
+from gui.services.project_io import (
+    build_project_payload,
+    make_project_relative,
+    resolve_project_path,
+)
 
 
 class _Pair:

@@ -1,6 +1,9 @@
 from .action_orchestration import choose_project_root_dialog
-from .main_window_view import (ActionButtonSet, create_action_buttons,
-                               wrap_button)
+from .main_window_view import (
+    ActionButtonSet,
+    create_action_buttons,
+    wrap_button,
+)
 from .pair_table import PairItem, PairTableModel
 from .table_columns import COLUMNS, table_columns
 

@@ -279,3 +279,5 @@
 - [x] GUI-Reparaturhinweise um libEGL ergänzt und Runtime-Report-Dateien aus Git ausgeschlossen
 
 - [x] Abschlusslauf finalisiert: Vollautomatischen QA-/Format-Startlauf ausgefuehrt, Codeformat vereinheitlicht und Testergebnis dokumentiert
+
+- [x] QA-Fehler behoben: Datei-Manifest synchronisiert und Black-Formatierung fuer gesamten Codebestand vereinheitlicht

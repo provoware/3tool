@@ -1,7 +1,10 @@
 from pathlib import Path
 
-from gui.controllers.actions import (build_initial_state, resolve_text,
-                                     validate_project_root_candidate)
+from gui.controllers.actions import (
+    build_initial_state,
+    resolve_text,
+    validate_project_root_candidate,
+)
 
 
 def test_validate_project_root_candidate(tmp_path: Path) -> None:

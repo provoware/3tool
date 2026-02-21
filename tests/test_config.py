@@ -5,9 +5,15 @@ from pathlib import Path
 
 import pytest
 
-from core.config import (CURRENT_SCHEMA_VERSION, Config,
-                         apply_simple_mode_defaults, config_file_path,
-                         load_config, save_config, validate_config_payload)
+from core.config import (
+    CURRENT_SCHEMA_VERSION,
+    Config,
+    apply_simple_mode_defaults,
+    config_file_path,
+    load_config,
+    save_config,
+    validate_config_payload,
+)
 
 
 def test_load_config_creates_defaults_when_missing(tmp_path: Path) -> None:
