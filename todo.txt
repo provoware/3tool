@@ -1,4 +1,5 @@
 # Aufgabenliste
+- [x] Finalisierung: Vollautomatische QA-Startroutine erneut ausgefuehrt, Abhaengigkeiten auto-validiert und Endtest (288 passed) bestaetigt
 - [x] Aktionskacheln vereinheitlicht: einheitliche Button-Rollen, bessere Reflow-Abstände und zugängliche Beschriftungen ergänzt
 - [x] Finalisierung: Vollständigen QA-Lauf (`./0000-testall`) inklusive Auto-Formatierung, Linting und Tests erfolgreich ausgeführt
 - [x] Start-Preflight robuster gemacht (Python-Befehl normalisiert, doppelte Befehls-Hinweise gefiltert, Report-Validierung nach dem Schreiben ergänzt)
