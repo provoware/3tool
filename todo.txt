@@ -1,4 +1,5 @@
 # Aufgabenliste
+- [x] Finalisierung: Vollständigen QA-Lauf (`./0000-testall`) inklusive Auto-Formatierung, Linting und Tests erfolgreich ausgeführt
 - [x] Start-Preflight robuster gemacht (Python-Befehl normalisiert, doppelte Befehls-Hinweise gefiltert, Report-Validierung nach dem Schreiben ergänzt)
 - [x] 0000-testall als reines Bash-Skript mit relativem Projektpfad umgesetzt
 - [x] CI um Pytest-Schritt und Dev-Abhaengigkeiten bereinigt (mypy verschoben, pytest ergaenzt)
