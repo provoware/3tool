@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import shutil
 import logging
+import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 from .utils import linux_safe_stem
-
 
 logger = logging.getLogger(__name__)
 

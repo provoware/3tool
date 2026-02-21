@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
 from core.paths import log_dir
 from videobatch_extra import cli_slideshow, cli_video
-
 
 LOGGER = logging.getLogger("videobatch.professional")
 VALID_MODES = {"video", "slideshow"}

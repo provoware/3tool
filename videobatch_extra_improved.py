@@ -3,12 +3,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from videobatch_extra import (
-    cli_multi_audio,
-    cli_single,
-    cli_slideshow,
-    cli_video,
-)
+from videobatch_extra import (cli_multi_audio, cli_single, cli_slideshow,
+                              cli_video)
 
 
 def _validate_paths(items: list[str], label: str) -> None:

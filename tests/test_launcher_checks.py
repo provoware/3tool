@@ -1,7 +1,7 @@
-import unittest
-from typing import Any, cast
-from pathlib import Path
 import subprocess
+import unittest
+from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -234,20 +234,21 @@ def test_write_permissions_ok_returns_false_for_file(tmp_path):
     assert not launcher_checks.write_permissions_ok(target)
 
 
-
-
 def test_gui_runtime_fix_hint_mentions_libegl(monkeypatch):
     class _Manager:
         name = "apt (Paketmanager/Software-Verwalter)"
         update_cmd = ["apt", "update"]
         install_cmd = ["apt", "install", "-y"]
 
-    monkeypatch.setattr(launcher_checks, "linux_package_manager", lambda: _Manager())
+    monkeypatch.setattr(
+        launcher_checks, "linux_package_manager", lambda: _Manager()
+    )
 
     hint = launcher_checks.gui_runtime_fix_hint()
 
     assert "libgl1" in hint
     assert "libegl1" in hint
+
 
 def test_check_gui_runtime_reports_import_error(monkeypatch):
     monkeypatch.setattr(

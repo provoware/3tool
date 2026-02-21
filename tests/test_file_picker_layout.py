@@ -8,10 +8,8 @@ QtCore = pytest.importorskip("PySide6.QtCore", exc_type=ImportError)
 QtGui = pytest.importorskip("PySide6.QtGui", exc_type=ImportError)
 QtWidgets = pytest.importorskip("PySide6.QtWidgets", exc_type=ImportError)
 
-from gui.dialogs.file_picker import (  # noqa: E402
-    PREVIEW_MIN_SIDE_PX,
-    FilePickerDialog,
-)
+from gui.dialogs.file_picker import (PREVIEW_MIN_SIDE_PX,  # noqa: E402
+                                     FilePickerDialog)
 
 
 def _create_sample_image(target: Path) -> None:

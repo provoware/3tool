@@ -2,7 +2,6 @@ import importlib
 
 import pytest
 
-
 SCREEN_CASES = [
     (800, 600),
     (1366, 768),

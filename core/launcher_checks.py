@@ -10,36 +10,26 @@ from typing import Iterable
 
 from core import dependency_consistency
 from core.dependency_consistency import RUNTIME_PACKAGES
-from core.launcher.checks import (
-    ffmpeg_available,
-    ffmpeg_install_hint,
-    format_command,
-    linux_package_manager,
-    write_permissions_ok,
-)
-from core.launcher.feedback import (
-    beginner_recovery_hints as _beginner_recovery_hints,
-)
-from core.launcher.feedback import (
-    build_check_feedback as _build_check_feedback,
-)
-from core.launcher.feedback import (
-    build_repair_feedback as _build_repair_feedback,
-)
-from core.launcher.models import (
-    CheckFeedback as _CheckFeedback,
-    CheckResult,
-    PackageManagerInfo as _PackageManagerInfo,
-    ReleaseReadinessResult,
-    RepairFeedback as _RepairFeedback,
-    RepairResult,
-)
+from core.launcher.checks import (ffmpeg_available, ffmpeg_install_hint,
+                                  format_command, linux_package_manager,
+                                  write_permissions_ok)
+from core.launcher.feedback import \
+    beginner_recovery_hints as _beginner_recovery_hints
+from core.launcher.feedback import \
+    build_check_feedback as _build_check_feedback
+from core.launcher.feedback import \
+    build_repair_feedback as _build_repair_feedback
+from core.launcher.models import CheckFeedback as _CheckFeedback
+from core.launcher.models import CheckResult
+from core.launcher.models import PackageManagerInfo as _PackageManagerInfo
+from core.launcher.models import ReleaseReadinessResult
+from core.launcher.models import RepairFeedback as _RepairFeedback
+from core.launcher.models import RepairResult
+from core.launcher.network import \
+    detect_linux_distribution as _detect_linux_distribution
 from core.launcher.network import dns_reachable, https_head_reachable
-from core.launcher.network import (
-    detect_linux_distribution as _detect_linux_distribution,
-)
 from core.launcher.network import parse_os_release as _parse_os_release
-from core.launcher.repairs import env_dir, ensure_venv, in_venv
+from core.launcher.repairs import ensure_venv, env_dir, in_venv
 
 REQ_PKGS = list(RUNTIME_PACKAGES)
 PACKAGE_IMPORT_NAMES = {
@@ -213,9 +203,8 @@ def pip_install(py: str, pkgs: Iterable[str]) -> None:
 def install_missing_packages_with_retries(
     py: str, missing_packages: Iterable[str]
 ) -> tuple[bool, str]:
-    from core.launcher.repairs import (
-        install_missing_packages_with_retries as _impl,
-    )
+    from core.launcher.repairs import \
+        install_missing_packages_with_retries as _impl
 
     return _impl(
         validated_python_command(py),
@@ -340,10 +329,7 @@ def _linux_libgl_install_hint() -> str:
             f"{manager.name}): {format_command(manager.update_cmd)} && "
             f"{format_command(install_cmd)}"
         )
-    return (
-        f"Befehl ({manager.name}): "
-        f"{format_command(install_cmd)}"
-    )
+    return f"Befehl ({manager.name}): " f"{format_command(install_cmd)}"
 
 
 def gui_runtime_fix_hint() -> str:

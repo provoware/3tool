@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
 import shutil
 import sys
+from pathlib import Path
 
 from core import launcher_checks
 from core.launcher_theme import log_theme_selection, resolve_launcher_theme

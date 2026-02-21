@@ -6,7 +6,6 @@ from pathlib import Path
 
 from core.utils import build_out_name
 
-
 DEFAULT_AUDIO_BITRATE = "192k"
 DEFAULT_OUTPUT_TEMPLATE = (
     "{audio_name}_{video_laenge}_{zeitstempel}_{qualitaet}_{abmasse}_{form}.mp4"

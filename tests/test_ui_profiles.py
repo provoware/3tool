@@ -1,11 +1,9 @@
 from typing import Any, cast
-from core.ui_profiles import (
-    INTERFACE_PROFILES,
-    SPACING_PROFILES,
-    resolve_density_multiplier,
-    resolve_interface_profile,
-    resolve_spacing_profile,
-)
+
+from core.ui_profiles import (INTERFACE_PROFILES, SPACING_PROFILES,
+                              resolve_density_multiplier,
+                              resolve_interface_profile,
+                              resolve_spacing_profile)
 
 
 def test_spacing_profile_fallback_to_standard() -> None:

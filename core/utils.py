@@ -5,7 +5,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from subprocess import CompletedProcess, PIPE
+from subprocess import PIPE, CompletedProcess
 from typing import List
 
 import ffmpeg
