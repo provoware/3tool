@@ -274,3 +274,5 @@
 - `bash scripts/quality_check.sh`
 - `pytest -q`
 - `python3 videobatch_launcher.py --release-check`
+
+- [x] Finalisierung: Release-Audit, QA-Check und Testlauf am 2026-02-21 erneut validiert
