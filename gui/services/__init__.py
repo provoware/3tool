@@ -1,19 +1,11 @@
 from __future__ import annotations
 
 from .output_preview import build_mini_preview_summary
-from .project_io import (
-    build_project_payload,
-    load_project_file,
-    make_project_relative,
-    resolve_project_path,
-    save_project_file,
-)
-from .runtime_paths import (
-    build_default_runtime_paths,
-    check_ffmpeg,
-    safe_move,
-    which,
-)
+from .project_io import (build_project_payload, load_project_file,
+                         make_project_relative, resolve_project_path,
+                         save_project_file)
+from .runtime_paths import (build_default_runtime_paths, check_ffmpeg,
+                            safe_move, which)
 from .workflow_services import ExportService, PairingService, ValidationService
 
 

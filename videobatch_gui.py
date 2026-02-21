@@ -26,30 +26,20 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
-from core.fallback_media import (
-    dumps_audio_list,
-    loads_audio_list,
-    persist_fallback_media,
-)
-from core.gui_logic import (
-    compute_workflow_min_size,
-    normalize_layout_width,
-    resolve_action_cell_min_width,
-    resolve_action_layout_columns,
-)
+from core.fallback_media import (dumps_audio_list, loads_audio_list,
+                                 persist_fallback_media)
+from core.gui_logic import (compute_workflow_min_size, normalize_layout_width,
+                            resolve_action_cell_min_width,
+                            resolve_action_layout_columns)
 from core.media_validation import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS
-from core.output_management import (
-    build_dated_output_dir,
-    transfer_with_validation,
-)
+from core.output_management import (build_dated_output_dir,
+                                    transfer_with_validation)
 from core.paths import config_dir, log_dir, user_data_dir
 from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
-from core.ui_profiles import (
-    resolve_density_multiplier,
-    resolve_interface_profile,
-    resolve_spacing_profile,
-)
+from core.ui_profiles import (resolve_density_multiplier,
+                              resolve_interface_profile,
+                              resolve_spacing_profile)
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
@@ -57,33 +47,18 @@ from gui.dialogs.file_picker import FilePickerDialog
 from gui.main_window import build_initial_state
 from gui.services.output_preview import build_mini_preview_summary
 from gui.services.preview import play_audio_preview, stop_audio_preview
-from gui.services.project_io import (
-    build_project_payload,
-    load_project_file,
-    make_project_relative,
-    resolve_project_path,
-    save_project_file,
-)
-from gui.services.runtime_paths import (
-    build_default_runtime_paths,
-    check_ffmpeg,
-    safe_move,
-)
-from gui.state.project_state import (
-    get_project_root,
-    get_project_start_dir,
-    set_last_project_path,
-    set_project_root,
-)
+from gui.services.project_io import (build_project_payload, load_project_file,
+                                     make_project_relative,
+                                     resolve_project_path, save_project_file)
+from gui.services.runtime_paths import (build_default_runtime_paths,
+                                        check_ffmpeg, safe_move)
+from gui.state.project_state import (get_project_root, get_project_start_dir,
+                                     set_last_project_path, set_project_root)
 from gui.views.action_orchestration import choose_project_root_dialog
 from gui.views.main_window_view import create_action_buttons
 from gui.widgets.dashboard import InfoDashboard
-from gui.widgets.feedback import (
-    ErrorBanner,
-    InlineValidationBadge,
-    SuccessToast,
-    WarningBadge,
-)
+from gui.widgets.feedback import (ErrorBanner, InlineValidationBadge,
+                                  SuccessToast, WarningBadge)
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()

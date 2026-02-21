@@ -1,9 +1,5 @@
-from .bootstrap import (
-    all_blocking_ok,
-    ensure_project_files,
-    prepare_runtime_dirs,
-    run_startup_checks,
-)
+from .bootstrap import (all_blocking_ok, ensure_project_files,
+                        prepare_runtime_dirs, run_startup_checks)
 from .feedback_renderer import render_feedback
 from .repair_orchestrator import apply_repairs
 
