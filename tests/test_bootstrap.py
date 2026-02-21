@@ -97,8 +97,6 @@ def test_run_preflight_writes_repaired_report(
     assert payload["checks_after"][0]["ok"] is True
 
 
-
-
 def test_run_preflight_report_contains_context_fields(
     monkeypatch,
     tmp_path: Path,
@@ -160,6 +158,8 @@ def test_run_preflight_rejects_invalid_repair_result(
         bootstrap.run_preflight("python3", tmp_path, tmp_path)
 
     assert "ungueltige Ergebnisse" in str(exc_info.value)
+
+
 def test_run_preflight_failure_mentions_report_path(
     monkeypatch,
     tmp_path: Path,

@@ -78,4 +78,3 @@ def build_mini_preview_summary(
         conflict_rows=tuple(dict.fromkeys(conflicts)),
         lines=tuple(lines[:safe_max_lines]),
     )
-
