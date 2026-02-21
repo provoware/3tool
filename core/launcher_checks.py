@@ -325,22 +325,24 @@ def _linux_libgl_install_hint() -> str:
     manager = linux_package_manager()
     if manager is None:
         return (
-            "Installiere libGL manuell (z. B. Paketname libgl1 oder "
-            "mesa-libGL je nach Distribution)."
+            "Installiere libGL/libEGL manuell (z. B. Paketname libgl1 "
+            "und libegl1 oder mesa-libGL/mesa-libEGL je nach "
+            "Distribution)."
         )
-    package_name = "libgl1"
+    package_names = ["libgl1", "libegl1"]
     lowered = manager.name.lower()
     if "dnf" in lowered or "yum" in lowered:
-        package_name = "mesa-libGL"
+        package_names = ["mesa-libGL", "mesa-libEGL"]
+    install_cmd = manager.install_cmd + package_names
     if manager.update_cmd:
         return (
             "Befehl ("
             f"{manager.name}): {format_command(manager.update_cmd)} && "
-            f"{format_command(manager.install_cmd + [package_name])}"
+            f"{format_command(install_cmd)}"
         )
     return (
         f"Befehl ({manager.name}): "
-        f"{format_command(manager.install_cmd + [package_name])}"
+        f"{format_command(install_cmd)}"
     )
 
 
