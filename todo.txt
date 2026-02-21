@@ -287,3 +287,5 @@
 - [x] QA-Fehler behoben: Datei-Manifest synchronisiert und Black-Formatierung fuer gesamten Codebestand vereinheitlicht
 
 - [x] Vollautomatische Gesamtpruefung (0000-testall) erneut ausgefuehrt, Auto-Formatierung angewendet und Testergebnis verifiziert
+
+- [x] Laienhilfe erweitert: vollautomatische Startroutine, QA-Komplettcheck, Debug-Hinweise und weiterfuehrende Einsteiger-Vorschlaege dokumentiert
