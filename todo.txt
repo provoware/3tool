@@ -194,6 +194,7 @@
 
 - [x] Start-Reparaturorchestrierung gehaertet: Eingaben/Check-Ergebnisse strikt validiert, laienfreundliche Naechstschritt-Hinweise ergänzt und Tests erweitert
 
+- [x] Startroutine gibt jetzt klare Live-Rueckmeldungen mit kopierbaren Naechste-Schritt-Befehlen aus und ist per Tests abgesichert
 ## Offene Punkte (neu)
 
 - [x] Undo/Redo-Button mit Ctrl+Z/Ctrl+Y ergänzt und Zustände per History-Stacks abgesichert
