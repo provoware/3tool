@@ -309,4 +309,3 @@ def test_run_preflight_shows_deduplicated_copyable_commands(
 
     output = capsys.readouterr().out
     assert output.count("Befehl: python3 -m pip install Pillow") == 1
-

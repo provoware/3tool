@@ -1,6 +1,6 @@
 {
   "schema_version": "2",
-  "generated_at_utc": "2026-02-21T02:34:22.720940+00:00",
+  "generated_at_utc": "2026-02-21T02:45:05.988819+00:00",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -188,10 +188,10 @@
     },
     {
       "path": "core/bootstrap.py",
-      "size": 9776,
-      "sha256": "af6e0f4eea43328bbcb4f681e54227e458bea4947e5c42cfbd501b805c3b58e9",
+      "size": 10593,
+      "sha256": "7868662dedcd832e49cdc8d72a93a58c20c0625841b5f1a5d709fb0229ec9338",
       "git_mode": "100644",
-      "git_blob": "15a2be869842a77bb0a948e78d81d5b0612607cb",
+      "git_blob": "c18351880a7c518e1b6b306d053d6c39dac7cd6a",
       "git_stage": "0"
     },
     {
@@ -772,10 +772,10 @@
     },
     {
       "path": "tests/test_bootstrap.py",
-      "size": 6907,
-      "sha256": "152438e79c327898cba3e1633ac5e406da9515122b4576bc9cc453fe3959ec53",
+      "size": 8668,
+      "sha256": "b6188029085bf169781a39c71c49a734681554cc529a8cce56b2f0d3c5150427",
       "git_mode": "100644",
-      "git_blob": "1f60eb30970b5f43032fc5558b5ae1a2689dc7a0",
+      "git_blob": "52ba3289e9696eb7b297e87914a7e00df1641538",
       "git_stage": "0"
     },
     {
@@ -1044,10 +1044,10 @@
     },
     {
       "path": "todo.txt",
-      "size": 21911,
-      "sha256": "b7ad282e2ab822019fa13667772302e9d060019a225ccb6a377903b58d43058c",
+      "size": 22154,
+      "sha256": "a12523c8882e0aa589df6615cc48c3560f4d5937b5c6167d7f600ada81bd83a6",
       "git_mode": "100644",
-      "git_blob": "92520c8ee095ced33117e429b669ee5e177f52bf",
+      "git_blob": "92871ef816f2a8fff8beebbfe76fae0e90f73bfc",
       "git_stage": "0"
     },
     {
