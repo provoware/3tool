@@ -80,6 +80,7 @@ def run_preflight(  # noqa: C901
             "Interner Fehler: python command ist leer. "
             "Naechster Schritt: Interpreter pruefen mit 'python3 --version'."
         )
+    py = py.strip()
     if not isinstance(user_data_path, Path):
         _fail("Interner Fehler: user_data_path ist kein Path.")
     if not isinstance(project_root, Path):
@@ -111,9 +112,15 @@ def run_preflight(  # noqa: C901
         checks: list[launcher_checks.CheckResult],
     ) -> list[str]:
         commands: list[str] = []
+        seen: set[str] = set()
         for item in checks:
-            if not item.ok and item.fix_hint:
-                commands.append(item.fix_hint)
+            if item.ok or not item.fix_hint:
+                continue
+            command = item.fix_hint.strip()
+            if not command or command in seen:
+                continue
+            seen.add(command)
+            commands.append(command)
         return commands[:3]
 
     def _validate_checks(
@@ -172,6 +179,8 @@ def run_preflight(  # noqa: C901
         checks_after: list[launcher_checks.CheckResult],
         repairs: list[launcher_checks.RepairResult],
     ) -> None:
+        if status not in {"ok", "repaired", "failed"}:
+            _fail("Interner Fehler: Unbekannter Report-Status.")
         report_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -196,6 +205,18 @@ def run_preflight(  # noqa: C901
             json.dumps(payload, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        try:
+            parsed_payload = json.loads(report_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            _fail(
+                "Interner Fehler: Preflight-Report konnte nicht geprueft "
+                f"werden ({exc})."
+            )
+        if parsed_payload.get("status") != status:
+            _fail(
+                "Interner Fehler: Preflight-Report enthaelt einen "
+                "ungueltigen Statuswert."
+            )
 
     checks = _validate_checks(
         launcher_checks.collect_checks(py, user_data_path, project_root),
