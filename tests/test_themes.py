@@ -157,3 +157,10 @@ def test_theme_css_has_border_based_focus_strategy_for_keyboard_navigation() -> 
         assert "QLineEdit:focus" in css, name
         assert "QCheckBox:focus" in css, name
         assert "border:2px solid" in css, name
+
+
+def test_theme_includes_button_role_styles_for_consistent_actions() -> None:
+    for name, token_map in themes.THEME_TOKENS.items():
+        css = themes._build_theme_css(token_map)
+        assert "QPushButton[buttonRole='danger']" in css, name
+        assert "QPushButton[actionButton='true']" in css, name

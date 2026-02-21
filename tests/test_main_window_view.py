@@ -23,13 +23,15 @@ def test_create_action_buttons_builds_expected_controls(qtbot):
     assert "encode" in action_set.buttons
     assert "redo" in action_set.buttons
     assert action_set.buttons["encode"].text() == "START"
+    assert action_set.buttons["clear"].property("buttonRole") == "danger"
+    assert action_set.buttons["add_images"].property("buttonRole") == "support"
     assert len(action_set.wrappers) == 11
     first_wrapper = action_set.wrappers[0]
-    assert first_wrapper.minimumWidth() >= 190
+    assert first_wrapper.minimumWidth() >= 200
     detail_labels = first_wrapper.findChildren(QtWidgets.QLabel)
     assert len(detail_labels) >= 1
     assert detail_labels[0].wordWrap() is True
-    assert detail_labels[0].minimumHeight() >= 32
+    assert detail_labels[0].minimumHeight() >= 34
 
 
 def test_table_displays_long_paths_with_wrap_and_without_elide(

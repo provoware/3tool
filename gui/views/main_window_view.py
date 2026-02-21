@@ -15,6 +15,97 @@ class ActionButtonSet:
     box: QtWidgets.QGroupBox
 
 
+_BUTTON_CONFIG: Dict[str, Dict[str, str]] = {
+    "add_images": {
+        "label": "Bilder wählen",
+        "tooltip": "Bilder (Fotos) auswählen",
+        "subtitle": "Bilder oder Ordner auswählen",
+        "role": "support",
+    },
+    "add_audios": {
+        "label": "Audios wählen",
+        "tooltip": "Audiodateien auswählen",
+        "subtitle": "Audiodateien hinzufügen",
+        "role": "support",
+    },
+    "auto_pair": {
+        "label": "Auto-Paaren",
+        "tooltip": "Bilder und Audios automatisch koppeln",
+        "subtitle": "Dateien automatisch koppeln",
+        "role": "secondary",
+    },
+    "wizard": {
+        "label": "Geführter Start",
+        "tooltip": "Schritt-für-Schritt-Assistent öffnen",
+        "subtitle": "Assistent für Einsteiger öffnen",
+        "role": "secondary",
+    },
+    "clear": {
+        "label": "Alles löschen",
+        "tooltip": "Listen komplett leeren",
+        "subtitle": "Listen komplett leeren",
+        "role": "danger",
+    },
+    "undo": {
+        "label": "Undo",
+        "tooltip": "Letzte Änderung rückgängig machen",
+        "subtitle": "Letzten Schritt rückgängig",
+        "role": "secondary",
+    },
+    "redo": {
+        "label": "Redo",
+        "tooltip": "Rückgängig rückgängig machen",
+        "subtitle": "Rückgängig wiederherstellen",
+        "role": "secondary",
+    },
+    "save": {
+        "label": "Projekt speichern",
+        "tooltip": "Aktuellen Stand speichern",
+        "subtitle": "Projekt auf Platte sichern",
+        "role": "secondary",
+    },
+    "load": {
+        "label": "Projekt laden",
+        "tooltip": "Gespeichertes Projekt laden",
+        "subtitle": "Gespeichertes Projekt laden",
+        "role": "secondary",
+    },
+    "encode": {
+        "label": "START",
+        "tooltip": "Encoding starten",
+        "subtitle": "Videos jetzt erstellen",
+        "role": "primary",
+    },
+    "stop": {
+        "label": "Stopp",
+        "tooltip": "Aktuellen Vorgang abbrechen",
+        "subtitle": "Laufenden Vorgang abbrechen",
+        "role": "danger",
+    },
+}
+
+
+def _configure_action_button(
+    button: QtWidgets.QPushButton,
+    *,
+    key: str,
+    tooltip: str,
+    role: str,
+) -> None:
+    button.setProperty("buttonRole", role)
+    button.setProperty("actionButton", True)
+    button.setObjectName(f"action_button_{key}")
+    button.setToolTip(tooltip)
+    button.setAccessibleName(button.text())
+    button.setAccessibleDescription(f"Aktion: {tooltip}")
+    button.setMinimumHeight(46)
+    button.setMinimumWidth(184)
+    button.setSizePolicy(
+        QtWidgets.QSizePolicy.Policy.Expanding,
+        QtWidgets.QSizePolicy.Policy.Fixed,
+    )
+
+
 def wrap_button(
     button: QtWidgets.QPushButton, sublabel: str
 ) -> QtWidgets.QWidget:
@@ -22,18 +113,15 @@ def wrap_button(
     wrapper.setProperty("actionTile", True)
     lay = QtWidgets.QVBoxLayout(wrapper)
     lay.setContentsMargins(10, 10, 10, 10)
-    lay.setSpacing(6)
-    button.setSizePolicy(
-        QtWidgets.QSizePolicy.Policy.Expanding,
-        QtWidgets.QSizePolicy.Policy.Fixed,
-    )
+    lay.setSpacing(8)
     detail = QtWidgets.QLabel(sublabel)
     detail.setWordWrap(True)
     detail.setAlignment(
         QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignTop
     )
-    detail.setMinimumHeight(32)
+    detail.setMinimumHeight(34)
     detail.setProperty("actionTileDetail", True)
+    detail.setAccessibleDescription(f"Zusatzinfo: {sublabel}")
     lay.addWidget(button)
     lay.addWidget(detail)
     return wrapper
@@ -44,62 +132,36 @@ def create_action_buttons(
     on_timer_tick: Callable[[], None],
 ) -> ActionButtonSet:
     buttons = {
-        "add_images": QtWidgets.QPushButton("Bilder wählen"),
-        "add_audios": QtWidgets.QPushButton("Audios wählen"),
-        "auto_pair": QtWidgets.QPushButton("Auto-Paaren"),
-        "clear": QtWidgets.QPushButton("Alles löschen"),
-        "undo": QtWidgets.QPushButton("Undo"),
-        "redo": QtWidgets.QPushButton("Redo"),
-        "save": QtWidgets.QPushButton("Projekt speichern"),
-        "load": QtWidgets.QPushButton("Projekt laden"),
-        "encode": QtWidgets.QPushButton("START"),
-        "stop": QtWidgets.QPushButton("Stopp"),
-        "wizard": QtWidgets.QPushButton("Geführter Start"),
+        key: QtWidgets.QPushButton(config["label"])
+        for key, config in _BUTTON_CONFIG.items()
     }
+    for key, button in buttons.items():
+        config = _BUTTON_CONFIG[key]
+        _configure_action_button(
+            button,
+            key=key,
+            tooltip=config["tooltip"],
+            role=config["role"],
+        )
     buttons["encode"].setProperty("accentRole", "primaryAction")
     buttons["encode"].setProperty("readyPulse", "off")
     buttons["stop"].setEnabled(False)
 
-    tips = {
-        "add_images": "Bilder (Fotos) auswählen",
-        "add_audios": "Audiodateien auswählen",
-        "auto_pair": "Bilder und Audios automatisch koppeln",
-        "clear": "Listen komplett leeren",
-        "undo": "Letzte Änderung rückgängig machen",
-        "redo": "Rückgängig rückgängig machen",
-        "save": "Aktuellen Stand speichern",
-        "load": "Gespeichertes Projekt laden",
-        "encode": "Encoding starten",
-        "stop": "Aktuellen Vorgang abbrechen",
-        "wizard": "Schritt-für-Schritt-Assistent öffnen",
-    }
     subtitles: Iterable[Tuple[str, str]] = (
-        ("add_images", "Bilder oder Ordner auswählen"),
-        ("add_audios", "Audiodateien hinzufügen"),
-        ("auto_pair", "Dateien automatisch koppeln"),
-        ("wizard", "Assistent für Einsteiger öffnen"),
-        ("clear", "Listen komplett leeren"),
-        ("undo", "Letzten Schritt rückgängig"),
-        ("redo", "Rückgängig wiederherstellen"),
-        ("save", "Projekt auf Platte sichern"),
-        ("load", "Gespeichertes Projekt laden"),
-        ("encode", "Videos jetzt erstellen"),
-        ("stop", "Laufenden Vorgang abbrechen"),
+        (key, config["subtitle"]) for key, config in _BUTTON_CONFIG.items()
     )
-    for key, text in tips.items():
-        buttons[key].setToolTip(text)
 
     wrappers = [wrap_button(buttons[key], label) for key, label in subtitles]
     for wrapper in wrappers:
-        wrapper.setMinimumWidth(190)
+        wrapper.setMinimumWidth(200)
         wrapper.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.MinimumExpanding,
         )
 
     layout = QtWidgets.QGridLayout()
-    layout.setSpacing(4)
-    layout.setContentsMargins(4, 4, 4, 4)
+    layout.setSpacing(8)
+    layout.setContentsMargins(6, 6, 6, 6)
 
     box = QtWidgets.QGroupBox("Aktionen")
     box.setLayout(layout)
