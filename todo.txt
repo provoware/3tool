@@ -200,8 +200,8 @@
 - [x] Start-Bootstrap schreibt JSON-Preflight-Report mit Feedback/Hinweisen und Tests ergänzt
 - [x] Adaptive Density als Einstellung eingefuehrt (Kompakt/Standard/Groß), DPI+Schriftgroesse verknuepft und mit GUI-/Profil-Tests abgesichert
 - [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
-  - [ ] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
-  - [ ] Workflow-Layout auf 2 Spalten umstellen (links Schritte, rechts Ergebnis/Preview) plus optionales Details/Log unten
+  - [x] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
+  - [x] Workflow-Layout auf 2 Spalten umstellen (links Schritte, rechts Ergebnis/Preview) plus optionales Details/Log unten
   - [x] Tabellen auf Master-Detail-Pattern umstellen (kompakte Tabelle + Detailpanel)
   - [x] Breakpoint-Verhalten ohne Splitter-Orientierungswechsel umsetzen (Kompaktmodus via QStackedWidget)
   - [x] Adaptive Density als Einstellung einführen (kompakt/normal/groß mit proportionaler Skalierung)

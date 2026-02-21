@@ -754,21 +754,19 @@ def test_workflow_splitter_policies_prioritize_preview_and_actions(
     qtbot.wait(win.WORKFLOW_REBALANCE_DEBOUNCE_MS + 80)
 
     assert win.workflow_columns.stretchFactor(
-        2
+        1
     ) > win.workflow_columns.stretchFactor(0)
-    assert win.workflow_columns.stretchFactor(
-        2
-    ) > win.workflow_columns.stretchFactor(1)
     assert win.workflow_splitters[1].stretchFactor(0) > win.workflow_splitters[
         1
     ].stretchFactor(1)
+    assert win.workflow_splitters[1].stretchFactor(2) > 0
 
     assert win.btn_box.minimumHeight() >= win.settings_widget.minimumHeight()
-    assert win.help_box.minimumHeight() >= win.log_box.minimumHeight()
+    assert win.table_box.minimumHeight() >= win.help_box.minimumHeight()
 
     col_sizes = list(win.workflow_columns.sizes())
-    assert col_sizes[2] >= col_sizes[0]
-    assert col_sizes[2] >= col_sizes[1]
+    assert len(col_sizes) == 2
+    assert col_sizes[1] >= col_sizes[0]
 
 
 def test_accessibility_metadata_assigns_section_descriptions(
