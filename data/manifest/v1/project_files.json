@@ -1,6 +1,6 @@
 {
   "schema_version": "2",
-  "generated_at_utc": "2026-02-21T02:11:54.575623+00:00",
+  "generated_at_utc": "2026-02-21T02:28:24.014533+00:00",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -188,10 +188,10 @@
     },
     {
       "path": "core/bootstrap.py",
-      "size": 7813,
-      "sha256": "3b620260c361909a9b0be017585c9ffb222d429b7ac333e8061a65baadb8015f",
+      "size": 9776,
+      "sha256": "af6e0f4eea43328bbcb4f681e54227e458bea4947e5c42cfbd501b805c3b58e9",
       "git_mode": "100644",
-      "git_blob": "9b314374b90e80c3be32bc631fe896f85b0afb92",
+      "git_blob": "9266b1f42a065f556d7e50e32f3841c6b9a68992",
       "git_stage": "0"
     },
     {
@@ -228,8 +228,8 @@
     },
     {
       "path": "core/gui_logic.py",
-      "size": 9843,
-      "sha256": "8bcf7785f23fd2fba54573769774ed5daf784199597c71ffac0fc517cd243f5e",
+      "size": 10008,
+      "sha256": "9952989b607a294e4aa6de868447ffd1889bd79c972c75619574eab6da7a8ca5",
       "git_mode": "100644",
       "git_blob": "0cae37a514ebcf572ce0da78aa2817d9871c6ddf",
       "git_stage": "0"
@@ -372,24 +372,24 @@
     },
     {
       "path": "core/startup/repair_orchestrator.py",
-      "size": 2093,
-      "sha256": "0636bf477e110b424b8f2a1526feda74eeb97f2d1fa64bdd457da16c542261b3",
+      "size": 2099,
+      "sha256": "c7efc1f310dcea63e6248df177d60b1bc5f01cfb5d9dd4ab0bd67c6ced8ea854",
       "git_mode": "100644",
       "git_blob": "09793ffa01b923e19aa5eb77c444b42d8d248902",
       "git_stage": "0"
     },
     {
       "path": "core/themes.py",
-      "size": 26705,
-      "sha256": "fd832a06c580441820584b3569d6f66cdee7f784e2ac25ab70cbfadb8a8bbab7",
+      "size": 26713,
+      "sha256": "d0a3a6e60620f257d8d6aaafc2fa7f54c47d2637f71f0661813cf1596a81e9b1",
       "git_mode": "100644",
       "git_blob": "3dd5ce02308e0bb6b74211eb48fca0acb53610fd",
       "git_stage": "0"
     },
     {
       "path": "core/ui_profiles.py",
-      "size": 4498,
-      "sha256": "6a47a0f933c9accfd70d91df99c2a90e47068d332979a4b284390db3eae3fb84",
+      "size": 4658,
+      "sha256": "5f4e8e4cc297f0e0d19fed3578a17bcd18b613f5b8caf33191cb9d236b7c2fc1",
       "git_mode": "100644",
       "git_blob": "bbae3bcfb72ffb6f5622be1b98dbdcfed49c38c3",
       "git_stage": "0"
@@ -476,8 +476,8 @@
     },
     {
       "path": "gui/controllers/actions.py",
-      "size": 1300,
-      "sha256": "66cff7e1f8a5968921bb4eade46c19fe2c04ac6a0f2a2d08c42f57c476b68450",
+      "size": 1887,
+      "sha256": "773750a76eb6a6723cba13ae8096c9d28c14398fc71a49ee8d46ab256b563928",
       "git_mode": "100644",
       "git_blob": "a0bda75cce1ab2b88ab9680527bd08a80b37f94d",
       "git_stage": "0"
@@ -508,8 +508,8 @@
     },
     {
       "path": "gui/services/__init__.py",
-      "size": 994,
-      "sha256": "d781165ff51c955d86caa09b584301e3876ef7993120a13c7ff84538889f7df2",
+      "size": 1142,
+      "sha256": "a5da1557ba68427889a66ec0bb42b5d7eaefe472a68756464b536b95a8dd33fc",
       "git_mode": "100644",
       "git_blob": "4de320b5499b4b5b18ca77c55f413a978d727ea2",
       "git_stage": "0"
@@ -519,7 +519,7 @@
       "size": 2348,
       "sha256": "70458b35fcaffe8716e0a9ca78fa031f91f9a71a8e75d3898a955edb40d3d9c4",
       "git_mode": "100644",
-      "git_blob": "c1b65c1c9d57fdfe928d0ccf7d058dc0e1227faa",
+      "git_blob": "4d1b7819e198be71bcd4946e12e75502a150ecc4",
       "git_stage": "0"
     },
     {
@@ -548,8 +548,8 @@
     },
     {
       "path": "gui/state/__init__.py",
-      "size": 310,
-      "sha256": "a5e62452e06c982c20bfebf7872b1736b2f24c8841745dc6aa61966cbe6a8706",
+      "size": 458,
+      "sha256": "fa439a85bc606cfce7350fbd6ab477b8d5fd73c4d85d3895d3d830ecba0118a2",
       "git_mode": "100644",
       "git_blob": "5b0f723c75c3c6a1e3383d4f57c1a508a0f5e5eb",
       "git_stage": "0"
@@ -756,10 +756,10 @@
     },
     {
       "path": "tests/test_bootstrap.py",
-      "size": 5468,
-      "sha256": "c024eb1de9a9f7cc58f31b58cfdff27328c6f6b170151595d95a70b22bfab69a",
+      "size": 6907,
+      "sha256": "152438e79c327898cba3e1633ac5e406da9515122b4576bc9cc453fe3959ec53",
       "git_mode": "100644",
-      "git_blob": "5f5f53443a49440102f9de0f4871cefd3ac492ff",
+      "git_blob": "1f60eb30970b5f43032fc5558b5ae1a2689dc7a0",
       "git_stage": "0"
     },
     {
@@ -828,8 +828,8 @@
     },
     {
       "path": "tests/test_gui_validation.py",
-      "size": 32328,
-      "sha256": "c8d1fdc3220ff8e6c456a41265c7c5f07b19886a36a6dca553be65e14d363517",
+      "size": 32387,
+      "sha256": "8babca8c74c9fdd93ff4415109d890f5413df6c1b207fc30c12358d258ca638a",
       "git_mode": "100644",
       "git_blob": "ff302f5a42d8e3e5b72a6bc422e612262c9fa1d3",
       "git_stage": "0"
@@ -900,8 +900,8 @@
     },
     {
       "path": "tests/test_output_preview.py",
-      "size": 1486,
-      "sha256": "518a9cc834d155d2e330726a7fa4b427342cc467c250ca2a00f75a18ad67edf0",
+      "size": 1508,
+      "sha256": "6b2658944ee1331e2ad13a985d8599b329b602ba8d1f3ba30e7e84289ab1ba43",
       "git_mode": "100644",
       "git_blob": "565a408dff2f17be3831d4c562dc3d8915d291dd",
       "git_stage": "0"
@@ -964,8 +964,8 @@
     },
     {
       "path": "tests/test_themes.py",
-      "size": 5458,
-      "sha256": "a8c46ba2bc795ee0ed1d516201bbc863cc4cbb56684e9717aa552e87ed909c5b",
+      "size": 5466,
+      "sha256": "4242ab5be5873ab5a4117f782c7df0fef4def10be8d41fe93a9b243dad0c23aa",
       "git_mode": "100644",
       "git_blob": "7c2617d1100e0e49f0aab3abcbad9b9829162740",
       "git_stage": "0"
@@ -980,8 +980,8 @@
     },
     {
       "path": "tests/test_ui_smoke_profiles.py",
-      "size": 1202,
-      "sha256": "93515bd3bf333a0bb693c670941866f6d2ce50087e35e8447c9be2bfb853d286",
+      "size": 1238,
+      "sha256": "708f3af9ed3de7d510cf6087d0c490a99c2d66c70b3f6188e269f7c9e0cc7a0e",
       "git_mode": "100644",
       "git_blob": "b69894d0879784dbdd2cf4e89925363e3fed22a2",
       "git_stage": "0"
@@ -1020,10 +1020,10 @@
     },
     {
       "path": "todo.txt",
-      "size": 21153,
-      "sha256": "94d6931295334a90b814032efcca9754a0e2fd9c365232054de74803c490912d",
+      "size": 21997,
+      "sha256": "40080b7325bcd8b47659d2eeffc8d8c0106d7862b118e67f0919c980f6e5e460",
       "git_mode": "100644",
-      "git_blob": "0335cfb49f58ef0a60deca4d65cd9d633a7de4b0",
+      "git_blob": "71225c9155fdf5c6f609291f8b7be526984a761f",
       "git_stage": "0"
     },
     {
@@ -1060,8 +1060,8 @@
     },
     {
       "path": "videobatch_professional.py",
-      "size": 6370,
-      "sha256": "489fb03371c106e6074a92c2213f4bd55e4b1276a966f51b6cdde7b5bc34577c",
+      "size": 6384,
+      "sha256": "72a3ab94f03b7a70750ae89ef4dc48c9ad1d9e61c5f1252896738ddb35955673",
       "git_mode": "100644",
       "git_blob": "10225e73833b87d07cfd43f3b0054ec4612fc34d",
       "git_stage": "0"

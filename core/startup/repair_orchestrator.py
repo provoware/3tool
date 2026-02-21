@@ -7,7 +7,9 @@ from core import launcher_checks
 from core.startup.bootstrap import all_blocking_ok, run_startup_checks
 
 
-def _validate_startup_inputs(py: str, target_dir: Path, project_root: Path) -> None:
+def _validate_startup_inputs(
+    py: str, target_dir: Path, project_root: Path
+) -> None:
     if not isinstance(py, str) or not py.strip():
         raise ValueError(
             "py muss ein nicht-leerer String sein. "

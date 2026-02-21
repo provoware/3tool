@@ -27,7 +27,10 @@ def test_main_window_ui_smoke_profiles(
 ):
     if not gui_runtime_available:
         assert gui_runtime_error is not None
-        assert "libGL.so.1" in gui_runtime_error or "libEGL.so.1" in gui_runtime_error
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
         return
 
     qtbot = request.getfixturevalue("qtbot")

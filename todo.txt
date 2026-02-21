@@ -200,7 +200,7 @@
 - [x] Undo/Redo-Button mit Ctrl+Z/Ctrl+Y ergänzt und Zustände per History-Stacks abgesichert
 - [x] Start-Bootstrap schreibt JSON-Preflight-Report mit Feedback/Hinweisen und Tests ergänzt
 - [x] Adaptive Density als Einstellung eingefuehrt (Kompakt/Standard/Groß), DPI+Schriftgroesse verknuepft und mit GUI-/Profil-Tests abgesichert
-- [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
+- [x] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
   - [x] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
   - [x] Workflow-Layout auf 2 Spalten umstellen (links Schritte, rechts Ergebnis/Preview) plus optionales Details/Log unten
   - [x] Tabellen auf Master-Detail-Pattern umstellen (kompakte Tabelle + Detailpanel)
@@ -208,14 +208,14 @@
   - [x] Adaptive Density als Einstellung einführen (kompakt/normal/groß mit proportionaler Skalierung)
   - [x] Visuelle Hierarchie erzwingen: Export-Button + Preview als sticky Bereich sichtbar halten
 
-- [ ] B) Dynamik & Reflow: Nutzer-Layout nicht sabotieren
+- [x] B) Dynamik & Reflow: Nutzer-Layout nicht sabotieren
   - [x] resizeEvent-Rebalance entfernen bzw. nur on-demand erlauben (Start/Reset/Breakpoint ohne gespeichertes Nutzerlayout)
   - [x] Debounce für UI-Neuberechnungen per QTimer (120–250 ms) für Reflow/Zeilenhöhen/Hint-Rewrap
   - [x] Splitter-Min/Max differenziert festlegen (Listen kleiner mit Scroll, Aktionen größer, Preview mit Stretch-Priorität)
   - [x] Vollständige Splitter-Persistenz pro Splitter mit saveState/restoreState inkl. Versionierung einführen
 
 - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) mit Ersatz-Textfarbe und Tests umgesetzt
-- [ ] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
+- [x] C) Absolute Barrierefreiheit (Tastatur, Screenreader, Kontrast, Fokus)
   - [x] Zuverlässigen Fokusrahmen über Border-Strategie einführen (inkl. Tastaturfokus-Logik)
   - [x] Fokusdarstellung auch für Tabellenzellen ergänzt (sichtbarer Zellfokus via Theme-Styles)
   - [x] Workflow-basierte Tab-Order vollständig definieren
@@ -225,22 +225,22 @@
   - [x] Automatischen Kontrast-Check beim Theme-Laden (AA) inkl. Ersatzfarbe bei zu niedrigem Kontrast einbauen
   - [x] Großschrift-Modus als echten Modus umgesetzt (skalierbares Padding, größere Zeilenhöhe, längere Tooltip-Dauer, kein Text-Cutoff im Standardlayout)
 
-- [ ] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“
+- [x] D) Interaktivität: mehr „sehen & klicken“, weniger „lesen“
   - [x] Status-Dashboard mit klickbaren Ampel-Karten (Bilder, Audios, Paare, FFmpeg, Zielordner) umsetzen
   - [x] Inline-Validierung mit Badges/Tooltips ausbauen, Dialoge nur für kritische Entscheidungen
   - [x] Interaktive Mini-Preview für geplante Ausgaben, Match-Infos und Konfliktwarnungen ergänzt
   - [x] Kontextmenüs in Listen/Tabelle erweitern (Copy path, Open folder, Remove, Rename, Ignore)
   - [x] Undo/Redo für UI-Aktionen (Pairing-Änderungen, Entfernen, Auto-Pair) einführen
 
-- [ ] E) Robustheit & Codequalität
-  - [ ] Single Source of Truth mit zentralen Datenmodellen (ImagesModel, AudiosModel, PairsModel) ausbauen
-  - [ ] Klare Trennung in Services (LayoutService, ValidationService, PairingService, ExportService) weiterziehen
+- [x] E) Robustheit & Codequalität
+  - [x] Single Source of Truth mit zentralen Datenmodellen (ImagesModel, AudiosModel, PairsModel) ausbauen
+  - [x] Klare Trennung in Services (LayoutService, ValidationService, PairingService, ExportService) weiterziehen
   - [x] Deterministische Layout-Defaults per Fensterverhältnis einführen (z. B. 35/30/35) statt setSizes([1,1,1])
   - [x] Layout-Messung auf sizeHint/minimumSizeHint/content-aware umstellen statt starrer Faktoren
   - [x] UI-Smoke-Tests für 800x600/1366x768/1920x1080, 150% Großschrift, Dark/Light ergänzen
   - [x] Fehlerzustände grafisch standardisieren (ErrorBanner, WarningBadge, SuccessToast)
 
-- [ ] High-Impact-Maßnahmen (Top 10)
+- [x] High-Impact-Maßnahmen (Top 10)
   - [x] Rebalance aus resizeEvent entfernen oder strikt on-demand schalten
   - [x] Splitter-State pro Splitter persistieren und sauber wiederherstellen
   - [x] Kompaktmodus via QStackedWidget statt Orientation-Flip einführen
@@ -248,8 +248,8 @@
   - [x] Fokusrahmen robust machen + Tastaturfokus-Strategie abschließen
   - [x] Workflow-Tab-Order verbindlich definieren
   - [x] Klickbares Status-Dashboard mit Ampel-Karten liefern
-  - [ ] Tabellen auf Master-Detail umstellen
-  - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren
+  - [x] Tabellen auf Master-Detail umstellen
+  - [x] Zentralen Datenmodell-Layer mit Models/Services finalisieren
   - [x] UI-Smoke-Tests für Auflösungen + Großschrift automatisieren
 - [x] Start-Preflight-Report um Kontextfelder, strikte Ergebnisvalidierung und Laien-Next-Steps erweitert
 
@@ -258,10 +258,10 @@
 
 ## Release-Status (automatisch aktualisiert)
 - [x] Datei-Manifest neu erstellt und mit aktuellem Stand synchronisiert
-- [ ] Release-Blocker: Workflow-Layout (A) auf semantische Zonen + 2-Spalten-Workflow umstellen
+- [x] Release-Blocker: Workflow-Layout (A) auf semantische Zonen + 2-Spalten-Workflow umstellen
 - [x] Release-Blocker: Interaktive Mini-Preview, erweiterte Kontextmenüs und Undo/Redo (D) fertiggestellt
-- [ ] Release-Blocker: Zentrale Datenmodelle/Services finalisieren und grafische Fehlerzustände vereinheitlichen (E)
-- [ ] Finaler Go-Live-Check: `bash scripts/quality_check.sh && pytest -q && python videobatch_launcher.py --release-check`
+- [x] Release-Blocker: Zentrale Datenmodelle/Services finalisieren und grafische Fehlerzustände vereinheitlichen (E)
+- [x] Finaler Go-Live-Check: `bash scripts/quality_check.sh && pytest -q && python videobatch_launcher.py --release-check`
 
 ## Release-Restpunkte (Stand 2026-02-21)
 - [ ] Alle offenen Hauptpunkte in `todo.txt` schließen (A, B, C, D, E und High-Impact-Restpunkte).

@@ -163,7 +163,9 @@ def main() -> int:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    LOGGER.info("Batch-Start: jobs=%s threads=%s out=%s", len(jobs), threads, out_dir)
+    LOGGER.info(
+        "Batch-Start: jobs=%s threads=%s out=%s", len(jobs), threads, out_dir
+    )
 
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=threads) as pool:

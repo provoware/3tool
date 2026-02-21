@@ -14,6 +14,7 @@ from .runtime_paths import (
     safe_move,
     which,
 )
+from .workflow_services import ExportService, PairingService, ValidationService
 
 
 def play_audio_preview(*args, **kwargs):
@@ -29,6 +30,9 @@ def stop_audio_preview(*args, **kwargs):
 
 
 __all__ = [
+    "ExportService",
+    "PairingService",
+    "ValidationService",
     "build_default_runtime_paths",
     "build_project_payload",
     "check_ffmpeg",
