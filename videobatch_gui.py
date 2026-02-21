@@ -26,29 +26,19 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QHeaderView
 
-from core.fallback_media import (
-    dumps_audio_list,
-    loads_audio_list,
-    persist_fallback_media,
-)
-from core.gui_logic import (
-    compute_workflow_min_size,
-    normalize_layout_width,
-    resolve_action_layout_columns,
-)
+from core.fallback_media import (dumps_audio_list, loads_audio_list,
+                                 persist_fallback_media)
+from core.gui_logic import (compute_workflow_min_size, normalize_layout_width,
+                            resolve_action_layout_columns)
 from core.media_validation import AUDIO_EXTENSIONS, IMAGE_EXTENSIONS
-from core.output_management import (
-    build_dated_output_dir,
-    transfer_with_validation,
-)
+from core.output_management import (build_dated_output_dir,
+                                    transfer_with_validation)
 from core.paths import config_dir, log_dir, user_data_dir
 from core.plugins import PluginManager
 from core.themes import get_theme_tokens, load_themes
-from core.ui_profiles import (
-    resolve_density_multiplier,
-    resolve_interface_profile,
-    resolve_spacing_profile,
-)
+from core.ui_profiles import (resolve_density_multiplier,
+                              resolve_interface_profile,
+                              resolve_spacing_profile)
 from core.ui_texts import load_ui_texts, text_with_fallback
 from core.utils import build_out_name, probe_duration
 from core.validation import normalize_audio_bitrate, validate_output_template
@@ -56,33 +46,18 @@ from gui.dialogs.file_picker import FilePickerDialog
 from gui.main_window import build_initial_state
 from gui.services.output_preview import build_mini_preview_summary
 from gui.services.preview import play_audio_preview, stop_audio_preview
-from gui.services.project_io import (
-    build_project_payload,
-    load_project_file,
-    make_project_relative,
-    resolve_project_path,
-    save_project_file,
-)
-from gui.services.runtime_paths import (
-    build_default_runtime_paths,
-    check_ffmpeg,
-    safe_move,
-)
-from gui.state.project_state import (
-    get_project_root,
-    get_project_start_dir,
-    set_last_project_path,
-    set_project_root,
-)
+from gui.services.project_io import (build_project_payload, load_project_file,
+                                     make_project_relative,
+                                     resolve_project_path, save_project_file)
+from gui.services.runtime_paths import (build_default_runtime_paths,
+                                        check_ffmpeg, safe_move)
+from gui.state.project_state import (get_project_root, get_project_start_dir,
+                                     set_last_project_path, set_project_root)
 from gui.views.action_orchestration import choose_project_root_dialog
 from gui.views.main_window_view import create_action_buttons
 from gui.widgets.dashboard import InfoDashboard
-from gui.widgets.feedback import (
-    ErrorBanner,
-    InlineValidationBadge,
-    SuccessToast,
-    WarningBadge,
-)
+from gui.widgets.feedback import (ErrorBanner, InlineValidationBadge,
+                                  SuccessToast, WarningBadge)
 
 # ---------- Paths ----------
 APP_DIR = user_data_dir()
@@ -1698,6 +1673,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         table_box = QtWidgets.QGroupBox("Paare")
         tb_lay = QtWidgets.QVBoxLayout(table_box)
+        self.table_detail_splitter = QtWidgets.QSplitter(Qt.Vertical)
+        self.table_detail_splitter.setChildrenCollapsible(False)
+        self.table_detail_splitter.setHandleWidth(8)
         self.output_preview_summary = QtWidgets.QLabel(
             "Mini-Vorschau: Noch keine Paare vorhanden."
         )
@@ -1710,15 +1688,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.output_preview_details = QtWidgets.QPlainTextEdit()
         self.output_preview_details.setReadOnly(True)
         self.output_preview_details.setMaximumBlockCount(20)
-        self.output_preview_details.setAccessibleName(
-            "Mini-Vorschau Details"
-        )
+        self.output_preview_details.setAccessibleName("Mini-Vorschau Details")
         self.output_preview_details.setAccessibleDescription(
             "Geplante Ausgaben und Konfliktwarnungen in einfacher Sprache"
         )
-        tb_lay.addWidget(self.table)
-        tb_lay.addWidget(self.output_preview_summary)
-        tb_lay.addWidget(self.output_preview_details)
+        self.table_detail_panel = QtWidgets.QGroupBox("Details zur Auswahl")
+        table_detail_layout = QtWidgets.QVBoxLayout(self.table_detail_panel)
+        table_detail_layout.setContentsMargins(8, 8, 8, 8)
+        table_detail_layout.addWidget(self.output_preview_summary)
+        table_detail_layout.addWidget(self.output_preview_details)
+        self.table_detail_splitter.addWidget(self.table)
+        self.table_detail_splitter.addWidget(self.table_detail_panel)
+        self.table_detail_splitter.setStretchFactor(0, 4)
+        self.table_detail_splitter.setStretchFactor(1, 2)
+        tb_lay.addWidget(self.table_detail_splitter)
 
         help_box = QtWidgets.QGroupBox("Hilfe")
         hb_lay = QtWidgets.QVBoxLayout(help_box)
@@ -1959,6 +1942,24 @@ class MainWindow(QtWidgets.QMainWindow):
         feedback_row.addWidget(self.success_toast, 1)
         central_layout.addLayout(feedback_row)
         central_layout.addWidget(self.workflow_stack, 1)
+        self.sticky_preview_summary = QtWidgets.QLabel(
+            "Sticky-Vorschau: Noch keine Paare vorhanden."
+        )
+        self.sticky_preview_summary.setWordWrap(True)
+        self.sticky_preview_summary.setProperty("previewStatus", "info")
+        self.sticky_preview_summary.setAccessibleName("Sticky Vorschau")
+        self.sticky_export_button = QtWidgets.QPushButton("START")
+        self.sticky_export_button.setToolTip(
+            "Startet die Ausgabe sofort. Bleibt immer sichtbar."
+        )
+        self.sticky_export_button.setProperty("accentRole", "primaryAction")
+        self.sticky_export_button.clicked.connect(self._start_encode)
+        sticky_row = QtWidgets.QHBoxLayout()
+        sticky_row.setContentsMargins(0, 0, 0, 0)
+        sticky_row.setSpacing(8)
+        sticky_row.addWidget(self.sticky_preview_summary, 1)
+        sticky_row.addWidget(self.sticky_export_button)
+        central_layout.addLayout(sticky_row)
         self.central_layout = central_layout
         central = QtWidgets.QWidget()
         central.setLayout(central_layout)
@@ -2091,6 +2092,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._active_section_name = "Paare"
         self._on_focus_changed(None, self.table)
         self._sync_history_buttons()
+        self._sync_sticky_export_state()
 
     # ----- UI helpers -----
     def _ui_text(self, key: str, fallback: str) -> str:
@@ -2397,6 +2399,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_encode.style().unpolish(self.btn_encode)
         self.btn_encode.style().polish(self.btn_encode)
         self.btn_encode.update()
+        self._sync_sticky_export_state()
+
+    def _sync_sticky_export_state(self) -> None:
+        if not hasattr(self, "sticky_export_button") or not hasattr(
+            self, "btn_encode"
+        ):
+            return
+        self.sticky_export_button.setEnabled(self.btn_encode.isEnabled())
+        self.sticky_export_button.setText(self.btn_encode.text())
+        self.sticky_export_button.setProperty(
+            "readyPulse", self.btn_encode.property("readyPulse")
+        )
+        self.sticky_export_button.style().unpolish(self.sticky_export_button)
+        self.sticky_export_button.style().polish(self.sticky_export_button)
+        self.sticky_export_button.update()
 
     def _set_workflow_compact_mode(self, enabled: bool) -> None:
         compact = bool(enabled)
@@ -2406,7 +2423,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._workflow_compact_mode = compact
         if hasattr(self, "workflow_stack"):
             self.workflow_stack.setCurrentWidget(
-                self.workflow_compact_page if compact else self.workflow_standard_page
+                self.workflow_compact_page
+                if compact
+                else self.workflow_standard_page
             )
 
     def _build_workflow_compact_page(self) -> QtWidgets.QWidget:
@@ -2436,7 +2455,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 (self.btn_box, self.table_box),
                 (self.help_box, self.log_box),
             )
-            for zone_layout, widgets in zip(self._compact_zone_layouts, zone_pairs):
+            for zone_layout, widgets in zip(
+                self._compact_zone_layouts, zone_pairs
+            ):
                 for widget in widgets:
                     zone_layout.addWidget(widget)
             return
@@ -2451,7 +2472,6 @@ class MainWindow(QtWidgets.QMainWindow):
         ):
             for widget in widgets:
                 splitter.addWidget(widget)
-
 
     def _rebalance_workflow_layout(
         self,
@@ -2771,9 +2791,7 @@ class MainWindow(QtWidgets.QMainWindow):
         message: str,
     ) -> None:
         clean_message = " ".join((message or "").split())
-        field.setProperty(
-            "validationState", "ok" if is_valid else "warn"
-        )
+        field.setProperty("validationState", "ok" if is_valid else "warn")
         field.style().unpolish(field)
         field.style().polish(field)
         if clean_message:
@@ -2843,9 +2861,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.output_template_edit,
             self.output_template_validation_badge,
             result.is_valid,
-            result.message
-            if not result.is_valid
-            else "Template ist gültig und gespeichert.",
+            (
+                result.message
+                if not result.is_valid
+                else "Template ist gültig und gespeichert."
+            ),
         )
         if not result.is_valid:
             self.warning_badge.show_warning(result.message)
@@ -3276,7 +3296,19 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.output_preview_summary.style().polish(self.output_preview_summary)
         self.output_preview_summary.update()
-        details = "\n".join(summary.lines) if summary.lines else "Keine Details."
+        if hasattr(self, "sticky_preview_summary"):
+            self.sticky_preview_summary.setProperty("previewStatus", status)
+            self.sticky_preview_summary.setText(f"Sticky-Vorschau: {text}")
+            self.sticky_preview_summary.style().unpolish(
+                self.sticky_preview_summary
+            )
+            self.sticky_preview_summary.style().polish(
+                self.sticky_preview_summary
+            )
+            self.sticky_preview_summary.update()
+        details = (
+            "\n".join(summary.lines) if summary.lines else "Keine Details."
+        )
         self.output_preview_details.setPlainText(details)
 
     def _update_counts(self):
@@ -3879,9 +3911,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.abitrate_edit,
             self.abitrate_validation_badge,
             bitrate_result.is_valid,
-            bitrate_result.message
-            if bitrate_result.message
-            else "Audio-Bitrate ist gültig.",
+            (
+                bitrate_result.message
+                if bitrate_result.message
+                else "Audio-Bitrate ist gültig."
+            ),
         )
         if require_valid and not bitrate_result.is_valid:
             self.warning_badge.show_warning(bitrate_result.message)
@@ -3902,9 +3936,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.output_template_edit,
             self.output_template_validation_badge,
             template_result.is_valid,
-            template_result.message
-            if not template_result.is_valid
-            else "Template ist gültig.",
+            (
+                template_result.message
+                if not template_result.is_valid
+                else "Template ist gültig."
+            ),
         )
         if require_valid and not template_result.is_valid:
             self.warning_badge.show_warning(template_result.message)

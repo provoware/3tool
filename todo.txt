@@ -202,10 +202,10 @@
 - [ ] A) Layout-Architektur: von „Splitter-Wirrwarr“ zu „Workflow-UI“
   - [ ] Semantische Zonen nach Aufgabe umsetzen: Eingabe, Validierung, Zuordnung, Output
   - [ ] Workflow-Layout auf 2 Spalten umstellen (links Schritte, rechts Ergebnis/Preview) plus optionales Details/Log unten
-  - [ ] Tabellen auf Master-Detail-Pattern umstellen (kompakte Tabelle + Detailpanel)
+  - [x] Tabellen auf Master-Detail-Pattern umstellen (kompakte Tabelle + Detailpanel)
   - [x] Breakpoint-Verhalten ohne Splitter-Orientierungswechsel umsetzen (Kompaktmodus via QStackedWidget)
   - [x] Adaptive Density als Einstellung einführen (kompakt/normal/groß mit proportionaler Skalierung)
-  - [ ] Visuelle Hierarchie erzwingen: Export-Button + Preview als sticky Bereich sichtbar halten
+  - [x] Visuelle Hierarchie erzwingen: Export-Button + Preview als sticky Bereich sichtbar halten
 
 - [ ] B) Dynamik & Reflow: Nutzer-Layout nicht sabotieren
   - [x] resizeEvent-Rebalance entfernen bzw. nur on-demand erlauben (Start/Reset/Breakpoint ohne gespeichertes Nutzerlayout)
