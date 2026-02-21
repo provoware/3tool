@@ -835,3 +835,50 @@ python3 start_gui.py --auto-repair --debug
 - Meldet Probleme in einfacher Sprache mit einem **direkten Loesungsvorschlag**.
 - Nutzt zuerst sichere Auto-Reparaturpfade, danach klare manuelle Schritte.
 - Schreibt alle Ergebnisse in ein Log (inkl. *Erfolg*, *Warnung*, *Fehler* und *naechster Schritt*).
+
+## 126. Vollautomatische Startroutine (empfohlen fuer Laien)
+
+Wenn du einfach nur starten willst, nutze immer diesen einen Befehl:
+
+```bash
+python3 -m app --mode gui
+```
+
+Das Programm prueft beim Start automatisch die wichtigsten Voraussetzungen
+(Abhaengigkeiten = benoetigte Bausteine) und zeigt klare Hinweise mit naechstem
+Schritt.
+
+## 127. Einmaliger Komplett-Check (automatische Pruefung + Auto-Formatierung)
+
+Mit diesem Befehl wird alles in einem Durchlauf geprueft:
+
+```bash
+./0000-testall
+```
+
+Das Skript fuehrt automatische Qualitaetspruefungen aus (Tests, Linting,
+Formatierung). So erkennst du Fehler frueh und haeltst den Code einheitlich.
+
+## 128. Debug-Modus mit einfachen Loesungshinweisen
+
+Wenn etwas nicht klappt, starte mit mehr Details:
+
+```bash
+python3 -m app --mode gui --debug
+```
+
+`--debug` zeigt detaillierte Meldungen (Debugging = gezielte Fehlersuche).
+Im Log stehen konkrete Hinweise und kopierbare Befehle fuer den naechsten Schritt.
+
+## 129. Drei einfache Verbesserungen fuer noch mehr Laienfreundlichkeit
+
+1. **Ein-Klick-Reparatur als Standard**
+   - Schaltflaeche klar benennen: **"Automatisch pruefen und reparieren"**.
+   - Nach dem Klick immer Rueckmeldung anzeigen: **Was wurde geprueft? Was wurde repariert?**
+2. **Eingaben immer sofort pruefen**
+   - Bei jedem Feld direkt validieren (Validierung = Eingabepruefung).
+   - Fehlertext in einfacher Sprache mit Beispielbefehl anzeigen.
+3. **Farbthemes mit Zwecknamen**
+   - Statt nur Designnamen: **"Kontrast (sehr gut lesbar)"**, **"Dunkel (abends)"**,
+     **"Hell (Tageslicht)"**.
+   - Dadurch verstehen Einsteiger schneller, welches Theme fuer sie passt.
