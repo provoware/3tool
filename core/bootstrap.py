@@ -85,6 +85,35 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
 
     report_path = user_data_path / "logs" / "startup_preflight_report.json"
 
+    def _emit_feedback(message: str) -> None:
+        if not isinstance(message, str) or not message.strip():
+            _fail("Interner Fehler: Rueckmeldungstext ist ungueltig.")
+        print(message)
+
+    def _summarize_checks(
+        checks: list[launcher_checks.CheckResult],
+        *,
+        stage_name: str,
+    ) -> str:
+        total = len(checks)
+        failed = len([item for item in checks if not item.ok])
+        blocking_failed = len(
+            [item for item in checks if item.blocking and not item.ok]
+        )
+        return (
+            f"{stage_name}: {total} Pruefungen, {failed} mit Problem, "
+            f"{blocking_failed} blockierend."
+        )
+
+    def _next_step_commands(
+        checks: list[launcher_checks.CheckResult],
+    ) -> list[str]:
+        commands: list[str] = []
+        for item in checks:
+            if not item.ok and item.fix_hint:
+                commands.append(item.fix_hint)
+        return commands[:3]
+
     def _validate_checks(
         checks: list[launcher_checks.CheckResult],
         *,
@@ -96,8 +125,7 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
                 "Naechster Schritt: Vollcheck starten mit './scripts/qa.sh'."
             )
         if any(
-            not isinstance(item, launcher_checks.CheckResult)
-            for item in checks
+            not isinstance(item, launcher_checks.CheckResult) for item in checks
         ):
             _fail(
                 f"Interner Fehler: {stage_name} lieferte ungueltige "
@@ -171,7 +199,15 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
         launcher_checks.collect_checks(py, user_data_path, project_root),
         stage_name="Start-Checks vor Reparatur",
     )
+    _emit_feedback(
+        f"🔎 {_summarize_checks(checks, stage_name='Start-Analyse')}"
+    )
+
     if all(item.ok for item in checks if item.blocking):
+        _emit_feedback(
+            "✅ System bereit. Naechster Schritt: Du kannst direkt mit der "
+            "Bearbeitung starten."
+        )
         _write_report(
             status="ok",
             checks_before=checks,
@@ -179,6 +215,12 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
             repairs=[],
         )
         return
+
+    _emit_feedback(
+        "🛠️ Automatische Reparatur startet. Bitte kurz warten, "
+        "fehlende Abhaengigkeiten werden selbststaendig korrigiert."
+    )
+
     repairs = _validate_repairs(
         launcher_checks.run_repairs(py, user_data_path, project_root)
     )
@@ -186,7 +228,14 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
         launcher_checks.collect_checks(py, user_data_path, project_root),
         stage_name="Start-Checks nach Reparatur",
     )
+    _emit_feedback(
+        f"🧪 {_summarize_checks(checks_after, stage_name='Kontrolle nach Reparatur')}"
+    )
     if all(item.ok for item in checks_after if item.blocking):
+        _emit_feedback(
+            "✅ Reparatur erfolgreich. Naechster Schritt: Programm startet "
+            "jetzt normal weiter."
+        )
         _write_report(
             status="repaired",
             checks_before=checks,
@@ -204,6 +253,14 @@ def run_preflight(py: str, user_data_path: Path, project_root: Path) -> None:
 
     hints = launcher_checks.beginner_recovery_hints(repairs)
     hints_block = "\n".join(f" - {item}" for item in hints)
+    quick_commands = _next_step_commands(checks_after)
+    command_block = "\n".join(f" - {item}" for item in quick_commands)
+    if command_block:
+        _emit_feedback(
+            "⚠️ Einige Punkte brauchen noch manuelle Hilfe. "
+            "Kopierbare Befehle:\n"
+            f"{command_block}"
+        )
     _fail(
         "Start-Bootstrap fehlgeschlagen. "
         "Ursache: Abhaengigkeiten/Tools konnten nicht geprueft oder repariert werden. "

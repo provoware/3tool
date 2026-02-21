@@ -160,6 +160,59 @@ def test_run_preflight_rejects_invalid_repair_result(
     assert "ungueltige Ergebnisse" in str(exc_info.value)
 
 
+def test_run_preflight_emits_success_feedback(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    monkeypatch.setattr(
+        bootstrap.launcher_checks,
+        "collect_checks",
+        lambda *_args, **_kwargs: [_ok_check()],
+    )
+
+    bootstrap.run_preflight("python3", tmp_path, tmp_path)
+
+    output = capsys.readouterr().out
+    assert "Start-Analyse" in output
+    assert "System bereit" in output
+
+
+def test_run_preflight_failure_shows_copyable_commands(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    broken_check = CheckResult(
+        key="fail",
+        title="FAIL",
+        ok=False,
+        detail="broken",
+        fix_hint="Befehl: python3 -m pip install --upgrade Pillow",
+        blocking=True,
+    )
+    monkeypatch.setattr(
+        bootstrap.launcher_checks,
+        "collect_checks",
+        lambda *_args, **_kwargs: [broken_check],
+    )
+    monkeypatch.setattr(
+        bootstrap.launcher_checks,
+        "run_repairs",
+        lambda *_args, **_kwargs: [
+            RepairResult(
+                key="packages",
+                title="Pakete",
+                ok=False,
+                detail="noch kaputt",
+            )
+        ],
+    )
+
+    with pytest.raises(bootstrap.BootstrapError):
+        bootstrap.run_preflight("python3", tmp_path, tmp_path)
+
+    output = capsys.readouterr().out
+    assert "Kopierbare Befehle" in output
+    assert "python3 -m pip install --upgrade Pillow" in output
+
+
 def test_run_preflight_failure_mentions_report_path(
     monkeypatch,
     tmp_path: Path,
