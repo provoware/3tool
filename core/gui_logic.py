@@ -129,6 +129,7 @@ def resolve_action_layout_columns(
     margin_left: int,
     margin_right: int,
     button_label_width: int,
+    content_min_width: object = 0,
 ) -> tuple[int, int]:
     """Resolve responsive action-grid columns with strict input checks."""
     safe_width = normalize_layout_width(available_width)
@@ -152,6 +153,11 @@ def resolve_action_layout_columns(
         parse_non_negative_int(value, "button_min_breite", default=190)
         for value in minimum_widths
     ]
+    safe_content_min_width = parse_non_negative_int(
+        content_min_width,
+        "button_content_min_breite",
+        default=0,
+    )
     usable_width = max(
         safe_width - safe_margin_left - safe_margin_right,
         240,
@@ -160,6 +166,7 @@ def resolve_action_layout_columns(
     min_cell_width = max(
         max(sanitized_min_widths, default=190),
         dynamic_min_width,
+        safe_content_min_width,
     )
     max_columns = 4 if usable_width >= 1100 else 3
     columns = max(
@@ -177,6 +184,50 @@ def resolve_action_layout_columns(
         max_columns,
     )
     return columns, max_columns
+
+
+def resolve_action_cell_min_width(
+    *,
+    minimum_widths: Sequence[object],
+    size_hint_widths: Sequence[object],
+    minimum_hint_widths: Sequence[object],
+    button_label_width: object,
+) -> int:
+    """Resolve a content-aware action cell width from widget size hints."""
+    safe_label_width = parse_non_negative_int(
+        button_label_width,
+        "button_label_breite",
+        default=190,
+    )
+    parsed_minimums = [
+        parse_non_negative_int(value, "button_min_breite", default=190)
+        for value in minimum_widths
+    ]
+    parsed_hints = [
+        parse_non_negative_int(value, "button_size_hint", default=0)
+        for value in size_hint_widths
+    ]
+    parsed_min_hints = [
+        parse_non_negative_int(
+            value,
+            "button_min_size_hint",
+            default=0,
+        )
+        for value in minimum_hint_widths
+    ]
+
+    explicit_min_width = max(parsed_minimums, default=190)
+    content_hint_width = max(parsed_hints + parsed_min_hints, default=0)
+    label_based_width = max(160, safe_label_width + 60)
+    cell_width = max(explicit_min_width, content_hint_width, label_based_width)
+    logger.debug(
+        "Action-Reflow Breite: min=%s hint=%s label=%s => %s",
+        explicit_min_width,
+        content_hint_width,
+        label_based_width,
+        cell_width,
+    )
+    return cell_width
 
 
 def compute_workflow_min_size(
