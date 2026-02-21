@@ -246,3 +246,67 @@ def test_run_preflight_failure_mentions_report_path(
     assert payload["status"] == "failed"
     assert payload["checks_before"][0]["ok"] is False
     assert payload["checks_after"][0]["ok"] is False
+
+
+def test_run_preflight_normalizes_python_command_in_report(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        bootstrap.launcher_checks,
+        "collect_checks",
+        lambda *_args, **_kwargs: [_ok_check()],
+    )
+
+    bootstrap.run_preflight("  python3  ", tmp_path, tmp_path)
+
+    report_path = tmp_path / "logs" / "startup_preflight_report.json"
+    payload = json.loads(report_path.read_text(encoding="utf-8"))
+    assert payload["python_cmd"] == "python3"
+
+
+def test_run_preflight_shows_deduplicated_copyable_commands(
+    monkeypatch, tmp_path: Path, capsys
+) -> None:
+    broken_checks = [
+        CheckResult(
+            key="fail_a",
+            title="FAIL A",
+            ok=False,
+            detail="broken",
+            fix_hint=" Befehl: python3 -m pip install Pillow ",
+            blocking=True,
+        ),
+        CheckResult(
+            key="fail_b",
+            title="FAIL B",
+            ok=False,
+            detail="broken",
+            fix_hint="Befehl: python3 -m pip install Pillow",
+            blocking=True,
+        ),
+    ]
+    monkeypatch.setattr(
+        bootstrap.launcher_checks,
+        "collect_checks",
+        lambda *_args, **_kwargs: broken_checks,
+    )
+    monkeypatch.setattr(
+        bootstrap.launcher_checks,
+        "run_repairs",
+        lambda *_args, **_kwargs: [
+            RepairResult(
+                key="packages",
+                title="Pakete",
+                ok=False,
+                detail="noch kaputt",
+            )
+        ],
+    )
+
+    with pytest.raises(bootstrap.BootstrapError):
+        bootstrap.run_preflight("python3", tmp_path, tmp_path)
+
+    output = capsys.readouterr().out
+    assert output.count("Befehl: python3 -m pip install Pillow") == 1
+
