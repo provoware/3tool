@@ -6,6 +6,7 @@ from core.gui_logic import (
     format_human_size,
     normalize_layout_width,
     parse_non_negative_int,
+    resolve_action_cell_min_width,
     resolve_action_layout_columns,
     resolve_dashboard_columns,
 )
@@ -35,6 +36,16 @@ def test_main_window_state_initialisiert() -> None:
     assert state.last_audio_dir == Path("/tmp/b")
 
 
+def test_action_cell_min_width_uses_content_hints() -> None:
+    cell_width = resolve_action_cell_min_width(
+        minimum_widths=[180, 200],
+        size_hint_widths=[220, 310],
+        minimum_hint_widths=[190, 205],
+        button_label_width=240,
+    )
+    assert cell_width >= 310
+
+
 def test_action_layout_spalten_validiert() -> None:
     columns, max_columns = resolve_action_layout_columns(
         available_width="1200",
@@ -43,6 +54,7 @@ def test_action_layout_spalten_validiert() -> None:
         margin_left=12,
         margin_right=12,
         button_label_width=260,
+        content_min_width=340,
     )
     assert max_columns == 4
     assert columns >= 1

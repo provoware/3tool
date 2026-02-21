@@ -235,7 +235,7 @@
   - [ ] Single Source of Truth mit zentralen Datenmodellen (ImagesModel, AudiosModel, PairsModel) ausbauen
   - [ ] Klare Trennung in Services (LayoutService, ValidationService, PairingService, ExportService) weiterziehen
   - [x] Deterministische Layout-Defaults per Fensterverhältnis einführen (z. B. 35/30/35) statt setSizes([1,1,1])
-  - [ ] Layout-Messung auf sizeHint/minimumSizeHint/content-aware umstellen statt starrer Faktoren
+  - [x] Layout-Messung auf sizeHint/minimumSizeHint/content-aware umstellen statt starrer Faktoren
   - [x] UI-Smoke-Tests für 800x600/1366x768/1920x1080, 150% Großschrift, Dark/Light ergänzen
   - [x] Fehlerzustände grafisch standardisieren (ErrorBanner, WarningBadge, SuccessToast)
 
@@ -251,6 +251,8 @@
   - [ ] Zentralen Datenmodell-Layer mit Models/Services finalisieren
   - [x] UI-Smoke-Tests für Auflösungen + Großschrift automatisieren
 - [x] Start-Preflight-Report um Kontextfelder, strikte Ergebnisvalidierung und Laien-Next-Steps erweitert
+
+- [x] Action-Reflow nutzt jetzt content-aware Mindestbreite aus sizeHint/minimumSizeHint mit Tests
 
 
 ## Release-Status (automatisch aktualisiert)
