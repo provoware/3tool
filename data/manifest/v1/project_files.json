@@ -1,6 +1,6 @@
 {
   "schema_version": "2",
-  "generated_at_utc": "2026-02-21T02:28:24.014533+00:00",
+  "generated_at_utc": "2026-02-21T02:34:22.720940+00:00",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -191,7 +191,7 @@
       "size": 9776,
       "sha256": "af6e0f4eea43328bbcb4f681e54227e458bea4947e5c42cfbd501b805c3b58e9",
       "git_mode": "100644",
-      "git_blob": "9266b1f42a065f556d7e50e32f3841c6b9a68992",
+      "git_blob": "15a2be869842a77bb0a948e78d81d5b0612607cb",
       "git_stage": "0"
     },
     {
@@ -231,7 +231,7 @@
       "size": 10008,
       "sha256": "9952989b607a294e4aa6de868447ffd1889bd79c972c75619574eab6da7a8ca5",
       "git_mode": "100644",
-      "git_blob": "0cae37a514ebcf572ce0da78aa2817d9871c6ddf",
+      "git_blob": "88730710cd40b4a58165cdf0cb833f37d28c4ee3",
       "git_stage": "0"
     },
     {
@@ -375,7 +375,7 @@
       "size": 2099,
       "sha256": "c7efc1f310dcea63e6248df177d60b1bc5f01cfb5d9dd4ab0bd67c6ced8ea854",
       "git_mode": "100644",
-      "git_blob": "09793ffa01b923e19aa5eb77c444b42d8d248902",
+      "git_blob": "2ffd4b73eb8e440aa0b09a96361cc5311fdf5d8c",
       "git_stage": "0"
     },
     {
@@ -383,7 +383,7 @@
       "size": 26713,
       "sha256": "d0a3a6e60620f257d8d6aaafc2fa7f54c47d2637f71f0661813cf1596a81e9b1",
       "git_mode": "100644",
-      "git_blob": "3dd5ce02308e0bb6b74211eb48fca0acb53610fd",
+      "git_blob": "172d3447be5dfbc94617917702ad11e1f4d9941a",
       "git_stage": "0"
     },
     {
@@ -391,7 +391,7 @@
       "size": 4658,
       "sha256": "5f4e8e4cc297f0e0d19fed3578a17bcd18b613f5b8caf33191cb9d236b7c2fc1",
       "git_mode": "100644",
-      "git_blob": "bbae3bcfb72ffb6f5622be1b98dbdcfed49c38c3",
+      "git_blob": "f5a31f65afd86c7f2eb07f53d626a34d69cf5991",
       "git_stage": "0"
     },
     {
@@ -479,7 +479,7 @@
       "size": 1887,
       "sha256": "773750a76eb6a6723cba13ae8096c9d28c14398fc71a49ee8d46ab256b563928",
       "git_mode": "100644",
-      "git_blob": "a0bda75cce1ab2b88ab9680527bd08a80b37f94d",
+      "git_blob": "bf3dbf1aecfbfb27ed09af24d5bd8b6d8ae0b07a",
       "git_stage": "0"
     },
     {
@@ -511,7 +511,7 @@
       "size": 1142,
       "sha256": "a5da1557ba68427889a66ec0bb42b5d7eaefe472a68756464b536b95a8dd33fc",
       "git_mode": "100644",
-      "git_blob": "4de320b5499b4b5b18ca77c55f413a978d727ea2",
+      "git_blob": "c7c12d3f60b914cc65be68260fc06bbbfaafdbcf",
       "git_stage": "0"
     },
     {
@@ -547,11 +547,27 @@
       "git_stage": "0"
     },
     {
+      "path": "gui/services/workflow_services.py",
+      "size": 2495,
+      "sha256": "6f4a9a5a32cb2a0d945d01fe84e9838b4b91e9e8204b387ee21cb7316f91efe2",
+      "git_mode": "100644",
+      "git_blob": "90cadb9ea5cdec8995e8f2b4e1e7a9f9f464f6ee",
+      "git_stage": "0"
+    },
+    {
       "path": "gui/state/__init__.py",
       "size": 458,
       "sha256": "fa439a85bc606cfce7350fbd6ab477b8d5fd73c4d85d3895d3d830ecba0118a2",
       "git_mode": "100644",
-      "git_blob": "5b0f723c75c3c6a1e3383d4f57c1a508a0f5e5eb",
+      "git_blob": "36eb0765c9965046d9bba6213cbd15ec9e5ade06",
+      "git_stage": "0"
+    },
+    {
+      "path": "gui/state/data_models.py",
+      "size": 2038,
+      "sha256": "97daa776d649d29e4374e7502b34630caa3a56c1817ef0fed85f0f915aa05b1c",
+      "git_mode": "100644",
+      "git_blob": "fa02939e4d047545f013268ef723723b5be33dc8",
       "git_stage": "0"
     },
     {
@@ -771,6 +787,14 @@
       "git_stage": "0"
     },
     {
+      "path": "tests/test_data_models_services.py",
+      "size": 1635,
+      "sha256": "c45f0efe3656dbe0fc69c99b2d6d4bdfe84856df55061bed48e25ffeed87d9a5",
+      "git_mode": "100644",
+      "git_blob": "a1d08ef22a127466b33e94e7286efe1094da062a",
+      "git_stage": "0"
+    },
+    {
       "path": "tests/test_dependency_consistency.py",
       "size": 1763,
       "sha256": "a3e78802cf56c59babf003c3335fe20e0862789c7c1d90a8cee1e282abde13d5",
@@ -831,7 +855,7 @@
       "size": 32387,
       "sha256": "8babca8c74c9fdd93ff4415109d890f5413df6c1b207fc30c12358d258ca638a",
       "git_mode": "100644",
-      "git_blob": "ff302f5a42d8e3e5b72a6bc422e612262c9fa1d3",
+      "git_blob": "d2b8fd4c3065020ce2fca2af110b6a132f5aa897",
       "git_stage": "0"
     },
     {
@@ -903,7 +927,7 @@
       "size": 1508,
       "sha256": "6b2658944ee1331e2ad13a985d8599b329b602ba8d1f3ba30e7e84289ab1ba43",
       "git_mode": "100644",
-      "git_blob": "565a408dff2f17be3831d4c562dc3d8915d291dd",
+      "git_blob": "3bcca70f2423b5df87f98df53ce4a4c6a1890124",
       "git_stage": "0"
     },
     {
@@ -967,7 +991,7 @@
       "size": 5466,
       "sha256": "4242ab5be5873ab5a4117f782c7df0fef4def10be8d41fe93a9b243dad0c23aa",
       "git_mode": "100644",
-      "git_blob": "7c2617d1100e0e49f0aab3abcbad9b9829162740",
+      "git_blob": "f028208a013794abf8e4b62d7eca94c80f1cb41a",
       "git_stage": "0"
     },
     {
@@ -983,7 +1007,7 @@
       "size": 1238,
       "sha256": "708f3af9ed3de7d510cf6087d0c490a99c2d66c70b3f6188e269f7c9e0cc7a0e",
       "git_mode": "100644",
-      "git_blob": "b69894d0879784dbdd2cf4e89925363e3fed22a2",
+      "git_blob": "59cf6203daadf175bb49983597b51aa10d09329b",
       "git_stage": "0"
     },
     {
@@ -1020,10 +1044,10 @@
     },
     {
       "path": "todo.txt",
-      "size": 21997,
-      "sha256": "40080b7325bcd8b47659d2eeffc8d8c0106d7862b118e67f0919c980f6e5e460",
+      "size": 21911,
+      "sha256": "b7ad282e2ab822019fa13667772302e9d060019a225ccb6a377903b58d43058c",
       "git_mode": "100644",
-      "git_blob": "71225c9155fdf5c6f609291f8b7be526984a761f",
+      "git_blob": "92520c8ee095ced33117e429b669ee5e177f52bf",
       "git_stage": "0"
     },
     {
@@ -1063,7 +1087,7 @@
       "size": 6384,
       "sha256": "72a3ab94f03b7a70750ae89ef4dc48c9ad1d9e61c5f1252896738ddb35955673",
       "git_mode": "100644",
-      "git_blob": "10225e73833b87d07cfd43f3b0054ec4612fc34d",
+      "git_blob": "96d9aa4325f7c5719c78de3ae453f94afdb040fb",
       "git_stage": "0"
     }
   ]
