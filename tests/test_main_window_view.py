@@ -25,7 +25,7 @@ def test_create_action_buttons_builds_expected_controls(qtbot):
     assert action_set.buttons["encode"].text() == "START"
     assert action_set.buttons["clear"].property("buttonRole") == "danger"
     assert action_set.buttons["add_images"].property("buttonRole") == "support"
-    assert len(action_set.wrappers) == 11
+    assert len(action_set.wrappers) == 9
     first_wrapper = action_set.wrappers[0]
     assert first_wrapper.minimumWidth() >= 200
     detail_labels = first_wrapper.findChildren(QtWidgets.QLabel)
@@ -105,3 +105,37 @@ def test_output_preview_widget_shows_conflict_warning(
     assert "Konflikt" in win.output_preview_summary.text()
     assert win.output_preview_summary.property("previewStatus") == "danger"
     assert "Zeile" in win.output_preview_details.toPlainText()
+
+
+def test_create_action_buttons_uses_three_by_three_primary_grid_order(qtbot):
+    parent = QtWidgets.QWidget()
+    qtbot.addWidget(parent)
+
+    action_set = create_action_buttons(parent, on_timer_tick=lambda: None)
+
+    keys_in_order = [
+        "add_images",
+        "add_audios",
+        "auto_pair",
+        "wizard",
+        "save",
+        "load",
+        "clear",
+        "stop",
+        "encode",
+    ]
+    for index, key in enumerate(keys_in_order):
+        wrapper = action_set.wrappers[index]
+        action_set.layout.addWidget(wrapper, index // 3, index % 3)
+
+    used_rows = set()
+    used_cols = set()
+    for idx in range(action_set.layout.count()):
+        row, col, row_span, col_span = action_set.layout.getItemPosition(idx)
+        assert row_span == 1
+        assert col_span == 1
+        used_rows.add(row)
+        used_cols.add(col)
+
+    assert used_rows == {0, 1, 2}
+    assert used_cols == {0, 1, 2}

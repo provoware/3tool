@@ -168,7 +168,7 @@ def resolve_action_layout_columns(
         dynamic_min_width,
         safe_content_min_width,
     )
-    max_columns = 4 if usable_width >= 1100 else 3
+    max_columns = 3
     columns = max(
         1,
         min(
