@@ -1075,9 +1075,9 @@ class MainWindow(QtWidgets.QMainWindow):
     FONT_STEP = 1
     WORKFLOW_SECTION_MIN_WIDTH = 180
     WORKFLOW_SECTION_MIN_HEIGHT = 190
-    WORKFLOW_COLUMN_DEFAULT_WEIGHTS = (30, 30, 40)
-    WORKFLOW_ROW_DEFAULT_WEIGHTS = ((38, 62), (62, 38), (65, 35))
-    WORKFLOW_SPLITTER_STATE_VERSION = 1
+    WORKFLOW_COLUMN_DEFAULT_WEIGHTS = (45, 55)
+    WORKFLOW_ROW_DEFAULT_WEIGHTS = ((36, 34, 30), (52, 22, 26))
+    WORKFLOW_SPLITTER_STATE_VERSION = 2
     WORKFLOW_BREAKPOINT_SMALL = 1024
     WORKFLOW_BREAKPOINT_MEDIUM = 1440
     WORKFLOW_STACK_GUARD_WIDTH = 860
@@ -1845,44 +1845,39 @@ class MainWindow(QtWidgets.QMainWindow):
         col1.setHandleWidth(10)
         col1.addWidget(self.pool_box)
         col1.addWidget(self.settings_widget)
+        col1.addWidget(self.btn_box)
         col2 = QtWidgets.QSplitter(Qt.Vertical)
         col2.setChildrenCollapsible(False)
         col2.setHandleWidth(10)
-        col2.addWidget(self.btn_box)
         col2.addWidget(self.table_box)
-        col3 = QtWidgets.QSplitter(Qt.Vertical)
-        col3.setChildrenCollapsible(False)
-        col3.setHandleWidth(10)
-        col3.addWidget(self.help_box)
-        col3.addWidget(self.log_box)
+        col2.addWidget(self.help_box)
+        col2.addWidget(self.log_box)
         self.workflow_columns.addWidget(col1)
         self.workflow_columns.addWidget(col2)
-        self.workflow_columns.addWidget(col3)
         self.workflow_columns.setSizes(
             self._scaled_sizes(
                 self.WORKFLOW_COLUMN_DEFAULT_WEIGHTS,
                 max(self.workflow_columns.width(), 1),
             )
         )
-        for idx in range(3):
+        for idx in range(len(self.WORKFLOW_COLUMN_DEFAULT_WEIGHTS)):
             self.workflow_columns.setCollapsible(idx, False)
-        for idx, col in enumerate((col1, col2, col3)):
+        for idx, col in enumerate((col1, col2)):
             col.setSizes(
                 self._scaled_sizes(
                     self.WORKFLOW_ROW_DEFAULT_WEIGHTS[idx],
                     max(col.height(), 1),
                 )
             )
-            col.setCollapsible(0, False)
-            col.setCollapsible(1, False)
-        self.workflow_splitters = [col1, col2, col3]
-        self._workflow_column_splitters = (col1, col2, col3)
+            for row_idx in range(len(self.WORKFLOW_ROW_DEFAULT_WEIGHTS[idx])):
+                col.setCollapsible(row_idx, False)
+        self.workflow_splitters = [col1, col2]
+        self._workflow_column_splitters = (col1, col2)
         self._layout_splitter_keys = {
-            "columns": "ui/workflow_splitter_columns_v1",
+            "columns": "ui/workflow_splitter_columns_v2",
             "rows": [
-                "ui/workflow_splitter_col1_rows_v1",
-                "ui/workflow_splitter_col2_rows_v1",
-                "ui/workflow_splitter_col3_rows_v1",
+                "ui/workflow_splitter_col1_rows_v2",
+                "ui/workflow_splitter_col2_rows_v2",
             ],
         }
         self._user_layout_touched = False
@@ -2080,10 +2075,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._section_resize_targets = {
             "Dateilisten": (0, 0),
             "Einstellungen": (0, 1),
-            "Aktionen": (1, 0),
-            "Paare": (1, 1),
-            "Hilfe": (2, 0),
-            "Protokoll": (2, 1),
+            "Aktionen": (0, 2),
+            "Paare": (1, 0),
+            "Hilfe": (1, 1),
+            "Protokoll": (1, 2),
         }
         self._configure_accessibility_metadata()
         QtWidgets.QApplication.instance().focusChanged.connect(
@@ -2434,9 +2429,8 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
         labels = (
-            "1/3 Eingabe + Validierung",
-            "2/3 Zuordnung + Aktionen",
-            "3/3 Preview + Protokoll",
+            "1/2 Eingabe, Validierung + Aktionen",
+            "2/2 Zuordnung, Hilfe + Protokoll",
         )
         self._compact_zone_layouts: List[QtWidgets.QVBoxLayout] = []
         for text in labels:
@@ -2451,9 +2445,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def _mount_workflow_sections(self, compact: bool) -> None:
         if compact:
             zone_pairs = (
-                (self.pool_box, self.settings_widget),
-                (self.btn_box, self.table_box),
-                (self.help_box, self.log_box),
+                (self.pool_box, self.settings_widget, self.btn_box),
+                (self.table_box, self.help_box, self.log_box),
             )
             for zone_layout, widgets in zip(
                 self._compact_zone_layouts, zone_pairs
@@ -2465,9 +2458,8 @@ class MainWindow(QtWidgets.QMainWindow):
         for splitter, widgets in zip(
             self._workflow_column_splitters,
             (
-                (self.pool_box, self.settings_widget),
-                (self.btn_box, self.table_box),
-                (self.help_box, self.log_box),
+                (self.pool_box, self.settings_widget, self.btn_box),
+                (self.table_box, self.help_box, self.log_box),
             ),
         ):
             for widget in widgets:
@@ -3021,10 +3013,8 @@ class MainWindow(QtWidgets.QMainWindow):
         effective_width = int(normalized_width / dpi_scale)
         if effective_width <= self.WORKFLOW_BREAKPOINT_SMALL:
             columns = 1
-        elif effective_width <= self.WORKFLOW_BREAKPOINT_MEDIUM:
-            columns = 2
         else:
-            columns = 3
+            columns = 2
         force_stack = (
             columns <= 1 or normalized_width <= self.WORKFLOW_STACK_GUARD_WIDTH
         )
@@ -4615,12 +4605,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self, "workflow_splitters"
         ):
             return
-        for idx, stretch in enumerate((2, 2, 3)):
+        for idx, stretch in enumerate((2, 3)):
             self.workflow_columns.setStretchFactor(idx, stretch)
-        row_stretches = ((1, 2), (3, 1), (3, 1))
+        row_stretches = ((2, 2, 1), (4, 1, 2))
         for splitter, stretches in zip(self.workflow_splitters, row_stretches):
-            splitter.setStretchFactor(0, stretches[0])
-            splitter.setStretchFactor(1, stretches[1])
+            for row_idx, stretch in enumerate(stretches):
+                splitter.setStretchFactor(row_idx, stretch)
 
     def _global_exception(self, etype, value, tb):
         import traceback
