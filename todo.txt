@@ -1,4 +1,5 @@
 # Aufgabenliste
+- [x] GUI-Aktionsbereich in ein strukturiertes 3x3-Grid umgebaut (Hauptaktionen) und Undo/Redo als separate Verlaufsgruppe ergänzt
 - [x] Zwei Deprecation-Warnungen in Legacy-Starttests behoben (Warnings jetzt explizit erwartet)
 - [x] Finalisierung: Vollautomatische QA-Startroutine erneut ausgefuehrt, Abhaengigkeiten auto-validiert und Endtest (288 passed) bestaetigt
 - [x] Aktionskacheln vereinheitlicht: einheitliche Button-Rollen, bessere Reflow-Abstände und zugängliche Beschriftungen ergänzt

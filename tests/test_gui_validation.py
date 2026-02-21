@@ -1059,3 +1059,28 @@ def test_undo_redo_restores_pair_states(
     win._redo_last()
 
     assert win.pairs[0].image_path.endswith("b.jpg")
+
+
+def test_main_window_action_reflow_caps_at_three_columns(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    columns, max_columns = win._resolve_action_columns(
+        win._action_button_wrappers,
+        available_width=9999,
+    )
+
+    assert columns == 3
+    assert max_columns == 3

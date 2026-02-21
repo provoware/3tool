@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Dict, Iterable, List, Tuple
+from typing import Callable, Dict, List, Tuple
 
 from PySide6 import QtCore, QtWidgets
 
@@ -84,6 +84,20 @@ _BUTTON_CONFIG: Dict[str, Dict[str, str]] = {
     },
 }
 
+_PRIMARY_ACTION_KEYS: Tuple[str, ...] = (
+    "add_images",
+    "add_audios",
+    "auto_pair",
+    "wizard",
+    "save",
+    "load",
+    "clear",
+    "stop",
+    "encode",
+)
+
+_SECONDARY_ACTION_KEYS: Tuple[str, ...] = ("undo", "redo")
+
 
 def _configure_action_button(
     button: QtWidgets.QPushButton,
@@ -147,11 +161,10 @@ def create_action_buttons(
     buttons["encode"].setProperty("readyPulse", "off")
     buttons["stop"].setEnabled(False)
 
-    subtitles: Iterable[Tuple[str, str]] = (
-        (key, config["subtitle"]) for key, config in _BUTTON_CONFIG.items()
-    )
-
-    wrappers = [wrap_button(buttons[key], label) for key, label in subtitles]
+    wrappers = [
+        wrap_button(buttons[key], _BUTTON_CONFIG[key]["subtitle"])
+        for key in _PRIMARY_ACTION_KEYS
+    ]
     for wrapper in wrappers:
         wrapper.setMinimumWidth(200)
         wrapper.setSizePolicy(
@@ -159,12 +172,35 @@ def create_action_buttons(
             QtWidgets.QSizePolicy.Policy.MinimumExpanding,
         )
 
+    secondary_wrappers = [
+        wrap_button(buttons[key], _BUTTON_CONFIG[key]["subtitle"])
+        for key in _SECONDARY_ACTION_KEYS
+    ]
+    for wrapper in secondary_wrappers:
+        wrapper.setMinimumWidth(200)
+        wrapper.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+        )
+
     layout = QtWidgets.QGridLayout()
     layout.setSpacing(8)
     layout.setContentsMargins(6, 6, 6, 6)
 
+    secondary_box = QtWidgets.QGroupBox("Verlauf")
+    secondary_layout = QtWidgets.QGridLayout(secondary_box)
+    secondary_layout.setSpacing(8)
+    secondary_layout.setContentsMargins(6, 6, 6, 6)
+    for index, wrapper in enumerate(secondary_wrappers):
+        secondary_layout.addWidget(wrapper, 0, index)
+        secondary_layout.setColumnStretch(index, 1)
+
     box = QtWidgets.QGroupBox("Aktionen")
-    box.setLayout(layout)
+    box_layout = QtWidgets.QVBoxLayout(box)
+    box_layout.setContentsMargins(6, 6, 6, 6)
+    box_layout.setSpacing(10)
+    box_layout.addLayout(layout)
+    box_layout.addWidget(secondary_box)
 
     timer = QtCore.QTimer(parent)
     timer.setInterval(500)
