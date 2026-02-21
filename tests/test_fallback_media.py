@@ -1,10 +1,7 @@
 from pathlib import Path
 
-from core.fallback_media import (
-    dumps_audio_list,
-    loads_audio_list,
-    persist_fallback_media,
-)
+from core.fallback_media import (dumps_audio_list, loads_audio_list,
+                                 persist_fallback_media)
 
 
 def test_audio_list_roundtrip() -> None:
