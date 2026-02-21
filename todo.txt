@@ -261,3 +261,14 @@
 - [x] Release-Blocker: Interaktive Mini-Preview, erweiterte Kontextmenüs und Undo/Redo (D) fertiggestellt
 - [ ] Release-Blocker: Zentrale Datenmodelle/Services finalisieren und grafische Fehlerzustände vereinheitlichen (E)
 - [ ] Finaler Go-Live-Check: `bash scripts/quality_check.sh && pytest -q && python videobatch_launcher.py --release-check`
+
+## Release-Restpunkte (Stand heute)
+- [ ] Codeformatierung angleichen, damit `black --check` grün ist (betrifft aktuell mehrere Dateien).
+- [ ] GUI-Startumgebung für Release-Check vervollständigen (`libEGL.so.1` fehlt aktuell in der Laufzeitumgebung).
+- [ ] Architektur-Restpunkt umsetzen: zentrale Datenmodelle/Services als Single Source of Truth finalisieren.
+
+### Schnelle Befehle für den finalen Go-Live (kopierbar)
+- `black core/bootstrap.py core/startup/repair_orchestrator.py core/themes.py tests/test_output_preview.py tests/test_ui_smoke_profiles.py tests/test_themes.py videobatch_professional.py`
+- `bash scripts/quality_check.sh`
+- `pytest -q`
+- `python3 videobatch_launcher.py --release-check`
