@@ -794,6 +794,68 @@ def test_accessibility_metadata_assigns_section_descriptions(
     assert "Master-Detail" in win.table.accessibleDescription()
 
 
+def test_pair_table_uses_master_detail_splitter_with_detail_panel(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    assert win.table_detail_splitter.orientation() == QtCore.Qt.Vertical
+    assert win.table_detail_splitter.count() == 2
+    assert win.table_detail_panel.title() == "Details zur Auswahl"
+    assert win.table_detail_splitter.widget(0) is win.table
+    assert win.table_detail_splitter.widget(1) is win.table_detail_panel
+
+
+def test_sticky_preview_and_export_are_kept_in_sync(
+    request, gui_runtime_available, gui_runtime_error
+):
+    if not gui_runtime_available:
+        assert gui_runtime_error is not None
+        assert (
+            "libGL.so.1" in gui_runtime_error
+            or "libEGL.so.1" in gui_runtime_error
+        )
+        return
+
+    qtbot = request.getfixturevalue("qtbot")
+    videobatch_gui = _import_gui_module()
+    win = videobatch_gui.MainWindow()
+    qtbot.addWidget(win)
+
+    win.btn_encode.setEnabled(False)
+    win._sync_sticky_export_state()
+    assert win.sticky_export_button.isEnabled() is False
+
+    win.btn_encode.setEnabled(True)
+    win._sync_sticky_export_state()
+    assert win.sticky_export_button.isEnabled() is True
+
+    win.pairs = [
+        videobatch_gui.PairItem(
+            image_path="/tmp/image-a.jpg",
+            audio_path="/tmp/audio-a.mp3",
+            output="/tmp/out-a.mp4",
+        )
+    ]
+    win._refresh_output_preview()
+
+    assert win.sticky_preview_summary.text().startswith("Sticky-Vorschau: ")
+    assert (
+        win.output_preview_summary.text() in win.sticky_preview_summary.text()
+    )
+
+
 def test_dashboard_quick_status_cards_show_text_and_state(
     request, gui_runtime_available, gui_runtime_error
 ):
@@ -935,6 +997,7 @@ def test_drop_list_rename_item_keeps_ignore_suffix(
 
     assert widget._rename_item_label(item)
     assert item.text() == "Alias.png (ignoriert)"
+
 
 def test_inline_template_validation_sets_field_state_and_badge(
     request, gui_runtime_available, gui_runtime_error
